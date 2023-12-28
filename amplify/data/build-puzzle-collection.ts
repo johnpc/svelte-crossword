@@ -3,7 +3,8 @@ import { Schema } from './resource';
 import { puzToJson } from './helpers/puz-to-json';
 import { getUrl, uploadData } from 'aws-amplify/storage';
 import { Amplify } from 'aws-amplify';
-import config from '../../amplifyconfiguration.json';
+// import config from '../../amplifyconfiguration.json';
+const config = {};
 import dotenv from 'dotenv';
 dotenv.config();
 
