@@ -4,7 +4,7 @@ const schema = a.schema({
   Todo: a.model({
     name: a.string(),
     description: a.string(),
-  }),
+  }).authorization([a.allow.public('iam')]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
