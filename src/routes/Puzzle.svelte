@@ -1,6 +1,25 @@
 <script lang="ts">
 	import Crossword from 'svelte-crossword';
-	const clues = [
+	import type { Schema } from "../../amplify/data/resource";
+
+	type Clue = {
+		clue: string,
+		answer: string,
+		direction: "across"|"down",
+		x: number,
+		y: number,
+	};
+	let clues: Clue[]
+	let ref: any;
+	let puzzle: Schema["Puzzle"];
+	$: timeInSeconds = 0;
+	$: isPuzzleComplete = false;
+	$: usedCheck = false;
+	$: usedReveal = false;
+	$: usedClear = false;
+
+	const fetchPuzzle = async () => {
+		clues = [
 		{
 			clue: 'The 1% of 1% milk',
 			answer: 'FAT',
@@ -72,19 +91,18 @@
 			y: 1
 		}
 	];
-	let ref: any;
-	$: timeInSeconds = 0;
-	$: isPuzzleComplete = false;
-	$: usedCheck = false;
-	$: usedReveal = false;
-	$: usedClear = false;
-
-	const fetchPuzzle = async () => {
-
 	}
+
+	fetchPuzzle();
 
 	const onPuzzleComplete = () => {
 		console.log('Puzzle complete!');
+		console.log({
+			usedCheck,
+			usedClear,
+			usedReveal,
+			timeInSeconds,
+		})
 	};
 	const tickTimer = () => {
 		setTimeout(() => {
