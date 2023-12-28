@@ -1,12 +1,12 @@
 <script>
-	import Counter from './Counter.svelte';
+	import Puzzle from './Puzzle.svelte';
 	import welcome from '$lib/images/svelte-welcome.webp';
 	import welcome_fallback from '$lib/images/svelte-welcome.png';
 </script>
 
 <svelte:head>
-	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
+	<title>Small Crosswords</title>
+	<meta name="description" content="Enjoy unlimited mini crossword puzzles!" />
 </svelte:head>
 
 <section>
@@ -18,14 +18,10 @@
 			</picture>
 		</span>
 
-		to your new<br />SvelteKit app
+		to Small Crosswords
 	</h1>
-
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
-
-	<Counter />
+	<p>Enjoy unlimited mini crossword puzzles!</p>
+	<Puzzle />
 </section>
 
 <style>
