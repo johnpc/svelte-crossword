@@ -19,7 +19,7 @@
 			"short_name": "Mini",
 			"description": "Solve a mini crossword",
 			"url": "/?source=pwa",
-			"icons": [{ "src": "/icons/logo_192.png", "sizes": "192x192" }]
+			"icons": [{ "src": "logo_192.png", "sizes": "192x192" }]
 		}
 	],
 	"description": "Free, unlimited mini crosswords"
