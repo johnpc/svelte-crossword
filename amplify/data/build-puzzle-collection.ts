@@ -18,6 +18,7 @@ const createDynamoRecord = async (buffer: Buffer, puzKey: string) => {
 	const json = puzToJson(buffer);
 	const createdPuzzle = await client.models.Puzzle.create(
 		{
+			id: puzKey,
 			puzJson: JSON.stringify(json),
 			puzKey
 		},
