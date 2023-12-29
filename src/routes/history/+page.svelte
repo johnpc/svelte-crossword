@@ -6,6 +6,7 @@
 	import { getCurrentUser } from 'aws-amplify/auth';
 	import type { AuthUser } from 'aws-amplify/auth';
 	import { goto } from '$app/navigation';
+	import { signOut, deleteUser } from 'aws-amplify/auth';
 	import config from '../../amplifyconfiguration.json';
 	Amplify.configure(config);
 	const client = generateClient<Schema>({
@@ -35,6 +36,17 @@
 		const hours = date.getHours() > 12 ? date.getHours() - 12 : date.getHours();
 		const minutes = date.getMinutes() < 10 ? `0${date.getMinutes()}` : date.getMinutes();
 		return `${date.toDateString()} at ${hours}:${minutes}${timeSuffix}`;
+	};
+	const handleDeleteAllData = async () => {
+		const confirmed = confirm(
+			'Are you sure? This will destroy your account and log you out immediately. It cannot be undone.'
+		);
+		if (!confirmed) {
+			return;
+		}
+		await deleteUser();
+		await signOut();
+		goto('/login');
 	};
 </script>
 
@@ -74,4 +86,9 @@
 			<hr />
 		</div>
 	{/each}
+	<hr />
+	<div style="text-size: xx-small">
+		<p>We value your privacy.</p>
+		<p><a href="#" on:click={() => handleDeleteAllData()}>Delete all my data.</a></p>
+	</div>
 {/if}

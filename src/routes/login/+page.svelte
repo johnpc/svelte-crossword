@@ -35,6 +35,15 @@
 		});
 		goto('/');
 	};
+	const tryOrAlert = async (fn: Function, args: {}) => {
+		try {
+			await fn(args);
+		} catch (error) {
+			const message = `failed to execute ${fn.name}: ${(error as Error).message}`;
+			console.error({ message, error });
+			alert(message);
+		}
+	};
 
 	const showRegistrationForm = () => {
 		register = true;
@@ -54,13 +63,19 @@
 		<input required type="password" id="password" bind:value={password} />
 		<hr />
 		{#if !confirm}
-			<button type="submit" on:click={registrationHandler}>Create account</button>
+			<button type="submit" on:click={() => tryOrAlert(registrationHandler, { username, password })}
+				>Create account</button
+			>
 		{/if}
 		{#if confirm}
 			<label for="confirmation">Confirmation Code</label>
 			<input required type="confirmation" id="confirmation" bind:value={confirmationCode} />
 			<hr />
-			<button type="submit" on:click={confirmationHandler}>Confirm Email</button>
+			<button
+				type="submit"
+				on:click={() => tryOrAlert(confirmationHandler, { username, confirmationCode })}
+				>Confirm Email</button
+			>
 		{/if}
 	</form>
 	<p>
@@ -81,7 +96,9 @@
 		<label for="password">Password&nbsp;&nbsp;</label>
 		<input required type="password" id="password" bind:value={password} />
 		<hr />
-		<button type="submit" on:click={loginHandler}>Log in</button>
+		<button type="submit" on:click={() => tryOrAlert(loginHandler, { username, password })}
+			>Log in</button
+		>
 	</form>
 	<p>
 		Not registered? <a
