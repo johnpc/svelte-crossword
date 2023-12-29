@@ -8,6 +8,7 @@
 	import { getCurrentUser } from 'aws-amplify/auth';
 	import type { AuthUser } from 'aws-amplify/auth';
 	import { onMount } from 'svelte';
+	import { signOut } from 'aws-amplify/auth';
 	Amplify.configure(config);
 	const client = generateClient<Schema>({
 		authMode: 'userPool'
@@ -164,11 +165,22 @@
 		tickTimer();
 		fetchPuzzle();
 	};
+
+	const onSignOut = async () => {
+		await signOut();
+		goto('/login');
+	};
 </script>
 
 {#if clues.length === 0}
 	<p>Loading...</p>
 {:else}
+	<h3>
+		Hello {profile.email} 👋
+		<span style="font-size: small;"
+			>(not you? <a href="#" on:click={() => onSignOut()}>sign out</a>)</span
+		>
+	</h3>
 	<Crossword bind:this={ref} data={clues} breakpoint={10000} theme="amelia">
 		<div class="toolbar" slot="toolbar" let:onClear let:onReveal let:onCheck>
 			<p style="display: inline;">{timeInSeconds}</p>

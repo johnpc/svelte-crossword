@@ -8,8 +8,8 @@
 	import type { AuthUser } from 'aws-amplify/auth';
 	import { goto } from '$app/navigation';
 	import config from '../../../amplifyconfiguration.json';
-	import {browser} from "$app/environment";
-	import { page } from '$app/stores'
+	import { browser } from '$app/environment';
+	import { page } from '$app/stores';
 	// const searchParams = browser && $page.url.searchParams.get('id');
 	// const userPuzzleId = searchParams;
 
@@ -37,15 +37,15 @@
 				goto('/login');
 			}
 			console.log({ currentUser });
-			const userPuzzleId = $page.url.searchParams.get('id')!
-			console.log({userPuzzleId: userPuzzleId});
+			const userPuzzleId = $page.url.searchParams.get('id')!;
+			console.log({ userPuzzleId: userPuzzleId });
 			const userPuzzleResponse = await client.models.UserPuzzle.get({
-				id: userPuzzleId,
+				id: userPuzzleId
 			});
 			console.log({ userPuzzleResponse });
 			userPuzzle = userPuzzleResponse.data;
 			const puzzleResponse = await userPuzzle.puzzle();
-			console.log({puzzleResponse});
+			console.log({ puzzleResponse });
 			puzzle = puzzleResponse.data!;
 			const jsonAtIndex = JSON.parse(puzzle.puzJson as string);
 			const across = Object.values(jsonAtIndex.clues.across) as Clue[];
@@ -60,7 +60,15 @@
 {#if clues.length === 0}
 	<p>Loading...</p>
 {:else}
-	<Crossword data={clues} breakpoint={10000} theme="amelia" revealed={true} showConfetti={false} showCompleteMessage={false} showKeyboard={false}>
+	<Crossword
+		data={clues}
+		breakpoint={10000}
+		theme="amelia"
+		revealed={true}
+		showConfetti={false}
+		showCompleteMessage={false}
+		showKeyboard={false}
+	>
 		<div id="toolbar" class="toolbar" slot="toolbar" let:onReveal>
 			<p style="display: inline;">Solved in {userPuzzle.timeInSeconds} seconds.</p>
 			{onReveal() ? '' : ''}
