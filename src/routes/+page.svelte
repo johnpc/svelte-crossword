@@ -18,7 +18,7 @@
 			</picture>
 		</span>
 
-		to Small Crosswords
+		<span>to Small Crosswords</span>
 	</h1>
 	<p>Enjoy unlimited mini crossword puzzles!</p>
 	<Puzzle />

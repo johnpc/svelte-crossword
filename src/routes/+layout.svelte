@@ -11,7 +11,9 @@
 	</main>
 
 	<footer>
-		<p>Contact <a href="mailto:support@smallcrosswords.com">support@smallcrosswords.com</a> for support.</p>
+		<p>
+			Contact <a href="mailto:support@smallcrosswords.com">support@smallcrosswords.com</a> for support.
+		</p>
 	</footer>
 </div>
 
