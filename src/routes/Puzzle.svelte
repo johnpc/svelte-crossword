@@ -169,17 +169,17 @@
 {#if clues.length === 0}
 	<p>Loading...</p>
 {:else}
-	<Crossword bind:this={ref} data={clues} breakpoint={10000} theme="classic">
+	<Crossword bind:this={ref} data={clues} breakpoint={10000} theme="amelia">
 		<div class="toolbar" slot="toolbar" let:onClear let:onReveal let:onCheck>
 			<p style="display: inline;">{timeInSeconds}</p>
 			{#if !isPuzzleComplete}
-				<button on:click={onToolbarHistory}>History</button>
+				<button class="history-button" on:click={onToolbarHistory}>History</button>
 			{/if}
 			<button on:click={() => onToolbarClear(onClear)}>Clear</button>
 			<button on:click={() => onToolbarReveal(onReveal)}>Reveal</button>
 			<button on:click={() => onToolbarCheck(onCheck)}>Check</button>
 			{#if isPuzzleComplete}
-				<button class="next-puzzle" on:click={onToolbarNextPuzzle}>Next Puzzle</button>
+				<button class="next-puzzle-button" on:click={onToolbarNextPuzzle}>Next Puzzle</button>
 			{/if}
 		</div>
 	</Crossword>
@@ -214,7 +214,11 @@
 		background-color: var(--primary-highlight-color);
 	}
 
-	.next-puzzle {
+	.next-puzzle-button {
+		background-color: var(--secondary-highlight-color);
+		color: aliceblue;
+	}
+	.history-button {
 		background-color: var(--secondary-highlight-color);
 		color: aliceblue;
 	}
