@@ -5,6 +5,7 @@ backend:
       commands:
         - nvm use 18
         - npm ci --force
+        - npx amplify generate config --out-dir src --branch $AWS_BRANCH --app-id $AWS_APP_ID
         - npx amplify pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
         - npx amplify generate config --out-dir src --branch $AWS_BRANCH --app-id $AWS_APP_ID
 frontend:

@@ -3,8 +3,8 @@ import { Schema } from './resource';
 import { puzToJson } from './helpers/puz-to-json';
 import { getUrl, uploadData } from 'aws-amplify/storage';
 import { Amplify } from 'aws-amplify';
-// import config from '../../src/amplifyconfiguration.json';
-const config = {};
+import config from '../../src/amplifyconfiguration.json';
+// const config = {};
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -33,7 +33,7 @@ const createDynamoRecord = async (buffer: Buffer, puzKey: string) => {
 
 const uploadPuzFile = async (
 	filename: string,
-	blob: any
+	blob: Blob
 ): Promise<{ key: string; href: string; error?: Error }> => {
 	try {
 		const result = await uploadData({
@@ -58,7 +58,7 @@ const uploadPuzFile = async (
 	}
 };
 
-export const handler = async (event: any) => {
+export const handler = async (event: Event) => {
 	console.log(`EVENT: ${JSON.stringify(event)}`);
 
 	const puzzleFeedResult = await fetch(puzzleFeedUrl);
