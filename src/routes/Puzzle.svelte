@@ -79,18 +79,18 @@
 	const fetchPuzzle = async () => {
 		console.log({ profile });
 		const puzzleResponse = await client.models.Puzzle.list({
-			limit: 100,
+			limit: 100
 		});
 		console.log({ puzzleResponse });
 		const completedPuzzles = await profile.completedPuzzles();
 		const completedPuzzleIdPromises = completedPuzzles.data.map(async (completedPuzzle) => {
 			const puzzle = await completedPuzzle.puzzle();
 			return puzzle.data?.id;
-		})
+		});
 		const completedPuzzleIds = await Promise.all(completedPuzzleIdPromises);
-		console.log({completedPuzzleIds});
-		puzzles = puzzleResponse.data.filter(puzzle => {
-			return !completedPuzzleIds.includes(puzzle.id)
+		console.log({ completedPuzzleIds });
+		puzzles = puzzleResponse.data.filter((puzzle) => {
+			return !completedPuzzleIds.includes(puzzle.id);
 		});
 		clues = getCluesFromPuzzle(puzzles[puzzleIndex]);
 	};
@@ -102,7 +102,7 @@
 			usedReveal,
 			timeInSeconds,
 			userPuzzlePuzzleId: puzzles[puzzleIndex].id,
-			profileCompletedPuzzlesId: profile.id,
+			profileCompletedPuzzlesId: profile.id
 		});
 	};
 	const tickTimer = () => {

@@ -10,17 +10,17 @@ const schema = a.schema({
 			completedPuzzles: a.hasMany('UserPuzzle')
 		})
 		.authorization([a.allow.owner(), a.allow.custom()]),
-  UserPuzzle: a
+	UserPuzzle: a
 		.model({
-      profile: a.belongsTo('Profile'),
+			profile: a.belongsTo('Profile'),
 			puzzle: a.hasOne('Puzzle'),
 			usedCheck: a.boolean().required(),
-      usedReveal: a.boolean().required(),
-      usedClear: a.boolean().required(),
-			timeInSeconds: a.integer().required(),
+			usedReveal: a.boolean().required(),
+			usedClear: a.boolean().required(),
+			timeInSeconds: a.integer().required()
 		})
 		.authorization([a.allow.owner(), a.allow.custom()]),
-    Puzzle: a
+	Puzzle: a
 		.model({
 			puzJson: a.json(),
 			puzKey: a.string()
