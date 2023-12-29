@@ -61,7 +61,7 @@
 	{#each completedPuzzles as { id, usedCheck, usedClear, usedReveal, timeInSeconds, createdAt }, i}
 		<div>
 			<h2>
-				<a href={`#${id}`} on:click={() => goto(`/history/${id}`)}
+				<a href={`#${id}`} on:click={() => goto(`/history/id?id=${id}`)}
 					>Puzzle on {getHumanReadableDate(new Date(createdAt))}</a
 				>
 			</h2>

@@ -8,7 +8,10 @@
 	import type { AuthUser } from 'aws-amplify/auth';
 	import { goto } from '$app/navigation';
 	import config from '../../../amplifyconfiguration.json';
-	export let data: {userPuzzleId: string};
+	import {browser} from "$app/environment";
+	import { page } from '$app/stores'
+	// const searchParams = browser && $page.url.searchParams.get('id');
+	// const userPuzzleId = searchParams;
 
 	Amplify.configure(config);
 	const client = generateClient<Schema>({
@@ -34,9 +37,10 @@
 				goto('/login');
 			}
 			console.log({ currentUser });
-			console.log({userPuzzleId: data.userPuzzleId});
+			const userPuzzleId = $page.url.searchParams.get('id')!
+			console.log({userPuzzleId: userPuzzleId});
 			const userPuzzleResponse = await client.models.UserPuzzle.get({
-				id: data.userPuzzleId,
+				id: userPuzzleId,
 			});
 			console.log({ userPuzzleResponse });
 			userPuzzle = userPuzzleResponse.data;
