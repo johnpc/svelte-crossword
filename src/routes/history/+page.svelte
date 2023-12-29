@@ -14,6 +14,7 @@
 	});
 	$: completedPuzzles = [] as Schema['UserPuzzle'][];
 	$: currentUser = {} as AuthUser;
+	$: isLoading = true;
 	onMount(() => {
 		const setup = async () => {
 			try {
@@ -27,6 +28,7 @@
 			});
 			console.log({ userPuzzleResponse });
 			completedPuzzles = userPuzzleResponse.data;
+			isLoading = false;
 		};
 
 		setup();
@@ -50,8 +52,10 @@
 	};
 </script>
 
-{#if completedPuzzles.length === 0}
+{#if isLoading}
 	<p>Loading...</p>
+{:else if completedPuzzles.length === 0}
+	<p>You have not completed any puzzles. <a href="#" on:click={() => goto('/')}>Go Back</a></p>
 {:else}
 	<div>
 		<h1>You've completed {completedPuzzles.length} puzzles!</h1>
