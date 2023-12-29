@@ -44,7 +44,7 @@
 			const profile = await getOrCreateProfile();
 			console.log({ profile });
 			const puzzle = await fetchPuzzle();
-			console.log({ puzzle })
+			console.log({ puzzle });
 		};
 
 		setup();
@@ -55,7 +55,7 @@
 			const getProfileResponse = await client.models.Profile.get({
 				id: currentUser.userId
 			});
-			console.log({getProfileResponse});
+			console.log({ getProfileResponse });
 			if (getProfileResponse?.data?.id) {
 				profile = getProfileResponse.data;
 				return;
@@ -69,7 +69,7 @@
 			email: currentUser.signInDetails?.loginId!,
 			name: currentUser.signInDetails?.loginId || currentUser.username
 		});
-		console.log({createProfileResponse});
+		console.log({ createProfileResponse });
 		profile = createProfileResponse.data;
 		return profile;
 	};
@@ -114,6 +114,7 @@
 			profileCompletedPuzzlesId: profile.id
 		});
 	};
+
 	const tickTimer = () => {
 		setTimeout(() => {
 			if (ref) {
@@ -162,17 +163,23 @@
 	};
 </script>
 
-<Crossword bind:this={ref} data={clues} showKeyboard={true} theme="amelia">
-	<div class="toolbar" slot="toolbar" let:onClear let:onReveal let:onCheck>
-		<p style="display: inline;">{timeInSeconds}</p>
-		<button on:click={() => onToolbarClear(onClear)}>Clear</button>
-		<button on:click={() => onToolbarReveal(onReveal)}>Reveal</button>
-		<button on:click={() => onToolbarCheck(onCheck)}>Check</button>
-		{#if isPuzzleComplete}
-			<button class="next-puzzle" on:click={onToolbarNextPuzzle}>Next Puzzle</button>
-		{/if}
-	</div>
-</Crossword>
+{#if clues.length === 0}
+	<p>Loading...</p>
+{/if}
+
+{#if clues.length > 0}
+	<Crossword bind:this={ref} data={clues} breakpoint={10000} theme="classic">
+		<div class="toolbar" slot="toolbar" let:onClear let:onReveal let:onCheck>
+			<p style="display: inline;">{timeInSeconds}</p>
+			<button on:click={() => onToolbarClear(onClear)}>Clear</button>
+			<button on:click={() => onToolbarReveal(onReveal)}>Reveal</button>
+			<button on:click={() => onToolbarCheck(onCheck)}>Check</button>
+			{#if isPuzzleComplete}
+				<button class="next-puzzle" on:click={onToolbarNextPuzzle}>Next Puzzle</button>
+			{/if}
+		</div>
+	</Crossword>
+{/if}
 
 <style>
 	.toolbar {

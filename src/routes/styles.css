@@ -105,3 +105,8 @@ button:focus:not(:focus-visible) {
 	width: 1px;
 	white-space: nowrap;
 }
+
+.svelte-crossword {
+	width: 100%;
+	max-width: 720px;
+}

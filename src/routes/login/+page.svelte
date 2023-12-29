@@ -63,8 +63,13 @@
 			<button type="submit" on:click={confirmationHandler}>Confirm Email</button>
 		{/if}
 	</form>
-	<p>Already registered? <a href="#registrationForm" aria-label="showLoginForm" on:click={showLoginForm}>Log In</a> instead
-{/if}
+	<p>
+		Already registered? <a
+			href="#registrationForm"
+			aria-label="showLoginForm"
+			on:click={showLoginForm}>Log In</a
+		> instead
+	</p>{/if}
 
 {#if !register}
 	<h1>Log In</h1>
@@ -78,6 +83,10 @@
 		<hr />
 		<button type="submit" on:click={loginHandler}>Log in</button>
 	</form>
-	<p>Not registered? <a href="#loginForm" aria-label="showRegistrationForm" on:click={showRegistrationForm}>Create an Account</a> instead
-
-{/if}
+	<p>
+		Not registered? <a
+			href="#loginForm"
+			aria-label="showRegistrationForm"
+			on:click={showRegistrationForm}>Create an Account</a
+		> instead
+	</p>{/if}
