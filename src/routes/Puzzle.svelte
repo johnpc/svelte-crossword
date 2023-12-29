@@ -4,8 +4,14 @@
 	import { generateClient } from 'aws-amplify/data';
 	import { Amplify } from 'aws-amplify';
 	import config from '../amplifyconfiguration.json';
+	import { goto } from '$app/navigation';
+	import { getCurrentUser } from 'aws-amplify/auth';
+	import type { AuthUser } from 'aws-amplify/auth';
+	import { onMount } from 'svelte';
 	Amplify.configure(config);
-	const client = generateClient<Schema>();
+	const client = generateClient<Schema>({
+		authMode: 'userPool'
+	});
 
 	type Clue = {
 		clue: string;
@@ -14,39 +20,89 @@
 		x: number;
 		y: number;
 	};
+
 	$: clues = [] as Clue[];
 	let ref: any;
 	$: puzzles = [] as Schema['Puzzle'][];
+	$: profile = {} as Schema['Profile'];
 	$: puzzleIndex = 0;
 	$: timeInSeconds = 0;
 	$: isPuzzleComplete = false;
 	$: usedCheck = false;
 	$: usedReveal = false;
 	$: usedClear = false;
+	$: currentUser = {} as AuthUser;
+
+	onMount(() => {
+		const setUser = async () => {
+			try {
+				currentUser = await getCurrentUser();
+			} catch (e) {
+				goto('/login');
+			}
+			console.log({ currentUser });
+		};
+
+		getOrCreateProfile();
+		setUser();
+		fetchPuzzle();
+	});
+	const getOrCreateProfile = async () => {
+		const currentUser = await getCurrentUser();
+		let profileResponse;
+		profileResponse = await client.models.Profile.get({
+			id: currentUser.userId
+		});
+		if (profileResponse.data) {
+			profile = profileResponse.data;
+			return;
+		}
+		profileResponse = await client.models.Profile.create({
+			id: currentUser.userId,
+			userId: currentUser.userId,
+			email: currentUser.signInDetails?.loginId!,
+			name: currentUser.signInDetails?.loginId || currentUser.username
+		});
+		profile = profileResponse.data;
+	};
 
 	const getCluesFromPuzzle = (puzzle: Schema['Puzzle']) => {
-		const jsonAtIndex = JSON.parse(puzzles[puzzleIndex].puzJson as string);
+		if (!puzzle) {
+			return [];
+		}
+		const jsonAtIndex = JSON.parse(puzzle.puzJson as string);
 		const across = Object.values(jsonAtIndex.clues.across) as Clue[];
 		const down = Object.values(jsonAtIndex.clues.down) as Clue[];
 		return [...across, ...down];
 	};
+
 	const fetchPuzzle = async () => {
+		console.log({ profile });
 		const puzzleResponse = await client.models.Puzzle.list({
-			authMode: 'iam'
+			limit: 100,
 		});
-		puzzles = puzzleResponse.data;
+		console.log({ puzzleResponse });
+		const completedPuzzles = await profile.completedPuzzles();
+		const completedPuzzleIdPromises = completedPuzzles.data.map(async (completedPuzzle) => {
+			const puzzle = await completedPuzzle.puzzle();
+			return puzzle.data?.id;
+		})
+		const completedPuzzleIds = await Promise.all(completedPuzzleIdPromises);
+		console.log({completedPuzzleIds});
+		puzzles = puzzleResponse.data.filter(puzzle => {
+			return !completedPuzzleIds.includes(puzzle.id)
+		});
 		clues = getCluesFromPuzzle(puzzles[puzzleIndex]);
 	};
 
-	fetchPuzzle();
-
-	const onPuzzleComplete = () => {
-		console.log('Puzzle complete!');
-		console.log({
+	const onPuzzleComplete = async () => {
+		await client.models.UserPuzzle.create({
 			usedCheck,
 			usedClear,
 			usedReveal,
-			timeInSeconds
+			timeInSeconds,
+			userPuzzlePuzzleId: puzzles[puzzleIndex].id,
+			profileCompletedPuzzlesId: profile.id,
 		});
 	};
 	const tickTimer = () => {

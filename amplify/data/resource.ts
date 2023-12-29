@@ -7,10 +7,20 @@ const schema = a.schema({
 			userId: a.string().required(),
 			name: a.string().required(),
 			email: a.string().required(),
-			completedPuzzles: a.hasMany('Puzzle')
+			completedPuzzles: a.hasMany('UserPuzzle')
 		})
 		.authorization([a.allow.owner(), a.allow.custom()]),
-	Puzzle: a
+  UserPuzzle: a
+		.model({
+      profile: a.belongsTo('Profile'),
+			puzzle: a.hasOne('Puzzle'),
+			usedCheck: a.boolean().required(),
+      usedReveal: a.boolean().required(),
+      usedClear: a.boolean().required(),
+			timeInSeconds: a.integer().required(),
+		})
+		.authorization([a.allow.owner(), a.allow.custom()]),
+    Puzzle: a
 		.model({
 			puzJson: a.json(),
 			puzKey: a.string()
