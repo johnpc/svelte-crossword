@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.johncorser.smallcrosswords",
+        "sha256_cert_fingerprints": ["5C:28:68:7F:14:67:8A:E7:95:98:69:67:50:EB:4E:50:EC:28:E3:7D:43:AE:7D:DA:C9:C3:C8:23:B0:51:C8:D3"]
+      }
+    }]
