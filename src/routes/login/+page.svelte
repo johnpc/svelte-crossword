@@ -6,7 +6,7 @@
 	Amplify.configure(config);
 
 	$: register = false;
-	$: confirm = true;
+	$: confirm = false;
 	$: username = '';
 	$: password = '';
 	$: confirmationCode = '';
@@ -15,6 +15,7 @@
 			username,
 			password
 		});
+		confirm = true;
 		alert('Please check your email and enter confirmation code.');
 	};
 
