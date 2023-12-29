@@ -51,13 +51,17 @@
 	});
 	const getOrCreateProfile = async () => {
 		const currentUser = await getCurrentUser();
-		const getProfileResponse = await client.models.Profile.get({
-			id: currentUser.userId
-		});
-		console.log({getProfileResponse});
-		if (getProfileResponse?.data?.id) {
-			profile = getProfileResponse.data;
-			return;
+		try {
+			const getProfileResponse = await client.models.Profile.get({
+				id: currentUser.userId
+			});
+			console.log({getProfileResponse});
+			if (getProfileResponse?.data?.id) {
+				profile = getProfileResponse.data;
+				return;
+			}
+		} catch (e) {
+			console.warn(e);
 		}
 		const createProfileResponse = await client.models.Profile.create({
 			id: currentUser.userId,
