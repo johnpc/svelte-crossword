@@ -30,41 +30,48 @@
 
 		setup();
 	});
+	const getHumanReadableDate = (date: Date) => {
+		const timeSuffix = date.getHours() < 12 ? 'am' : 'pm';
+		const hours = date.getHours() > 12 ? date.getHours() - 12 : date.getHours();
+		const minutes = date.getMinutes() < 10 ? `0${date.getMinutes()}` : date.getMinutes();
+		return `${date.toDateString()} at ${hours}:${minutes}${timeSuffix}`;
+	};
 </script>
 
 {#if completedPuzzles.length === 0}
 	<p>Loading...</p>
 {:else}
-	<p>You've completed {completedPuzzles.length} puzzles!</p>
-	<p>
-		You've used the "reveal" feature {completedPuzzles.filter(({ usedReveal }) => usedReveal)
-			.length} times
-	</p>
-	<p>
-		On average, a puzzle takes you {Math.floor(
-			completedPuzzles
-				.map(({ timeInSeconds }) => timeInSeconds)
-				.reduce((acc, cur) => {
-					return acc + cur;
-				}, 0) / completedPuzzles.length
-		)} seconds
-	</p>
+	<div>
+		<h1>You've completed {completedPuzzles.length} puzzles!</h1>
+		<h3>
+			On average, a puzzle takes you {Math.floor(
+				completedPuzzles
+					.map(({ timeInSeconds }) => timeInSeconds)
+					.reduce((acc, cur) => {
+						return acc + cur;
+					}, 0) / completedPuzzles.length
+			)} seconds.
+		</h3>
+		<p>
+			You've used the "reveal" feature {completedPuzzles.filter(({ usedReveal }) => usedReveal)
+				.length} times.
+		</p>
+	</div>
 	<hr />
-	<ul>
-		{#each completedPuzzles as { id, userPuzzlePuzzleId, usedCheck, usedClear, usedReveal, timeInSeconds, createdAt }, i}
-			<li>
-				<ol>
-					<li>id: {id}</li>
-					<li>userPuzzlePuzzleId: {userPuzzlePuzzleId}</li>
-					<li>usedCheck: {usedCheck}</li>
-					<li>usedClear: {usedClear}</li>
-					<li>usedReveal: {usedReveal}</li>
-					<li>timeInSeconds: {timeInSeconds}</li>
-					<li>createdAt: {createdAt}</li>
-					<li>i: {i}</li>
-				</ol>
-				<hr />
-			</li>
-		{/each}
-	</ul>
+	{#each completedPuzzles as { id, usedCheck, usedClear, usedReveal, timeInSeconds, createdAt }, i}
+		<div>
+			<h2>
+				<a href={`#${id}`} on:click={() => goto(`/history/${id}`)}
+					>Puzzle on {getHumanReadableDate(new Date(createdAt))}</a
+				>
+			</h2>
+			<span>Solved in {timeInSeconds} seconds.</span>
+			<ul {id}>
+				<li>usedCheck: {usedCheck ? '✅' : '❌'}</li>
+				<li>usedClear: {usedClear ? '✅' : '❌'}</li>
+				<li>usedReveal: {usedReveal ? '✅' : '❌'}</li>
+			</ul>
+			<hr />
+		</div>
+	{/each}
 {/if}
