@@ -172,7 +172,9 @@
 	<Crossword bind:this={ref} data={clues} breakpoint={10000} theme="classic">
 		<div class="toolbar" slot="toolbar" let:onClear let:onReveal let:onCheck>
 			<p style="display: inline;">{timeInSeconds}</p>
-			<button on:click={onToolbarHistory}>History</button>
+			{#if !isPuzzleComplete}
+				<button on:click={onToolbarHistory}>History</button>
+			{/if}
 			<button on:click={() => onToolbarClear(onClear)}>Clear</button>
 			<button on:click={() => onToolbarReveal(onReveal)}>Reveal</button>
 			<button on:click={() => onToolbarCheck(onCheck)}>Check</button>
