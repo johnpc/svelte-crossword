@@ -1,22 +1,48 @@
-# create-svelte
+# svelte-crossword
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+This is an app for playing unlimited crossword minis, built with Svelte and AWS Amplify.
 
-## Creating a project
+## Installing dependencies
 
-If you're seeing this, you've probably already done this step. Congrats!
+To install dependencies, run:
 
 ```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
+npm ci --force
 ```
 
-## Developing
+Currently, `--force` is required (but I'm working on it).
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Set up environment
+
+You'll need to configure your environment variables. First copy from the example
+
+```bash
+cp .env.example .env
+```
+
+Then fill in the desired environment variable values. There should be comments in the `.env.example` file that indicate how to get the values that you should set.
+
+## Developing with Amplify
+
+First, you'll want to set up a development sandbox in your AWS account. You can do that by running:
+
+```bash
+npm run sandbox
+```
+
+in a terminal tab. This process will watch for changes in the `amplify/` directory and apply them to your AWS backend resources. This includes auth (Cognito), storage (S3), and api (AppSync/DynamoDb) resources.
+
+Once your resources are deployed, a file named `src/amplifyconfiguration.json` will be written. Now your app will use the AWS resources you've just deployed.
+
+Start by seeding your database:
+
+```bash
+npm run seed
+```
+
+## Developing Svelte
+
+Start a development server:
 
 ```bash
 npm run dev
@@ -25,14 +51,10 @@ npm run dev
 npm run dev -- --open
 ```
 
-## Building
+Now you can open http://localhost:5175/ to see your app in action (including hot reloading as you update the source code).
 
-To create a production version of your app:
+## Deploying
 
-```bash
-npm run build
-```
+Deploy this application to your own AWS account in one click:
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+[![amplifybutton](https://oneclick.amplifyapp.com/button.svg)](https://console.aws.amazon.com/amplify/home#/deploy?repo=https://github.com/johnpc/svelte-crossword)
