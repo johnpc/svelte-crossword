@@ -46,34 +46,38 @@
 
 {#if register}
 	<h1>Register</h1>
-	<button on:click={showLoginForm}>Login</button>
-	<form>
-		<label for="email">Email</label>
+	<form id="registrationForm">
+		<label for="email">Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
 		<input required type="email" id="email" bind:value={username} />
-
-		<label for="password">Password</label>
+		<hr />
+		<label for="password">Password&nbsp;&nbsp;</label>
 		<input required type="password" id="password" bind:value={password} />
+		<hr />
 		{#if !confirm}
 			<button type="submit" on:click={registrationHandler}>Create account</button>
 		{/if}
 		{#if confirm}
 			<label for="confirmation">Confirmation Code</label>
 			<input required type="confirmation" id="confirmation" bind:value={confirmationCode} />
+			<hr />
 			<button type="submit" on:click={confirmationHandler}>Confirm Email</button>
 		{/if}
 	</form>
+	<p>Already registered? <a href="#registrationForm" aria-label="showLoginForm" on:click={showLoginForm}>Log In</a> instead
 {/if}
 
 {#if !register}
 	<h1>Log In</h1>
-	<button on:click={showRegistrationForm}>Register</button>
-	<form>
-		<label for="email">Email</label>
+	<form id="loginForm">
+		<label for="email">Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
 		<input required type="email" id="email" bind:value={username} />
+		<hr />
 
-		<label for="password">Password</label>
+		<label for="password">Password&nbsp;&nbsp;</label>
 		<input required type="password" id="password" bind:value={password} />
-
+		<hr />
 		<button type="submit" on:click={loginHandler}>Log in</button>
 	</form>
+	<p>Not registered? <a href="#loginForm" aria-label="showRegistrationForm" on:click={showRegistrationForm}>Create an Account</a> instead
+
 {/if}
