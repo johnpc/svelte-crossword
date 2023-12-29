@@ -5,6 +5,7 @@
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
+		"ios": "cap open ios",
 		"seed": "vite-node amplify/data/helpers/seed.ts",
 		"sandbox": "amplify sandbox --config-out-dir ./src",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -16,6 +17,8 @@
 	"devDependencies": {
 		"@aws-amplify/backend": "^0.7.0",
 		"@aws-amplify/backend-cli": "^0.9.2",
+		"@capacitor/cli": "^5.6.0",
+		"@capacitor/core": "^5.6.0",
 		"@fontsource/fira-mono": "^4.5.10",
 		"@neoconfetti/svelte": "^1.0.0",
 		"@sveltejs/adapter-auto": "^3.0.0",
@@ -44,6 +47,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@capacitor/ios": "^5.6.0",
 		"aws-amplify": "^6.0.9",
 		"svelte-crossword": "^0.3.4"
 	},
