@@ -41,29 +41,33 @@
 				goto('/login');
 			}
 			console.log({ currentUser });
-			await getOrCreateProfile();
-			await fetchPuzzle();
+			const profile = await getOrCreateProfile();
+			console.log({ profile });
+			const puzzle = await fetchPuzzle();
+			console.log({ puzzle })
 		};
 
 		setup();
 	});
 	const getOrCreateProfile = async () => {
 		const currentUser = await getCurrentUser();
-		let profileResponse;
-		profileResponse = await client.models.Profile.get({
+		const getProfileResponse = await client.models.Profile.get({
 			id: currentUser.userId
 		});
-		if (profileResponse.data) {
-			profile = profileResponse.data;
+		console.log({getProfileResponse});
+		if (getProfileResponse?.data?.id) {
+			profile = getProfileResponse.data;
 			return;
 		}
-		profileResponse = await client.models.Profile.create({
+		const createProfileResponse = await client.models.Profile.create({
 			id: currentUser.userId,
 			userId: currentUser.userId,
 			email: currentUser.signInDetails?.loginId!,
 			name: currentUser.signInDetails?.loginId || currentUser.username
 		});
-		profile = profileResponse.data;
+		console.log({createProfileResponse});
+		profile = createProfileResponse.data;
+		return profile;
 	};
 
 	const getCluesFromPuzzle = (puzzle: Schema['Puzzle']) => {
@@ -93,6 +97,7 @@
 			return !completedPuzzleIds.includes(puzzle.id);
 		});
 		clues = getCluesFromPuzzle(puzzles[puzzleIndex]);
+		return clues;
 	};
 
 	const onPuzzleComplete = async () => {
