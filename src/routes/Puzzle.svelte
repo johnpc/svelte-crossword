@@ -34,18 +34,18 @@
 	$: currentUser = {} as AuthUser;
 
 	onMount(() => {
-		const setUser = async () => {
+		const setup = async () => {
 			try {
 				currentUser = await getCurrentUser();
 			} catch (e) {
 				goto('/login');
 			}
 			console.log({ currentUser });
+			await getOrCreateProfile();
+			await fetchPuzzle();
 		};
 
-		getOrCreateProfile();
-		setUser();
-		fetchPuzzle();
+		setup();
 	});
 	const getOrCreateProfile = async () => {
 		const currentUser = await getCurrentUser();
