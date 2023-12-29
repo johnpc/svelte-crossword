@@ -149,6 +149,9 @@
 		usedCheck = true;
 		onCheck();
 	};
+	const onToolbarHistory = () => {
+		goto('/history');
+	};
 	const onToolbarNextPuzzle = () => {
 		console.log('Requested new puzzle!');
 		timeInSeconds = 0;
@@ -165,12 +168,11 @@
 
 {#if clues.length === 0}
 	<p>Loading...</p>
-{/if}
-
-{#if clues.length > 0}
+{:else}
 	<Crossword bind:this={ref} data={clues} breakpoint={10000} theme="classic">
 		<div class="toolbar" slot="toolbar" let:onClear let:onReveal let:onCheck>
 			<p style="display: inline;">{timeInSeconds}</p>
+			<button on:click={onToolbarHistory}>History</button>
 			<button on:click={() => onToolbarClear(onClear)}>Clear</button>
 			<button on:click={() => onToolbarReveal(onReveal)}>Reveal</button>
 			<button on:click={() => onToolbarCheck(onCheck)}>Check</button>
