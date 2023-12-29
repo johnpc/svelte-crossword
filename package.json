@@ -10,7 +10,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"prepare": "husky install"
 	},
 	"devDependencies": {
 		"@aws-amplify/backend": "^0.7.0",
@@ -29,6 +30,8 @@
 		"eslint": "^8.56.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-svelte": "^2.35.1",
+		"husky": "^8.0.0",
+		"lint-staged": "^15.2.0",
 		"prettier": "^3.1.1",
 		"prettier-plugin-svelte": "^3.1.2",
 		"svelte": "^4.2.7",
@@ -43,5 +46,14 @@
 	"dependencies": {
 		"aws-amplify": "^6.0.9",
 		"svelte-crossword": "^0.3.4"
+	},
+	"lint-staged": {
+		"*.ts": [
+			"prettier --write",
+			"eslint --cache --fix"
+		],
+		"*.json": "prettier --write",
+		"*.yml": "prettier --write",
+		"*.md": "prettier --write"
 	}
 }
