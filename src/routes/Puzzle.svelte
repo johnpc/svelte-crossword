@@ -33,7 +33,7 @@
 	$: usedReveal = false;
 	$: usedClear = false;
 	$: currentUser = {} as AuthUser;
-	$: keyboardStyle = "outline" as "outline"|"depth"
+	$: keyboardStyle = 'outline' as 'outline' | 'depth';
 
 	onMount(() => {
 		const setup = async () => {
@@ -162,9 +162,12 @@
 		usedClear = false;
 		isPuzzleComplete = false;
 		puzzleIndex++;
-		clues = getCluesFromPuzzle(puzzles[puzzleIndex]);
+		if (puzzles[puzzleIndex]) {
+			clues = getCluesFromPuzzle(puzzles[puzzleIndex]);
+		} else {
+			fetchPuzzle();
+		}
 		tickTimer();
-		fetchPuzzle();
 	};
 
 	const onSignOut = async () => {
@@ -182,7 +185,14 @@
 			>(not you? <a href="#" on:click={() => onSignOut()}>sign out</a>)</span
 		>
 	</h3>
-	<Crossword bind:this={ref} data={clues} breakpoint={10000} theme="amelia" showKeyboard={true} keyboardStyle={keyboardStyle}>
+	<Crossword
+		bind:this={ref}
+		data={clues}
+		breakpoint={10000}
+		theme="amelia"
+		showKeyboard={true}
+		{keyboardStyle}
+	>
 		<div class="toolbar" slot="toolbar" let:onClear let:onReveal let:onCheck>
 			<p style="display: inline;">{timeInSeconds}</p>
 			{#if !isPuzzleComplete}
@@ -192,7 +202,9 @@
 			<button on:click={() => onToolbarReveal(onReveal)}>Reveal</button>
 			<button on:click={() => onToolbarCheck(onCheck)}>Check</button>
 			{#if isPuzzleComplete}
-				<button class="next-puzzle-button" on:click={() => onToolbarNextPuzzle()}>Next Puzzle</button>
+				<button class="next-puzzle-button" on:click={() => onToolbarNextPuzzle()}
+					>Next Puzzle</button
+				>
 			{/if}
 		</div>
 	</Crossword>

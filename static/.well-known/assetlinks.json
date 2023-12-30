@@ -1,11 +1,13 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "com.johncorser.smallcrosswords",
-        "sha256_cert_fingerprints": [
-          "5C:28:68:7F:14:67:8A:E7:95:98:69:67:50:EB:4E:50:EC:28:E3:7D:43:AE:7D:DA:C9:C3:C8:23:B0:51:C8:D3",
-          "51:D7:C6:4F:54:55:86:3E:46:2B:6D:60:4A:E1:AF:76:F4:53:1B:4F:7D:21:57:F9:00:D5:AC:D1:24:BE:00:E8"
-        ]
-      }
-    }]
+[
+	{
+		"relation": ["delegate_permission/common.handle_all_urls"],
+		"target": {
+			"namespace": "android_app",
+			"package_name": "com.johncorser.smallcrosswords",
+			"sha256_cert_fingerprints": [
+				"5C:28:68:7F:14:67:8A:E7:95:98:69:67:50:EB:4E:50:EC:28:E3:7D:43:AE:7D:DA:C9:C3:C8:23:B0:51:C8:D3",
+				"51:D7:C6:4F:54:55:86:3E:46:2B:6D:60:4A:E1:AF:76:F4:53:1B:4F:7D:21:57:F9:00:D5:AC:D1:24:BE:00:E8"
+			]
+		}
+	}
+]
