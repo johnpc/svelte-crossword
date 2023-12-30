@@ -39,7 +39,7 @@
 		try {
 			await fn(args);
 		} catch (error) {
-			const message = `failed to execute ${fn.name}: ${(error as Error).message}`;
+			const message = `Error: ${(error as Error).message}`;
 			console.error({ message, error });
 			alert(message);
 		}
