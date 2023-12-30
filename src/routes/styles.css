@@ -110,3 +110,7 @@ button:focus:not(:focus-visible) {
 	width: 100%;
 	max-width: 720px;
 }
+
+.keyboard button.single.svelte-n3ouos {
+	padding: 1rem 0.5rem;
+}
