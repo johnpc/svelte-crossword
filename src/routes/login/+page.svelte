@@ -24,8 +24,11 @@
 			username,
 			confirmationCode
 		});
-		alert('Success. Now please log in');
 		register = false;
+		if (password) {
+			return await loginHandler();
+		}
+		alert('Success. Now please log in');
 	};
 
 	const loginHandler = async () => {
