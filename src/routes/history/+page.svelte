@@ -90,9 +90,9 @@
 			<hr />
 		</div>
 	{/each}
-	<hr />
-	<div style="text-size: xx-small">
-		<p>We value your <a href="/privacy-policy.html">privacy</a>.</p>
-		<p><a href="#" on:click={() => handleDeleteAllData()}>Delete all my data.</a></p>
-	</div>
 {/if}
+<hr />
+<div style="text-size: xx-small">
+	<p>We value your <a href="/privacy-policy.html">privacy</a>.</p>
+	<p><a href="#" on:click={() => handleDeleteAllData()}>Delete my account and all my data.</a></p>
+</div>
