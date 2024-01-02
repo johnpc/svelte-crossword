@@ -185,6 +185,7 @@
 			>(not you? <a href="#" on:click={() => onSignOut()}>sign out</a>)</span
 		>
 	</h3>
+
 	<Crossword
 		bind:this={ref}
 		data={clues}

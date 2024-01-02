@@ -21,10 +21,36 @@
 		<span>to Small Crosswords</span>
 	</h1>
 	<p>Enjoy unlimited mini crossword puzzles!</p>
+	<pwa-install
+		><div>Small Crosswords works better as an app.</div>
+		<button class="installButton">Install App</button></pwa-install
+	>
 	<Puzzle />
 </section>
 
 <style>
+	pwa-install::part(openButton) {
+		background: none;
+		color: black;
+		border-radius: 5px;
+	}
+
+	.installButton {
+		cursor: pointer;
+		margin-left: 1em;
+		font-size: 1em;
+		font-family: var(--font);
+
+		background-color: purple;
+		color: white;
+		border-radius: 4px;
+		/* color: var(--main-color); */
+		padding: 0.75em;
+		border: none;
+		font-weight: 400;
+		transition: background-color 150ms;
+	}
+
 	section {
 		display: flex;
 		flex-direction: column;
