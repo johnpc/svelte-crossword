@@ -21,12 +21,13 @@ type Clue = {
 };
 
 const client = generateClient<Schema>();
-const miniPuzzleFeedUrl =
-	'https://rss-bridge.org/bridge01/?action=display&bridge=CssSelectorBridge&home_page=https%3A%2F%2Fcrosshare.org%2Fdailyminis&url_selector=%23__next+%3E+div+%3E+div+%3E+a&url_pattern=&content_selector=&content_cleanup=&title_cleanup=&limit=100&format=Json';
+const today = new Date();
+const year = today.getFullYear();
+const month = today.getMonth() + 1 < 10 ? `0${today.getMonth() + 1}` : today.getMonth() + 1;
+const miniPuzzleFeedUrl = `https://rss-bridge.org/bridge01/?action=display&bridge=CssSelectorBridge&home_page=https%3A%2F%2Fcrosshare.org%2Fdailyminis%2F${year}%2F${month}&url_selector=%23__next+%3E+div+%3E+div+%3E+a&url_pattern=&content_selector=&content_cleanup=&title_cleanup=&limit=100&format=Json`;
 const newestPuzzleFeedUrl =
-	'https://rss-bridge.org/bridge01/?action=display&bridge=CssSelectorBridge&home_page=https%3A%2F%2Fcrosshare.org%2Fnewest&url_selector=%23__next+%3E+div+%3E+div+%3E+a&url_pattern=&content_selector=&content_cleanup=&title_cleanup=&limit=100&format=Json';
+	'https://rss-bridge.org/bridge01/?action=display&bridge=CssSelectorBridge&home_page=https%3A%2F%2Fcrosshare.org%2Fnewest%2F1&url_selector=%23__next+%3E+div+%3E+div+%3E+a&url_pattern=&content_selector=&content_cleanup=&title_cleanup=&limit=100&format=Json';
 const puzFileLocationPrefix = 'https://crosshare.org/api/puz'; // .puz file available from https://crosshare.org/api/puz/Mf1l08Ofuj8pmEoV9nyO
-
 const createDynamoRecord = async (buffer: Buffer, puzKey: string) => {
 	const json = puzToJson(buffer);
 	const across = Object.values(json.clues.across) as Clue[];
