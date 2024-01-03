@@ -103,6 +103,7 @@
 			return !completedPuzzleIds.includes(puzzle.id);
 		});
 		clues = getCluesFromPuzzle(puzzles[puzzleIndex]);
+		console.log({ clues, puzzle: puzzles[puzzleIndex] });
 		return clues;
 	};
 
