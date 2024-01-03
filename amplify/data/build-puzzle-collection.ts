@@ -6,9 +6,20 @@ import { Amplify } from 'aws-amplify';
 import config from '../../src/amplifyconfiguration.json';
 // const config = {};
 import dotenv from 'dotenv';
+import validateClues from 'svelte-crossword/src/helpers/validateClues.js';
+import createClues from 'svelte-crossword/src/helpers/createClues.js';
+
 dotenv.config();
 
 Amplify.configure(config);
+type Clue = {
+	clue: string;
+	answer: string;
+	direction: 'across' | 'down';
+	x: number;
+	y: number;
+};
+
 const client = generateClient<Schema>();
 const miniPuzzleFeedUrl =
 	'https://rss-bridge.org/bridge01/?action=display&bridge=CssSelectorBridge&home_page=https%3A%2F%2Fcrosshare.org%2Fdailyminis&url_selector=%23__next+%3E+div+%3E+div+%3E+a&url_pattern=&content_selector=&content_cleanup=&title_cleanup=&limit=100&format=Json';
@@ -18,6 +29,15 @@ const puzFileLocationPrefix = 'https://crosshare.org/api/puz'; // .puz file avai
 
 const createDynamoRecord = async (buffer: Buffer, puzKey: string) => {
 	const json = puzToJson(buffer);
+	const across = Object.values(json.clues.across) as Clue[];
+	const down = Object.values(json.clues.down) as Clue[];
+	const clues = [...across, ...down];
+	const isValid = validateClues(createClues(clues));
+	if (!isValid) {
+		return;
+	}
+	console.log({ isValid });
+
 	const createdPuzzle = await client.models.Puzzle.create(
 		{
 			id: puzKey,
@@ -89,6 +109,7 @@ export const handler = async (event: Event) => {
 			.map(async (puzFileContents) => {
 				const uploadStatus = await uploadPuzFile(puzFileContents.id + '.puz', puzFileContents.blob);
 				console.log({ uploadStatus, blobSize: puzFileContents.blob.size });
+
 				const buffer = await puzFileContents.blob.arrayBuffer();
 				await createDynamoRecord(Buffer.from(buffer), uploadStatus.key);
 			});
