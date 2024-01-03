@@ -14,7 +14,12 @@ const schema = a.schema({
 			email: a.string().required(),
 			completedPuzzles: a.hasMany('UserPuzzle')
 		})
-		.authorization([a.allow.owner(), a.allow.custom(), a.allow.public('iam').to(['read'])]),
+		.authorization([
+			a.allow.owner(),
+			a.allow.custom(),
+			a.allow.private().to(['read']),
+			a.allow.public('iam').to(['read'])
+		]),
 	UserPuzzle: a
 		.model({
 			profile: a.belongsTo('Profile'),
@@ -24,7 +29,12 @@ const schema = a.schema({
 			usedClear: a.boolean().required(),
 			timeInSeconds: a.integer().required()
 		})
-		.authorization([a.allow.owner(), a.allow.custom(), a.allow.public('iam').to(['read'])]),
+		.authorization([
+			a.allow.owner(),
+			a.allow.custom(),
+			a.allow.private().to(['read']),
+			a.allow.public('iam').to(['read'])
+		]),
 	Puzzle: a
 		.model({
 			puzJson: a.json(),
