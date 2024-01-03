@@ -1,4 +1,9 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import type {
+	ConstructFactory,
+	FunctionResources,
+	ResourceProvider
+} from '@aws-amplify/plugin-types';
 
 const schema = a.schema({
 	Profile: a
@@ -9,7 +14,7 @@ const schema = a.schema({
 			email: a.string().required(),
 			completedPuzzles: a.hasMany('UserPuzzle')
 		})
-		.authorization([a.allow.owner(), a.allow.custom()]),
+		.authorization([a.allow.owner(), a.allow.custom(), a.allow.public('iam').to(['read'])]),
 	UserPuzzle: a
 		.model({
 			profile: a.belongsTo('Profile'),
@@ -19,7 +24,7 @@ const schema = a.schema({
 			usedClear: a.boolean().required(),
 			timeInSeconds: a.integer().required()
 		})
-		.authorization([a.allow.owner(), a.allow.custom()]),
+		.authorization([a.allow.owner(), a.allow.custom(), a.allow.public('iam').to(['read'])]),
 	Puzzle: a
 		.model({
 			puzJson: a.json(),
@@ -30,7 +35,7 @@ const schema = a.schema({
 
 export type Schema = ClientSchema<typeof schema>;
 
-export const data = (authFunction: any) =>
+export const data = (authFunction: ConstructFactory<ResourceProvider<FunctionResources>>) =>
 	defineData({
 		schema,
 		authorizationModes: {
