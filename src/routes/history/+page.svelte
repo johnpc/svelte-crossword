@@ -24,7 +24,12 @@
 			}
 			console.log({ currentUser });
 			const userPuzzleResponse = await client.models.UserPuzzle.list({
-				limit: 100
+				limit: 100,
+				filter: {
+					profileCompletedPuzzlesId: {
+						eq: currentUser.userId
+					}
+				}
 			});
 			console.log({ userPuzzleResponse });
 			completedPuzzles = userPuzzleResponse.data;
