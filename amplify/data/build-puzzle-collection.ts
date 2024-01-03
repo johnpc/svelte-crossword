@@ -10,8 +10,10 @@ dotenv.config();
 
 Amplify.configure(config);
 const client = generateClient<Schema>();
-const puzzleFeedUrl =
+const miniPuzzleFeedUrl =
 	'https://rss-bridge.org/bridge01/?action=display&bridge=CssSelectorBridge&home_page=https%3A%2F%2Fcrosshare.org%2Fdailyminis&url_selector=%23__next+%3E+div+%3E+div+%3E+a&url_pattern=&content_selector=&content_cleanup=&title_cleanup=&limit=100&format=Json';
+const newestPuzzleFeedUrl =
+	'https://rss-bridge.org/bridge01/?action=display&bridge=CssSelectorBridge&home_page=https%3A%2F%2Fcrosshare.org%2Fnewest&url_selector=%23__next+%3E+div+%3E+div+%3E+a&url_pattern=&content_selector=&content_cleanup=&title_cleanup=&limit=100&format=Json';
 const puzFileLocationPrefix = 'https://crosshare.org/api/puz'; // .puz file available from https://crosshare.org/api/puz/Mf1l08Ofuj8pmEoV9nyO
 
 const createDynamoRecord = async (buffer: Buffer, puzKey: string) => {
@@ -61,35 +63,36 @@ const uploadPuzFile = async (
 
 export const handler = async (event: Event) => {
 	console.log(`EVENT: ${JSON.stringify(event)}`);
-
-	const puzzleFeedResult = await fetch(puzzleFeedUrl);
-	// Url Formatted like: "https://crosshare.org/crosswords/Mf1l08Ofuj8pmEoV9nyO/jerms-mini-104",
-	const puzzleFeedJson = (await puzzleFeedResult.json()) as { items: { url: string }[] };
-	const puzzleIds = puzzleFeedJson.items.map((item) => {
-		const trimmedFront = item.url.substring('https://crosshare.org/crosswords/'.length);
-		const trimmedEnd = trimmedFront.substring(0, trimmedFront.indexOf('/'));
-		return trimmedEnd;
-	});
-
-	const puzFileContentsPromises = puzzleIds.map(async (puzzleId) => {
-		const puzFileContents = await fetch(`${puzFileLocationPrefix}/${puzzleId}`);
-		const status = puzFileContents.status;
-		const blob = await puzFileContents.blob();
-		return {
-			id: puzzleId,
-			status,
-			blob
-		};
-	});
-	const puzFileContentsArray = await Promise.all(puzFileContentsPromises);
-	const uploadPromises = puzFileContentsArray
-		.filter((puzFileContents) => puzFileContents.status === 200)
-		.map(async (puzFileContents) => {
-			const uploadStatus = await uploadPuzFile(puzFileContents.id + '.puz', puzFileContents.blob);
-			console.log({ uploadStatus, blobSize: puzFileContents.blob.size });
-			const buffer = await puzFileContents.blob.arrayBuffer();
-			await createDynamoRecord(Buffer.from(buffer), uploadStatus.key);
+	[miniPuzzleFeedUrl, newestPuzzleFeedUrl].map(async (puzzleFeedUrl) => {
+		const puzzleFeedResult = await fetch(puzzleFeedUrl);
+		// Url Formatted like: "https://crosshare.org/crosswords/Mf1l08Ofuj8pmEoV9nyO/jerms-mini-104",
+		const puzzleFeedJson = (await puzzleFeedResult.json()) as { items: { url: string }[] };
+		const puzzleIds = puzzleFeedJson.items.map((item) => {
+			const trimmedFront = item.url.substring('https://crosshare.org/crosswords/'.length);
+			const trimmedEnd = trimmedFront.substring(0, trimmedFront.indexOf('/'));
+			return trimmedEnd;
 		});
-	await Promise.all(uploadPromises);
-	console.log(`Uploaded ${uploadPromises.length} puzzles`);
+
+		const puzFileContentsPromises = puzzleIds.map(async (puzzleId) => {
+			const puzFileContents = await fetch(`${puzFileLocationPrefix}/${puzzleId}`);
+			const status = puzFileContents.status;
+			const blob = await puzFileContents.blob();
+			return {
+				id: puzzleId,
+				status,
+				blob
+			};
+		});
+		const puzFileContentsArray = await Promise.all(puzFileContentsPromises);
+		const uploadPromises = puzFileContentsArray
+			.filter((puzFileContents) => puzFileContents.status === 200)
+			.map(async (puzFileContents) => {
+				const uploadStatus = await uploadPuzFile(puzFileContents.id + '.puz', puzFileContents.blob);
+				console.log({ uploadStatus, blobSize: puzFileContents.blob.size });
+				const buffer = await puzFileContents.blob.arrayBuffer();
+				await createDynamoRecord(Buffer.from(buffer), uploadStatus.key);
+			});
+		await Promise.all(uploadPromises);
+		console.log(`Uploaded ${uploadPromises.length} puzzles`);
+	});
 };
