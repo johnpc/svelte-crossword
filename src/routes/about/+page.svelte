@@ -8,13 +8,13 @@
 </svelte:head>
 
 <div class="text-column">
-	<h1>About this app</h1>
+	<h1>About Small Crosswords</h1>
 
 	<p style="text-align: center;">
 		<img width="50%" style="border-radius: 500px;" src={silas} alt="Silas" />
 	</p>
 
-	<p>Meet Silas, Founder of Small Crosswords</p>
+	<p>Meet Silas Bush, Founder of Small Crosswords</p>
 	<p>
 		Silas is a Cannes Lion awarded marketer turned entrepreneur on a mission to create bite-sized
 		crossword puzzles for busy puzzle lovers.
