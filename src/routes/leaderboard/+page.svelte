@@ -5,32 +5,20 @@
 	import { Amplify } from 'aws-amplify';
 	import config from '../../amplifyconfiguration.json';
 	import LeaderboardItem from './LeaderboardItem.svelte';
-	import { getCurrentUser } from 'aws-amplify/auth';
-
+	import { getAllUserPuzzles } from '../helpers/getAllUserPuzzles';
 	Amplify.configure(config);
 	const client = generateClient<Schema>({
 		authMode: 'iam'
 	});
 	$: profiles = [] as Schema['Profile'][];
+
 	onMount(() => {
 		const setup = async () => {
-			let isLoggedIn = false;
-			try {
-				await getCurrentUser();
-				isLoggedIn = true;
-			} catch {
-				isLoggedIn = false;
-			}
-
-			const profileResponse = await client.models.Profile.list({
-				authMode: isLoggedIn ? 'userPool' : 'iam'
-			});
+			const profileResponse = await client.models.Profile.list();
 			const profileData = profileResponse.data.length ? profileResponse.data : [];
 			const profilesWithCompletedPuzzleCountPromises = profileData.map(async (profile) => {
-				const completedPuzzlesResponse = await profile.completedPuzzles({
-					authMode: isLoggedIn ? 'userPool' : 'iam'
-				});
-				const completedPuzzlesCount = completedPuzzlesResponse.data.length;
+				const completedPuzzlesResponse = await getAllUserPuzzles(profile);
+				const completedPuzzlesCount = completedPuzzlesResponse.length;
 				return { ...profile, completedPuzzlesCount };
 			});
 			const profilesWithCompletedPuzzleCount = await Promise.all(

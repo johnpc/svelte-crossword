@@ -18,6 +18,7 @@ const schema = a.schema({
 			a.allow.owner(),
 			a.allow.custom(),
 			a.allow.private().to(['read']),
+			a.allow.private('iam').to(['read']),
 			a.allow.public('iam').to(['read'])
 		]),
 	UserPuzzle: a
@@ -33,6 +34,7 @@ const schema = a.schema({
 			a.allow.owner(),
 			a.allow.custom(),
 			a.allow.private().to(['read']),
+			a.allow.private('iam').to(['read']),
 			a.allow.public('iam').to(['read'])
 		]),
 	Puzzle: a
@@ -40,7 +42,12 @@ const schema = a.schema({
 			puzJson: a.json(),
 			puzKey: a.string()
 		})
-		.authorization([a.allow.public('iam'), a.allow.private('userPools'), a.allow.custom()])
+		.authorization([
+			a.allow.public('iam'),
+			a.allow.private('userPools'),
+			a.allow.custom(),
+			a.allow.private('iam').to(['read'])
+		])
 });
 
 export type Schema = ClientSchema<typeof schema>;

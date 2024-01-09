@@ -1,24 +1,21 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { Schema } from '../../../amplify/data/resource';
-	import { getCurrentUser } from 'aws-amplify/auth';
+	import { generateClient } from 'aws-amplify/data';
+	import { Amplify } from 'aws-amplify';
+	import config from '../../amplifyconfiguration.json';
+	import { getAllUserPuzzles } from '../helpers/getAllUserPuzzles';
+	Amplify.configure(config);
+	const client = generateClient<Schema>({
+		authMode: 'iam'
+	});
 	export let profile: Schema['Profile'];
 
 	$: completedPuzzles = [] as Schema['UserPuzzle'][];
 	onMount(() => {
 		const setup = async () => {
-			let isLoggedIn = false;
-			try {
-				await getCurrentUser();
-				isLoggedIn = true;
-			} catch {
-				isLoggedIn = false;
-			}
-
-			const completedPuzzlesResponse = await profile.completedPuzzles({
-				authMode: isLoggedIn ? 'userPool' : 'iam'
-			});
-			completedPuzzles = completedPuzzlesResponse.data;
+			const completedPuzzlesResponse = await getAllUserPuzzles(profile);
+			completedPuzzles = completedPuzzlesResponse;
 		};
 
 		setup();
