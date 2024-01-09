@@ -9,6 +9,7 @@
 	import type { AuthUser } from 'aws-amplify/auth';
 	import { onMount } from 'svelte';
 	import { signOut } from 'aws-amplify/auth';
+	import { getAllUserPuzzles } from './helpers/getAllUserPuzzles';
 	Amplify.configure(config);
 	const client = generateClient<Schema>({
 		authMode: 'userPool'
@@ -89,19 +90,21 @@
 	const fetchPuzzle = async () => {
 		console.log({ profile });
 		const puzzleResponse = await client.models.Puzzle.list({
-			limit: 100
+			limit: 10000,
 		});
 		console.log({ puzzleResponse });
-		const completedPuzzles = await profile.completedPuzzles();
-		const completedPuzzleIdPromises = completedPuzzles.data.map(async (completedPuzzle) => {
+		const completedPuzzles = await getAllUserPuzzles(profile);
+		const completedPuzzleIdPromises = completedPuzzles.map(async (completedPuzzle) => {
 			const puzzle = await completedPuzzle.puzzle();
 			return puzzle.data?.id;
 		});
+
 		const completedPuzzleIds = await Promise.all(completedPuzzleIdPromises);
 		console.log({ completedPuzzleIds });
 		puzzles = puzzleResponse.data.filter((puzzle) => {
 			return !completedPuzzleIds.includes(puzzle.id);
 		});
+		console.log({puzzles, puzzleIndex});
 		clues = getCluesFromPuzzle(puzzles[puzzleIndex]);
 		console.log({ clues, puzzle: puzzles[puzzleIndex] });
 		return clues;
