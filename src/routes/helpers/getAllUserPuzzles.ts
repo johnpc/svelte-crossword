@@ -9,6 +9,7 @@ const client = generateClient<Schema>({
 });
 export const getAllUserPuzzles = async (profile: Schema['Profile']) => {
 	let nextToken;
+	const completedPuzzleIds: string[] = [];
 	const userPuzzles = [] as Schema['UserPuzzle'][];
 	do {
 		const completedPuzzlesResponse = (await client.models.UserPuzzle.list({
@@ -23,7 +24,15 @@ export const getAllUserPuzzles = async (profile: Schema['Profile']) => {
 			data: Schema['UserPuzzle'][];
 		};
 		nextToken = completedPuzzlesResponse.nextToken;
-		userPuzzles.push(...completedPuzzlesResponse.data);
+		const rawUserPuzzles = completedPuzzlesResponse.data;
+		for (const rawUserPuzzle of rawUserPuzzles) {
+			if (completedPuzzleIds.includes(rawUserPuzzle.userPuzzlePuzzleId!)) {
+				continue;
+			}
+			completedPuzzleIds.push(rawUserPuzzle.userPuzzlePuzzleId!);
+			userPuzzles.push(rawUserPuzzle);
+		}
+		// userPuzzles.push(...completedPuzzlesResponse.data);
 	} while (nextToken);
 	return userPuzzles;
 };
