@@ -10,6 +10,7 @@
 	import { onMount } from 'svelte';
 	import { signOut } from 'aws-amplify/auth';
 	import { getAllUserPuzzles } from './helpers/getAllUserPuzzles';
+	import { getOrCreateProfile } from './helpers/getOrCreateProfile';
 	Amplify.configure(config);
 	const client = generateClient<Schema>({
 		authMode: 'userPool'
@@ -44,7 +45,7 @@
 				goto('/login');
 			}
 			console.log({ currentUser });
-			const profile = await getOrCreateProfile();
+			profile = await getOrCreateProfile();
 			console.log({ profile });
 			const puzzle = await fetchPuzzle();
 			console.log({ puzzle });
@@ -52,30 +53,7 @@
 
 		setup();
 	});
-	const getOrCreateProfile = async () => {
-		const currentUser = await getCurrentUser();
-		try {
-			const getProfileResponse = await client.models.Profile.get({
-				id: currentUser.userId
-			});
-			console.log({ getProfileResponse });
-			if (getProfileResponse?.data?.id) {
-				profile = getProfileResponse.data;
-				return;
-			}
-		} catch (e) {
-			console.warn(e);
-		}
-		const createProfileResponse = await client.models.Profile.create({
-			id: currentUser.userId,
-			userId: currentUser.userId,
-			email: currentUser.signInDetails?.loginId!,
-			name: currentUser.signInDetails?.loginId || currentUser.username
-		});
-		console.log({ createProfileResponse });
-		profile = createProfileResponse.data;
-		return profile;
-	};
+
 
 	const getCluesFromPuzzle = (puzzle: Schema['Puzzle']) => {
 		if (!puzzle) {

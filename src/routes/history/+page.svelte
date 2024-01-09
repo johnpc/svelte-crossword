@@ -8,6 +8,8 @@
 	import { goto } from '$app/navigation';
 	import { signOut, deleteUser } from 'aws-amplify/auth';
 	import config from '../../amplifyconfiguration.json';
+	import { getAllUserPuzzles } from '../helpers/getAllUserPuzzles';
+	import { getOrCreateProfile } from '../helpers/getOrCreateProfile';
 	Amplify.configure(config);
 	const client = generateClient<Schema>({
 		authMode: 'userPool'
@@ -23,16 +25,10 @@
 				goto('/login');
 			}
 			console.log({ currentUser });
-			const userPuzzleResponse = await client.models.UserPuzzle.list({
-				limit: 100,
-				filter: {
-					profileCompletedPuzzlesId: {
-						eq: currentUser.userId
-					}
-				}
-			});
+			const profile = await getOrCreateProfile();
+			const userPuzzleResponse = await getAllUserPuzzles(profile);
 			console.log({ userPuzzleResponse });
-			completedPuzzles = userPuzzleResponse.data;
+			completedPuzzles = userPuzzleResponse;
 			isLoading = false;
 		};
 
