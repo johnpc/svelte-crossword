@@ -32,7 +32,6 @@ export const getAllUserPuzzles = async (profile: Schema['Profile']) => {
 			completedPuzzleIds.push(rawUserPuzzle.userPuzzlePuzzleId!);
 			userPuzzles.push(rawUserPuzzle);
 		}
-		// userPuzzles.push(...completedPuzzlesResponse.data);
 	} while (nextToken);
 	return userPuzzles;
 };

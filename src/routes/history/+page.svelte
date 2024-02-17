@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Jumper } from 'svelte-loading-spinners';
 	import { onMount } from 'svelte';
 	import type { Schema } from '../../../amplify/data/resource';
 	import { generateClient } from 'aws-amplify/data';
@@ -25,7 +26,7 @@
 				goto('/login');
 			}
 			console.log({ currentUser });
-			const profile = await getOrCreateProfile();
+			const profile = await getOrCreateProfile(client);
 			const userPuzzleResponse = await getAllUserPuzzles(profile);
 			console.log({ userPuzzleResponse });
 			completedPuzzles = userPuzzleResponse;
@@ -54,7 +55,7 @@
 </script>
 
 {#if isLoading}
-	<p>Loading...</p>
+	<p><Jumper size="60" color="#FF3E00" unit="px" duration="1s" /></p>
 {:else if completedPuzzles.length === 0}
 	<p>You have not completed any puzzles. <a href="#" on:click={() => goto('/')}>Go Back</a></p>
 {:else}

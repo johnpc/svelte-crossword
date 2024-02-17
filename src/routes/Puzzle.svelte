@@ -1,92 +1,47 @@
 <script lang="ts">
 	import Crossword from 'svelte-crossword';
+	import { Jumper } from 'svelte-loading-spinners';
 	import type { Schema } from '../../amplify/data/resource';
 	import { generateClient } from 'aws-amplify/data';
-	import { Amplify } from 'aws-amplify';
-	import config from '../amplifyconfiguration.json';
 	import { goto } from '$app/navigation';
 	import { getCurrentUser } from 'aws-amplify/auth';
-	import type { AuthUser } from 'aws-amplify/auth';
 	import { onMount } from 'svelte';
 	import { signOut } from 'aws-amplify/auth';
-	import { getAllUserPuzzles } from './helpers/getAllUserPuzzles';
 	import { getOrCreateProfile } from './helpers/getOrCreateProfile';
-	Amplify.configure(config);
+	import type { Clue, HydratedProfile } from './helpers/types/types';
+	import { getNextPuzzle } from './helpers/getNextPuzzle';
 	const client = generateClient<Schema>({
 		authMode: 'userPool'
 	});
 
-	type Clue = {
-		clue: string;
-		answer: string;
-		direction: 'across' | 'down';
-		x: number;
-		y: number;
-	};
-
 	$: clues = [] as Clue[];
-	let ref: any;
-	$: puzzles = [] as Schema['Puzzle'][];
-	$: profile = {} as Schema['Profile'];
-	$: puzzleIndex = 0;
+	$: puzzleId = '' as string;
+	$: profile = {} as HydratedProfile;
 	$: timeInSeconds = 0;
 	$: isPuzzleComplete = false;
 	$: usedCheck = false;
 	$: usedReveal = false;
 	$: usedClear = false;
-	$: currentUser = {} as AuthUser;
 	$: keyboardStyle = 'outline' as 'outline' | 'depth';
+	let ref: any;
 
 	onMount(() => {
 		const setup = async () => {
 			try {
-				currentUser = await getCurrentUser();
+				await getCurrentUser();
 			} catch (e) {
 				goto('/login');
 			}
-			console.log({ currentUser });
-			profile = await getOrCreateProfile();
-			console.log({ profile });
-			const puzzle = await fetchPuzzle();
-			console.log({ puzzle });
+			profile = await getOrCreateProfile(client);
+			console.log({ onMount: true, profile });
+			const puzzle = await getNextPuzzle(profile);
+			clues = puzzle.clues;
+			puzzleId = puzzle.id;
+			console.log({ onMount: true, clues });
 		};
 
 		setup();
 	});
-
-
-	const getCluesFromPuzzle = (puzzle: Schema['Puzzle']) => {
-		if (!puzzle) {
-			return [];
-		}
-		const jsonAtIndex = JSON.parse(puzzle.puzJson as string);
-		const across = Object.values(jsonAtIndex.clues.across) as Clue[];
-		const down = Object.values(jsonAtIndex.clues.down) as Clue[];
-		return [...across, ...down];
-	};
-
-	const fetchPuzzle = async () => {
-		console.log({ profile });
-		const puzzleResponse = await client.models.Puzzle.list({
-			limit: 10000,
-		});
-		console.log({ puzzleResponse });
-		const completedPuzzles = await getAllUserPuzzles(profile);
-		const completedPuzzleIdPromises = completedPuzzles.map(async (completedPuzzle) => {
-			const puzzle = await completedPuzzle.puzzle();
-			return puzzle.data?.id;
-		});
-
-		const completedPuzzleIds = await Promise.all(completedPuzzleIdPromises);
-		console.log({ completedPuzzleIds });
-		puzzles = puzzleResponse.data.filter((puzzle) => {
-			return !completedPuzzleIds.includes(puzzle.id);
-		});
-		console.log({puzzles, puzzleIndex});
-		clues = getCluesFromPuzzle(puzzles[puzzleIndex]);
-		console.log({ clues, puzzle: puzzles[puzzleIndex] });
-		return clues;
-	};
 
 	const onPuzzleComplete = async () => {
 		await client.models.UserPuzzle.create({
@@ -94,7 +49,7 @@
 			usedClear,
 			usedReveal,
 			timeInSeconds,
-			userPuzzlePuzzleId: puzzles[puzzleIndex].id,
+			userPuzzlePuzzleId: puzzleId,
 			profileCompletedPuzzlesId: profile.id
 		});
 	};
@@ -136,19 +91,16 @@
 	const onToolbarHistory = () => {
 		goto('/history');
 	};
-	const onToolbarNextPuzzle = () => {
+	const onToolbarNextPuzzle = async () => {
 		console.log('Requested new puzzle!');
 		timeInSeconds = 0;
 		usedCheck = false;
 		usedReveal = false;
 		usedClear = false;
 		isPuzzleComplete = false;
-		puzzleIndex++;
-		if (puzzles[puzzleIndex]) {
-			clues = getCluesFromPuzzle(puzzles[puzzleIndex]);
-		} else {
-			fetchPuzzle();
-		}
+		const puzzle = await getNextPuzzle(profile);
+		clues = puzzle.clues;
+		puzzleId = puzzle.id;
 		tickTimer();
 	};
 
@@ -159,13 +111,11 @@
 </script>
 
 {#if clues.length === 0}
-	<p>Loading...</p>
+	<p><Jumper size="60" color="#FF3E00" unit="px" duration="1s" /></p>
 {:else}
 	<h3>
 		Hello {profile.email} 👋
-		<span style="font-size: small;"
-			>(not you? <a href="#" on:click={() => onSignOut()}>sign out</a>)</span
-		>
+		<span id="logoutLink">(not you? <a href="#" on:click={() => onSignOut()}>sign out</a>)</span>
 	</h3>
 
 	<Crossword
@@ -177,7 +127,7 @@
 		{keyboardStyle}
 	>
 		<div class="toolbar" slot="toolbar" let:onClear let:onReveal let:onCheck>
-			<p style="display: inline;">{timeInSeconds}</p>
+			<p id="timer">{timeInSeconds}</p>
 			{#if !isPuzzleComplete}
 				<button class="history-button" on:click={onToolbarHistory}>History</button>
 			{/if}
@@ -229,5 +179,11 @@
 	.history-button {
 		background-color: var(--secondary-highlight-color);
 		color: aliceblue;
+	}
+	#logoutLink {
+		font-size: small;
+	}
+	#timer {
+		display: inline;
 	}
 </style>

@@ -1,22 +1,27 @@
 import type { Schema } from '../../../amplify/data/resource';
-import { generateClient } from 'aws-amplify/data';
-import { Amplify } from 'aws-amplify';
-import config from '../../amplifyconfiguration.json';
 import { getCurrentUser } from 'aws-amplify/auth';
+import type { HydratedProfile } from './types/types';
+import type { V6Client } from '@aws-amplify/api-graphql';
 
-Amplify.configure(config);
-const client = generateClient<Schema>({
-	authMode: 'userPool'
-});
-export const getOrCreateProfile = async () => {
+export const getOrCreateProfile = async (client: V6Client<Schema>): Promise<HydratedProfile> => {
 	const currentUser = await getCurrentUser();
+	const selectionSet = ['id', 'email', 'userId', 'name', 'completedPuzzles.*'] as readonly (
+		| 'id'
+		| 'email'
+		| 'userId'
+		| 'name'
+		| 'completedPuzzles.*'
+	)[];
 	try {
-		const getProfileResponse = await client.models.Profile.get({
-			id: currentUser.userId
-		});
+		const getProfileResponse = await client.models.Profile.get(
+			{
+				id: currentUser.userId
+			},
+			{ selectionSet }
+		);
 		console.log({ getProfileResponse });
 		if (getProfileResponse?.data?.id) {
-			return getProfileResponse.data;
+			return getProfileResponse.data as HydratedProfile;
 		}
 	} catch (e) {
 		console.warn(e);
@@ -28,5 +33,12 @@ export const getOrCreateProfile = async () => {
 		name: currentUser.signInDetails?.loginId || currentUser.username
 	});
 	console.log({ createProfileResponse });
-	return createProfileResponse.data;
+	const hydratedProfile = await client.models.Profile.get(
+		{
+			id: currentUser.userId
+		},
+		{ selectionSet }
+	);
+
+	return hydratedProfile.data as HydratedProfile;
 };

@@ -8,10 +8,8 @@
 	import type { AuthUser } from 'aws-amplify/auth';
 	import { goto } from '$app/navigation';
 	import config from '../../../amplifyconfiguration.json';
-	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
-	// const searchParams = browser && $page.url.searchParams.get('id');
-	// const userPuzzleId = searchParams;
+	import { Jumper } from 'svelte-loading-spinners';
 
 	Amplify.configure(config);
 	const client = generateClient<Schema>({
@@ -58,7 +56,7 @@
 </script>
 
 {#if clues.length === 0}
-	<p>Loading...</p>
+	<p><Jumper size="60" color="#FF3E00" unit="px" duration="1s" /></p>
 {:else}
 	<Crossword
 		data={clues}
