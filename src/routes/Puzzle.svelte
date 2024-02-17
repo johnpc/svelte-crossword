@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Crossword from './components/crossword/Crossword.svelte';
-	import { Jumper } from 'svelte-loading-spinners';
+	import { SyncLoader } from 'svelte-loading-spinners';
 	import type { Schema } from '../../amplify/data/resource';
 	import { generateClient } from 'aws-amplify/data';
 	import { goto } from '$app/navigation';
@@ -111,7 +111,7 @@
 </script>
 
 {#if clues.length === 0}
-	<p><Jumper size="60" color="#FF3E00" unit="px" duration="1s" /></p>
+	<p><SyncLoader size="60" color="palevioletred" unit="px" duration="1s" /></p>
 {:else}
 	<h3>
 		👋 {profile.email.split('@')[0]}

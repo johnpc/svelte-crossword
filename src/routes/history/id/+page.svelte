@@ -9,7 +9,7 @@
 	import { goto } from '$app/navigation';
 	import config from '../../../amplifyconfiguration.json';
 	import { page } from '$app/stores';
-	import { Jumper } from 'svelte-loading-spinners';
+	import { SyncLoader } from 'svelte-loading-spinners';
 
 	Amplify.configure(config);
 	const client = generateClient<Schema>({
@@ -56,7 +56,7 @@
 </script>
 
 {#if clues.length === 0}
-	<p><Jumper size="60" color="#FF3E00" unit="px" duration="1s" /></p>
+	<p><SyncLoader size="60" color="palevioletred" unit="px" duration="1s" /></p>
 {:else}
 	<Crossword
 		data={clues}

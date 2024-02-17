@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Jumper } from 'svelte-loading-spinners';
+	import { SyncLoader } from 'svelte-loading-spinners';
 	import { onMount } from 'svelte';
 	import type { Schema } from '../../../amplify/data/resource';
 	import { generateClient } from 'aws-amplify/data';
@@ -55,7 +55,7 @@
 </script>
 
 {#if isLoading}
-	<p><Jumper size="60" color="#FF3E00" unit="px" duration="1s" /></p>
+	<p><SyncLoader size="60" color="palevioletred" unit="px" duration="1s" /></p>
 {:else if completedPuzzles.length === 0}
 	<p>You have not completed any puzzles. <a href="#" on:click={() => goto('/')}>Go Back</a></p>
 {:else}
