@@ -211,7 +211,32 @@
 
 {#if keyboardVisible}
 	<div class="keyboard">
-		<Keyboard layout="crossword" style={keyboardStyle} on:keydown={onKeydown} />
+		<Keyboard
+			layout="crossword"
+			style={keyboardStyle}
+			on:keydown={onKeydown}
+			--height="2.5rem"
+			--background="#d7cefd"
+			--color="currentColor"
+			--border="none"
+			--border-radius="1px"
+			--box-shadow="none"
+			--flex="1"
+			--font-family="sans-serif"
+			--font-size="12px"
+			--font-weight="normal"
+			--margin="0.125rem"
+			--min-width="1rem"
+			--opacity="1"
+			--stroke-width="1px"
+			--text-transform="none"
+			--active-background="#9980fa"
+			--active-border="none"
+			--active-box-shadow="none"
+			--active-color="currentColor"
+			--active-opacity="1"
+			--active-transform="none"
+		/>
 	</div>
 {/if}
 

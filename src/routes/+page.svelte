@@ -1,7 +1,5 @@
 <script>
 	import Puzzle from './Puzzle.svelte';
-	import welcome from '$lib/images/svelte-welcome.webp';
-	import welcome_fallback from '$lib/images/svelte-welcome.png';
 </script>
 
 <svelte:head>
@@ -11,21 +9,16 @@
 
 <section>
 	<h1>
-		<span class="welcome">
-			<picture>
-				<source srcset={welcome} type="image/webp" />
-				<img src={welcome_fallback} alt="Welcome" />
-			</picture>
-		</span>
-
-		<span>to Small Crosswords</span>
+		<span>Small Crosswords</span>
 	</h1>
-	<p>Enjoy unlimited mini crossword puzzles!</p>
-	<pwa-install
-		><div>Small Crosswords works better as an app.</div>
-		<button class="installButton">Install App</button></pwa-install
-	>
+	<div style="text-align: center;">
+		<pwa-install
+			><div style="margin-bottom: 15px;">works better as an app</div>
+			<button class="installButton">Install App</button></pwa-install
+		>
+	</div>
 	<Puzzle />
+	<p>Enjoy unlimited mini crossword puzzles!</p>
 </section>
 
 <style>
@@ -37,14 +30,12 @@
 
 	.installButton {
 		cursor: pointer;
-		margin-left: 1em;
 		font-size: 1em;
 		font-family: var(--font);
 
-		background-color: purple;
+		background-color: palevioletred;
 		color: white;
 		border-radius: 4px;
-		/* color: var(--main-color); */
 		padding: 0.75em;
 		border: none;
 		font-weight: 400;

@@ -161,7 +161,7 @@
 	}
 
 	button.single {
-		min-width: var(--min-width, 2rem);
+		min-width: var(--min-width, 1rem);
 	}
 
 	button.active,

@@ -114,7 +114,7 @@
 	<p><Jumper size="60" color="#FF3E00" unit="px" duration="1s" /></p>
 {:else}
 	<h3>
-		Hello {profile.email} 👋
+		👋 {profile.email.split('@')[0]}
 		<span id="logoutLink">(not you? <a href="#" on:click={() => onSignOut()}>sign out</a>)</span>
 	</h3>
 
