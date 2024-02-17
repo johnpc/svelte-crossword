@@ -7,10 +7,8 @@ This is an app for playing unlimited crossword minis, built with Svelte and AWS 
 To install dependencies, run:
 
 ```bash
-npm ci --force
+npm ci
 ```
-
-Currently, `--force` is required (but I'm working on it).
 
 ## Set up environment
 

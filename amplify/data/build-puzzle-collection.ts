@@ -6,8 +6,8 @@ import { Amplify } from 'aws-amplify';
 import config from '../../src/amplifyconfiguration.json';
 // const config = {};
 import dotenv from 'dotenv';
-import validateClues from 'svelte-crossword/src/helpers/validateClues.js';
-import createClues from 'svelte-crossword/src/helpers/createClues.js';
+import validateClues from '../../src/routes/components/crossword/helpers/validateClues';
+import createClues from '../../src/routes/components/crossword/helpers/createClues';
 
 dotenv.config();
 
@@ -116,5 +116,6 @@ export const handler = async (event: Event) => {
 			});
 		await Promise.all(uploadPromises);
 		console.log(`Uploaded ${uploadPromises.length} puzzles`);
+		return event;
 	});
 };

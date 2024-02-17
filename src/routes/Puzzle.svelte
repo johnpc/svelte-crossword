@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Crossword from 'svelte-crossword';
+	import Crossword from './components/crossword/Crossword.svelte';
 	import { Jumper } from 'svelte-loading-spinners';
 	import type { Schema } from '../../amplify/data/resource';
 	import { generateClient } from 'aws-amplify/data';
