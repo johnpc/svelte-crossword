@@ -33,5 +33,6 @@ export const getAllUserPuzzles = async (profile: Schema['Profile']) => {
 			userPuzzles.push(rawUserPuzzle);
 		}
 	} while (nextToken);
+	userPuzzles.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 	return userPuzzles;
 };

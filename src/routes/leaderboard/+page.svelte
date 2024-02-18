@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SyncLoader } from 'svelte-loading-spinners';
 	import { onMount } from 'svelte';
 	import type { Schema } from '../../../amplify/data/resource';
 	import { generateClient } from 'aws-amplify/data';
@@ -6,11 +7,13 @@
 	import config from '../../amplifyconfiguration.json';
 	import LeaderboardItem from './LeaderboardItem.svelte';
 	import { getAllUserPuzzles } from '../helpers/getAllUserPuzzles';
+
 	Amplify.configure(config);
 	const client = generateClient<Schema>({
 		authMode: 'iam'
 	});
 	$: profiles = [] as Schema['Profile'][];
+	$: isLoading = true;
 
 	onMount(() => {
 		const setup = async () => {
@@ -30,6 +33,7 @@
 				}
 			);
 			profiles = profilesWithCompletedPuzzleCount;
+			isLoading = false;
 		};
 
 		setup();
@@ -43,10 +47,13 @@
 
 <div class="text-column">
 	<h1>Leaderboard</h1>
-
-	<ol>
-		{#each profiles ?? [] as profile, i}
-			<LeaderboardItem {profile} />
-		{/each}
-	</ol>
+	{#if isLoading}
+		<p><SyncLoader size="60" color="palevioletred" unit="px" duration="1s" /></p>
+	{:else}
+		<ol>
+			{#each profiles ?? [] as profile, i}
+				<LeaderboardItem {profile} />
+			{/each}
+		</ol>
+	{/if}
 </div>
