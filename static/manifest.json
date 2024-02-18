@@ -4,16 +4,9 @@
 	"start_url": "/",
 	"icons": [
 		{
-			"src": "logo_512.png",
-			"type": "image/png",
-			"sizes": "512x512",
-			"purpose": "any"
-		},
-		{
 			"src": "logo_512_maskable.png",
 			"type": "image/png",
-			"sizes": "512x512",
-			"purpose": "maskable"
+			"sizes": "512x512"
 		}
 	],
 	"background_color": "palevioletred",
@@ -27,7 +20,10 @@
 			"short_name": "Mini",
 			"description": "Solve a mini crossword",
 			"url": "/?source=pwa",
-			"icons": [{ "src": "logo_192.png", "sizes": "192x192" }]
+			"icons": [
+				{ "src": "logo_192.png", "sizes": "192x192" },
+				{ "src": "logo_512.png", "sizes": "512x512" }
+			]
 		}
 	],
 	"description": "Free, unlimited mini crosswords"
