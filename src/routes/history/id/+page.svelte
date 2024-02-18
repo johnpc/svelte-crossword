@@ -61,7 +61,7 @@
 	<Crossword
 		data={clues}
 		breakpoint={10000}
-		theme="amelia"
+		theme="pink"
 		revealed={true}
 		showConfetti={false}
 		showCompleteMessage={false}

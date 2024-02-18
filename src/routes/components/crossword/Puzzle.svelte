@@ -216,7 +216,7 @@
 			style={keyboardStyle}
 			on:keydown={onKeydown}
 			--height="2.5rem"
-			--background="#d7cefd"
+			--background="linen"
 			--color="currentColor"
 			--border="none"
 			--border-radius="1px"

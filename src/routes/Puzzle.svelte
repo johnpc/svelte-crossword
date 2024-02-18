@@ -122,7 +122,7 @@
 		bind:this={ref}
 		data={clues}
 		breakpoint={10000}
-		theme="amelia"
+		theme="pink"
 		showKeyboard={true}
 		{keyboardStyle}
 	>
