@@ -55,7 +55,7 @@
 </script>
 
 {#if isLoading}
-	<p><SyncLoader size="60" color="palevioletred" unit="px" duration="1s" /></p>
+	<p style="margin: auto"><SyncLoader size="60" color="palevioletred" unit="px" duration="1s" /></p>
 {:else if completedPuzzles.length === 0}
 	<p>You have not completed any puzzles. <a href="#" on:click={() => goto('/')}>Go Back</a></p>
 {:else}
@@ -84,10 +84,16 @@
 				>
 			</h2>
 			<span>Solved in {timeInSeconds} seconds.</span>
-			<ul {id}>
-				<li>usedCheck: {usedCheck ? '✅' : '❌'}</li>
-				<li>usedClear: {usedClear ? '✅' : '❌'}</li>
-				<li>usedReveal: {usedReveal ? '✅' : '❌'}</li>
+			<ul style="list-style-type: none;" {id}>
+				{#if usedClear}
+					<li>🧹 Used Clear 🧹</li>
+				{/if}
+				{#if usedCheck}
+					<li>🔎 Used Check 🔎</li>
+				{/if}
+				{#if usedReveal}
+					<li>🚨 Used Reveal 🚨</li>
+				{/if}
 			</ul>
 			<hr />
 		</div>

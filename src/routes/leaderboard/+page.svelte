@@ -48,7 +48,9 @@
 <div class="text-column">
 	<h1>Leaderboard</h1>
 	{#if isLoading}
-		<p><SyncLoader size="60" color="palevioletred" unit="px" duration="1s" /></p>
+		<p style="margin: auto">
+			<SyncLoader size="60" color="palevioletred" unit="px" duration="1s" />
+		</p>
 	{:else}
 		<ol>
 			{#each profiles ?? [] as profile, i}

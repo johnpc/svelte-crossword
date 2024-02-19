@@ -56,7 +56,7 @@
 </script>
 
 {#if clues.length === 0}
-	<p><SyncLoader size="60" color="palevioletred" unit="px" duration="1s" /></p>
+	<p style="margin: auto"><SyncLoader size="60" color="palevioletred" unit="px" duration="1s" /></p>
 {:else}
 	<Crossword
 		data={clues}
@@ -71,13 +71,13 @@
 			<p style="display: inline;">Solved in {userPuzzle.timeInSeconds} seconds.</p>
 			{onReveal() ? '' : ''}
 			{#if userPuzzle.usedClear}
-				<span>Used Clear ✅</span>
+				<span>Used Clear 🧹</span>
 			{/if}
 			{#if userPuzzle.usedReveal}
-				<span>Used Reveal ✅</span>
+				<span>Used Reveal 🚨</span>
 			{/if}
 			{#if userPuzzle.usedCheck}
-				<span>Used Check ✅</span>
+				<span>Used Check 🔎</span>
 			{/if}
 		</div>
 	</Crossword>

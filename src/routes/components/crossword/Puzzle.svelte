@@ -230,7 +230,7 @@
 			--opacity="1"
 			--stroke-width="1px"
 			--text-transform="none"
-			--active-background="#9980fa"
+			--active-background="palevioletred"
 			--active-border="none"
 			--active-box-shadow="none"
 			--active-color="currentColor"
