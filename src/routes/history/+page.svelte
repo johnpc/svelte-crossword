@@ -59,21 +59,50 @@
 {:else if completedPuzzles.length === 0}
 	<p>You have not completed any puzzles. <a href="#" on:click={() => goto('/')}>Go Back</a></p>
 {:else}
+	{@const averagePuzzleTime = Math.floor(
+		completedPuzzles
+			.map(({ timeInSeconds }) => timeInSeconds)
+			.reduce((acc, cur) => {
+				return acc + cur;
+			}, 0) / completedPuzzles.length
+	)}
+	{@const checkPercent = Math.floor(
+		(completedPuzzles.filter(({ usedCheck }) => usedCheck).length / completedPuzzles.length) * 100
+	)}
+	{@const medianPuzzleTime = () => {
+		const sorted = [...completedPuzzles].sort((a, b) => a.timeInSeconds - b.timeInSeconds);
+		const middleIndex = Math.floor(sorted.length / 2);
+
+		if (sorted.length % 2 === 0) {
+			return (sorted[middleIndex - 1].timeInSeconds + sorted[middleIndex].timeInSeconds) / 2;
+		} else {
+			return sorted[middleIndex].timeInSeconds;
+		}
+	}}
+
 	<div>
 		<h1>You've completed {completedPuzzles.length} puzzles!</h1>
-		<h3>
-			On average, a puzzle takes you {Math.floor(
-				completedPuzzles
-					.map(({ timeInSeconds }) => timeInSeconds)
-					.reduce((acc, cur) => {
-						return acc + cur;
-					}, 0) / completedPuzzles.length
-			)} seconds.
-		</h3>
-		<p>
-			You've used the "reveal" feature {completedPuzzles.filter(({ usedReveal }) => usedReveal)
-				.length} times.
-		</p>
+		<ul>
+			<li>
+				You've been at it for <strong
+					>{Math.floor((averagePuzzleTime * completedPuzzles.length) / 60)} minutes</strong
+				>.
+			</li>
+			<li>
+				On average, a puzzle takes you <strong>{averagePuzzleTime} seconds</strong>.
+			</li>
+			<li>
+				A typical puzzle takes you <strong>{medianPuzzleTime()} seconds</strong>.
+			</li>
+			<li>
+				You use the "check" feature on <strong>{checkPercent}%</strong> of puzzles.
+			</li>
+			<li>
+				You've used the "reveal" feature <strong
+					>{completedPuzzles.filter(({ usedReveal }) => usedReveal).length} times</strong
+				>.
+			</li>
+		</ul>
 	</div>
 	<hr />
 	{#each completedPuzzles as { id, usedCheck, usedClear, usedReveal, timeInSeconds, createdAt }, i}
@@ -84,7 +113,7 @@
 				>
 			</h2>
 			<span>Solved in {timeInSeconds} seconds.</span>
-			<ul style="list-style-type: none;" {id}>
+			<ul {id}>
 				{#if usedClear}
 					<li>🧹 Used Clear 🧹</li>
 				{/if}
@@ -100,7 +129,19 @@
 	{/each}
 {/if}
 <hr />
-<div style="text-size: xx-small">
+<div id="privacy">
 	<p>We value your <a href="/privacy-policy.html">privacy</a>.</p>
 	<p><a href="#" on:click={() => handleDeleteAllData()}>Delete my account and all my data.</a></p>
 </div>
+
+<style>
+	ul {
+		list-style-type: none;
+	}
+	li {
+		margin-bottom: 5px;
+	}
+	#privacy {
+		text-size: xx-small;
+	}
+</style>
