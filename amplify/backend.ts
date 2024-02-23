@@ -15,7 +15,8 @@ const authFunction = defineFunction({
 
 const seedPuzzleDbFunction = defineFunction({
 	entry: './data/build-puzzle-collection.ts',
-	timeoutSeconds: 600
+	timeoutSeconds: 600,
+	memoryMB: 1024,
 });
 
 const backend = defineBackend({

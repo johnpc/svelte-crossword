@@ -85,7 +85,7 @@ const uploadPuzFile = async (
 export const handler = async (event: Event) => {
 	console.log(`EVENT: ${JSON.stringify(event)}`);
 	console.log({ miniPuzzleFeedUrl, newestPuzzleFeedUrl });
-	[miniPuzzleFeedUrl, newestPuzzleFeedUrl].map(async (puzzleFeedUrl) => {
+	const allPromises = [miniPuzzleFeedUrl, newestPuzzleFeedUrl].map(async (puzzleFeedUrl) => {
 		const puzzleFeedResult = await fetch(puzzleFeedUrl);
 		// Url Formatted like: "https://crosshare.org/crosswords/Mf1l08Ofuj8pmEoV9nyO/jerms-mini-104",
 		const puzzleFeedJson = (await puzzleFeedResult.json()) as { items: { url: string }[] };
@@ -119,6 +119,7 @@ export const handler = async (event: Event) => {
 			});
 		await Promise.all(uploadPromises);
 		console.log(`Uploaded ${uploadPromises.length} puzzles`);
-		return event;
 	});
+	await Promise.all(allPromises);
+	return event;
 };
