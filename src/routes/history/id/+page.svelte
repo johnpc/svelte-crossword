@@ -10,7 +10,7 @@
 	import config from '../../../amplifyconfiguration.json';
 	import { page } from '$app/stores';
 	import { SyncLoader } from 'svelte-loading-spinners';
-
+	import { getHumanReadableDuration } from '../../helpers/getHumanReadableDuration';
 	Amplify.configure(config);
 	const client = generateClient<Schema>({
 		authMode: 'userPool'
@@ -68,7 +68,9 @@
 		showKeyboard={false}
 	>
 		<div id="toolbar" class="toolbar" slot="toolbar" let:onReveal>
-			<p style="display: inline;">Solved in {userPuzzle.timeInSeconds} seconds.</p>
+			<p style="display: inline;">
+				Solved in {getHumanReadableDuration(userPuzzle.timeInSeconds)} seconds.
+			</p>
 			{onReveal() ? '' : ''}
 			{#if userPuzzle.usedClear}
 				<span>Used Clear 🧹</span>

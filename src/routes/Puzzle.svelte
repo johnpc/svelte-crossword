@@ -12,6 +12,7 @@
 	import { getNextPuzzle } from './helpers/getNextPuzzle';
 	import { puzzleStore, resetPuzzleStoreDefaults } from './helpers/puzzleStore';
 	import { get } from 'svelte/store';
+	import { getHumanReadableDuration } from './helpers/getHumanReadableDuration';
 
 	const client = generateClient<Schema>({
 		authMode: 'userPool'
@@ -137,7 +138,7 @@
 		{keyboardStyle}
 	>
 		<div class="toolbar" slot="toolbar" let:onClear let:onReveal let:onCheck>
-			<p id="timer">{timeInSeconds}</p>
+			<p id="timer">{getHumanReadableDuration(timeInSeconds)}</p>
 			{#if !isPuzzleComplete}
 				<button class="history-button" on:click={onToolbarHistory}>History</button>
 			{/if}

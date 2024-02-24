@@ -9,6 +9,7 @@
 	import { goto } from '$app/navigation';
 	import { signOut, deleteUser } from 'aws-amplify/auth';
 	import config from '../../amplifyconfiguration.json';
+	import { getHumanReadableDuration } from '../helpers/getHumanReadableDuration';
 	import { getAllUserPuzzles } from '../helpers/getAllUserPuzzles';
 	import { getOrCreateProfile } from '../helpers/getOrCreateProfile';
 	import { resetPuzzleStoreDefaults } from '../helpers/puzzleStore';
@@ -87,14 +88,15 @@
 		<ul>
 			<li>
 				You've been at it for <strong
-					>{Math.floor((averagePuzzleTime * completedPuzzles.length) / 60)} minutes</strong
+					>{getHumanReadableDuration(averagePuzzleTime * completedPuzzles.length)}</strong
 				>.
 			</li>
 			<li>
-				On average, a puzzle takes you <strong>{averagePuzzleTime} seconds</strong>.
+				On average, a puzzle takes you <strong>{getHumanReadableDuration(averagePuzzleTime)}</strong
+				>.
 			</li>
 			<li>
-				A typical puzzle takes you <strong>{medianPuzzleTime()} seconds</strong>.
+				A typical puzzle takes you <strong>{getHumanReadableDuration(medianPuzzleTime())}</strong>.
 			</li>
 			<li>
 				You use the "check" feature on <strong>{checkPercent}%</strong> of puzzles.
@@ -114,7 +116,7 @@
 					>Puzzle on {getHumanReadableDate(new Date(createdAt))}</a
 				>
 			</h2>
-			<span>Solved in {timeInSeconds} seconds.</span>
+			<span>Solved in {getHumanReadableDuration(timeInSeconds)} seconds.</span>
 			<ul {id}>
 				{#if usedClear}
 					<li>🧹 Used Clear 🧹</li>
