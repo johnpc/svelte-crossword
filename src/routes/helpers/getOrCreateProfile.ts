@@ -7,13 +7,12 @@ import { get } from 'svelte/store';
 
 export const getOrCreateProfile = async (client: V6Client<Schema>): Promise<HydratedProfile> => {
 	const store = get(puzzleStore);
-	if (store.profile.id) {
-		console.log({ usingCache: true });
-		return store.profile;
+	const currentUser = await getCurrentUser();
+	if (store.profile[currentUser.userId]?.id) {
+		return store.profile[currentUser.userId];
 	}
 
-	const currentUser = await getCurrentUser();
-	const selectionSet = ['id', 'email', 'userId', 'name', 'completedPuzzles.*'] as readonly (
+	const selectionSet = ['id'] as readonly (
 		| 'id'
 		| 'email'
 		| 'userId'
@@ -31,7 +30,7 @@ export const getOrCreateProfile = async (client: V6Client<Schema>): Promise<Hydr
 		if (getProfileResponse?.data?.id) {
 			puzzleStore.set({
 				...store,
-				profile: getProfileResponse.data as HydratedProfile
+				profile: { [getProfileResponse.data.id]: getProfileResponse.data as HydratedProfile }
 			});
 			return getProfileResponse.data as HydratedProfile;
 		}
@@ -55,7 +54,9 @@ export const getOrCreateProfile = async (client: V6Client<Schema>): Promise<Hydr
 	const profile = hydratedProfile.data as HydratedProfile;
 	puzzleStore.set({
 		...store,
-		profile
+		profile: {
+			[profile.id]: profile
+		}
 	});
 
 	return profile;

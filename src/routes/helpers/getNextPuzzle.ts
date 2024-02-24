@@ -42,11 +42,11 @@ export const getNextPuzzle = async (profile: Schema['Profile']): Promise<Crosswo
 		console.log({ puzzleResponse });
 		puzzleStore.set({
 			...store,
-			allPuzzles: puzzleResponse.data
+			allPuzzles: { [profile.id]: puzzleResponse.data }
 		});
 	}
 
-	const incompletePuzzles = store.allPuzzles.filter((puzzle) => {
+	const incompletePuzzles = store.allPuzzles[profile.id].filter((puzzle) => {
 		return !allCompletedPuzzleIds.includes(puzzle.id);
 	});
 

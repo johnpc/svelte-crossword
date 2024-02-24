@@ -11,8 +11,8 @@ const client = generateClient<Schema>({
 });
 export const getAllUserPuzzles = async (profile: Schema['Profile']) => {
 	const store = get(puzzleStore);
-	if (store.userPuzzles.length > 0) {
-		return store.userPuzzles;
+	if (store.userPuzzles[profile.id]?.length > 0) {
+		return store.userPuzzles[profile.id];
 	}
 
 	let nextToken;
@@ -44,7 +44,7 @@ export const getAllUserPuzzles = async (profile: Schema['Profile']) => {
 	userPuzzles.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 	puzzleStore.set({
 		...store,
-		userPuzzles
+		userPuzzles: { [profile.id]: userPuzzles }
 	});
 	return userPuzzles;
 };

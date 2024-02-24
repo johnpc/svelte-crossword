@@ -1,5 +1,3 @@
-import type { Schema } from '../../../../amplify/data/resource';
-
 export type Clue = {
 	clue: string;
 	answer: string;
@@ -8,9 +6,7 @@ export type Clue = {
 	y: number;
 };
 
-export type HydratedProfile = Schema['Profile'] & {
-	completedPuzzles: Schema['UserPuzzle'][];
-};
+export type HydratedProfile = { id: string };
 
 export type CrosswordClues = {
 	id: string;
