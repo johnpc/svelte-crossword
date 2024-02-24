@@ -2,12 +2,19 @@ import type { Schema } from '../../../amplify/data/resource';
 import { generateClient } from 'aws-amplify/data';
 import { Amplify } from 'aws-amplify';
 import config from '../../amplifyconfiguration.json';
+import { puzzleStore } from './puzzleStore';
+import { get } from 'svelte/store';
 
 Amplify.configure(config);
 const client = generateClient<Schema>({
 	authMode: 'iam'
 });
 export const getAllUserPuzzles = async (profile: Schema['Profile']) => {
+	const store = get(puzzleStore);
+	if (store.userPuzzles.length > 0) {
+		return store.userPuzzles;
+	}
+
 	let nextToken;
 	const completedPuzzleIds: string[] = [];
 	const userPuzzles = [] as Schema['UserPuzzle'][];
@@ -18,6 +25,7 @@ export const getAllUserPuzzles = async (profile: Schema['Profile']) => {
 					eq: profile.userId
 				}
 			},
+			limit: 1000,
 			nextToken
 		})) as {
 			nextToken: string | undefined;
@@ -34,5 +42,9 @@ export const getAllUserPuzzles = async (profile: Schema['Profile']) => {
 		}
 	} while (nextToken);
 	userPuzzles.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+	puzzleStore.set({
+		...store,
+		userPuzzles
+	});
 	return userPuzzles;
 };

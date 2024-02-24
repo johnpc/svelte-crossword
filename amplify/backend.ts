@@ -1,5 +1,5 @@
 import * as s3 from 'aws-cdk-lib/aws-s3';
-import { Function } from 'aws-cdk-lib/aws-lambda';
+import { Function as LambdaFunction } from 'aws-cdk-lib/aws-lambda';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as events from 'aws-cdk-lib/aws-events';
 import { defineBackend, defineFunction } from '@aws-amplify/backend';
@@ -16,7 +16,7 @@ const authFunction = defineFunction({
 const seedPuzzleDbFunction = defineFunction({
 	entry: './data/build-puzzle-collection.ts',
 	timeoutSeconds: 600,
-	memoryMB: 1024,
+	memoryMB: 1024
 });
 
 const backend = defineBackend({
@@ -28,11 +28,11 @@ const backend = defineBackend({
 });
 
 // Set up custom authorizor lambda
-const underlyingAuthLambda = backend.authFunction.resources.lambda as Function;
+const underlyingAuthLambda = backend.authFunction.resources.lambda as LambdaFunction;
 underlyingAuthLambda.addEnvironment('ADMIN_API_KEY', process.env.ADMIN_API_KEY!);
 
 // Set up seed db lambda
-const underlyingSeedLambda = backend.seedPuzzleDbFunction.resources.lambda as Function;
+const underlyingSeedLambda = backend.seedPuzzleDbFunction.resources.lambda as LambdaFunction;
 underlyingSeedLambda.addEnvironment('ADMIN_API_KEY', process.env.ADMIN_API_KEY!);
 const eventRule = new events.Rule(
 	backend.seedPuzzleDbFunction.resources.lambda.stack,

@@ -2,8 +2,16 @@ import type { Schema } from '../../../amplify/data/resource';
 import { getCurrentUser } from 'aws-amplify/auth';
 import type { HydratedProfile } from './types/types';
 import type { V6Client } from '@aws-amplify/api-graphql';
+import { puzzleStore } from './puzzleStore';
+import { get } from 'svelte/store';
 
 export const getOrCreateProfile = async (client: V6Client<Schema>): Promise<HydratedProfile> => {
+	const store = get(puzzleStore);
+	if (store.profile.id) {
+		console.log({ usingCache: true });
+		return store.profile;
+	}
+
 	const currentUser = await getCurrentUser();
 	const selectionSet = ['id', 'email', 'userId', 'name', 'completedPuzzles.*'] as readonly (
 		| 'id'
@@ -21,6 +29,10 @@ export const getOrCreateProfile = async (client: V6Client<Schema>): Promise<Hydr
 		);
 		console.log({ getProfileResponse });
 		if (getProfileResponse?.data?.id) {
+			puzzleStore.set({
+				...store,
+				profile: getProfileResponse.data as HydratedProfile
+			});
 			return getProfileResponse.data as HydratedProfile;
 		}
 	} catch (e) {
@@ -40,5 +52,11 @@ export const getOrCreateProfile = async (client: V6Client<Schema>): Promise<Hydr
 		{ selectionSet }
 	);
 
-	return hydratedProfile.data as HydratedProfile;
+	const profile = hydratedProfile.data as HydratedProfile;
+	puzzleStore.set({
+		...store,
+		profile
+	});
+
+	return profile;
 };

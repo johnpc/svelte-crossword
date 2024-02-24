@@ -10,6 +10,9 @@
 	import { getOrCreateProfile } from './helpers/getOrCreateProfile';
 	import type { Clue, HydratedProfile } from './helpers/types/types';
 	import { getNextPuzzle } from './helpers/getNextPuzzle';
+	import { puzzleStore } from './helpers/puzzleStore';
+	import { get } from 'svelte/store';
+
 	const client = generateClient<Schema>({
 		authMode: 'userPool'
 	});
@@ -44,13 +47,18 @@
 	});
 
 	const onPuzzleComplete = async () => {
-		await client.models.UserPuzzle.create({
+		const userPuzzleResponse = await client.models.UserPuzzle.create({
 			usedCheck,
 			usedClear,
 			usedReveal,
 			timeInSeconds,
 			userPuzzlePuzzleId: puzzleId,
 			profileCompletedPuzzlesId: profile.id
+		});
+		const store = get(puzzleStore);
+		puzzleStore.set({
+			...store,
+			userPuzzles: [...store.userPuzzles, userPuzzleResponse.data]
 		});
 	};
 
