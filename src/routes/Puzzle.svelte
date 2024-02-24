@@ -142,9 +142,15 @@
 			{#if !isPuzzleComplete}
 				<button class="history-button" on:click={onToolbarHistory}>History</button>
 			{/if}
-			<button on:click={() => onToolbarClear(onClear)}>Clear</button>
-			<button on:click={() => onToolbarReveal(onReveal)}>Reveal</button>
-			<button on:click={() => onToolbarCheck(onCheck)}>Check</button>
+			<button class={usedClear ? 'active' : ''} on:click={() => onToolbarClear(onClear)}
+				>Clear</button
+			>
+			<button class={usedReveal ? 'active' : ''} on:click={() => onToolbarReveal(onReveal)}
+				>Reveal</button
+			>
+			<button class={usedCheck ? 'active' : ''} on:click={() => onToolbarCheck(onCheck)}
+				>Check</button
+			>
 			{#if isPuzzleComplete}
 				<button class="next-puzzle-button" on:click={() => onToolbarNextPuzzle()}
 					>Next Puzzle</button
@@ -196,5 +202,9 @@
 	}
 	#timer {
 		display: inline;
+	}
+	.active {
+		color: aliceblue;
+		background-color: var(--secondary-highlight-color);
 	}
 </style>
