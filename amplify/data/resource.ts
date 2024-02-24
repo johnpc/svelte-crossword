@@ -43,9 +43,9 @@ const schema = a.schema({
 			puzKey: a.string()
 		})
 		.authorization([
-			a.allow.public('iam'),
-			a.allow.private('userPools'),
 			a.allow.custom(),
+			a.allow.private('userPools').to(['read']),
+			a.allow.public('iam').to(['read']),
 			a.allow.private('iam').to(['read'])
 		])
 });

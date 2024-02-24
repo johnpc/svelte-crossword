@@ -20,7 +20,10 @@ type Clue = {
 	y: number;
 };
 
-const client = generateClient<Schema>();
+const client = generateClient<Schema>({
+	authMode: 'lambda',
+	authToken: process.env.ADMIN_API_KEY
+});
 const today = new Date();
 const year = today.getFullYear();
 const month = today.getMonth() + 1 < 10 ? `0${today.getMonth() + 1}` : today.getMonth() + 1;
