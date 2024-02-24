@@ -65,7 +65,7 @@ const uploadPuzFile = async (
 ): Promise<{ key: string; error?: Error }> => {
 	try {
 		const buffer = await blob.arrayBuffer();
-		const key = `public/${filename}`;
+		const key = filename;
 		const s3Response = await s3.send(
 			new PutObjectCommand({
 				Bucket: process.env.BUCKET_NAME,
@@ -92,7 +92,7 @@ export const handler = async (event: Event) => {
 		event.timeStamp ? new Date(event.timeStamp) : new Date()
 	);
 	console.log({ miniPuzzleFeedUrl, newestPuzzleFeedUrl });
-	const allPromises = [miniPuzzleFeedUrl].map(async (puzzleFeedUrl) => {
+	const allPromises = [miniPuzzleFeedUrl, newestPuzzleFeedUrl].map(async (puzzleFeedUrl) => {
 		const puzzleFeedResult = await fetch(puzzleFeedUrl);
 		// Url Formatted like: "https://crosshare.org/crosswords/Mf1l08Ofuj8pmEoV9nyO/jerms-mini-104",
 		const puzzleFeedJson = (await puzzleFeedResult.json()) as { items: { url: string }[] };
@@ -115,7 +115,7 @@ export const handler = async (event: Event) => {
 			};
 		});
 		const puzFileContentsArray = await Promise.all(puzFileContentsPromises);
-		const uploadPromises = [puzFileContentsArray[0]]
+		const uploadPromises = puzFileContentsArray
 			.filter((puzFileContents) => puzFileContents.status === 200)
 			.map(async (puzFileContents) => {
 				const uploadStatus = await uploadPuzFile(puzFileContents.id + '.puz', puzFileContents.blob);

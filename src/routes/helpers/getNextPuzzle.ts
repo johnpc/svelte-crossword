@@ -1,13 +1,7 @@
 import type { Schema } from '../../../amplify/data/resource';
-import { generateClient } from 'aws-amplify/data';
 import { getAllUserPuzzles } from './getAllUserPuzzles';
 import type { Clue, CrosswordClues, HydratedProfile } from './types/types';
-import { puzzleStore } from './puzzleStore';
-import { get } from 'svelte/store';
-
-const client = generateClient<Schema>({
-	authMode: 'userPool'
-});
+import { getAllPuzzles } from './getAllPuzzles';
 
 const getCompletedPuzzleIds = async (profile: HydratedProfile): Promise<string[]> => {
 	const completedPuzzles = await getAllUserPuzzles(profile);
@@ -30,21 +24,9 @@ const getCluesFromPuzzle = (puzzle: Schema['Puzzle']) => {
 
 export const getNextPuzzle = async (profile: HydratedProfile): Promise<CrosswordClues> => {
 	const allCompletedPuzzleIds = await getCompletedPuzzleIds(profile);
-	let store = get(puzzleStore);
-	if (!store.allPuzzles[profile.id]?.length) {
-		const puzzleResponse = await client.models.Puzzle.list({
-			limit: 10000
-		});
-		console.log({ puzzleResponse });
-		puzzleStore.set({
-			...store,
-			allPuzzles: { [profile.id]: puzzleResponse.data }
-		});
-		store = get(puzzleStore);
-	}
-
-	console.log({ allCompletedPuzzleIds, storedPuzzles: store.allPuzzles[profile.id] });
-	const incompletePuzzles = store.allPuzzles[profile.id].filter((puzzle) => {
+	const allPuzzles = await getAllPuzzles(profile);
+	console.log({ allCompletedPuzzleIds, allStoredPuzzles: allPuzzles });
+	const incompletePuzzles = allPuzzles.filter((puzzle) => {
 		return !allCompletedPuzzleIds.includes(puzzle.id);
 	});
 

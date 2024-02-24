@@ -11,6 +11,7 @@ import type { Schema } from '../../amplify/data/resource';
 import { getCurrentUser, type AuthUser } from 'aws-amplify/auth';
 import { getAllUserPuzzles } from './helpers/getAllUserPuzzles';
 import { getOrCreateProfile } from './helpers/getOrCreateProfile';
+import { getAllPuzzles } from './helpers/getAllPuzzles';
 const client = generateClient<Schema>({
 	authMode: 'userPool'
 });
@@ -37,16 +38,14 @@ const maybeUpdateStore = async () => {
 		return;
 	}
 
-	const puzzleResponse = await client.models.Puzzle.list({
-		limit: 10000
-	});
-	const profile = await getOrCreateProfile(client, false);
-	const userPuzzles = await getAllUserPuzzles(profile);
+	const profile = await getOrCreateProfile(client, true);
+	const userPuzzles = await getAllUserPuzzles(profile, true);
+	const puzzles = await getAllPuzzles(profile, true);
 	puzzleStore.set({
 		...store,
 		profile: { [profile.id]: profile },
 		userPuzzles: { [profile.id]: userPuzzles },
-		allPuzzles: { [profile.id]: puzzleResponse.data },
+		allPuzzles: { [profile.id]: puzzles },
 		lastUpdated: { [profile.id]: Date.now() }
 	});
 };
