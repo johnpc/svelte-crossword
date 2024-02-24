@@ -1,15 +1,64 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { signUp, signIn, confirmSignUp } from 'aws-amplify/auth';
+	import {
+		signUp,
+		signIn,
+		confirmSignUp,
+		resetPassword,
+		confirmResetPassword,
+		type ResetPasswordOutput
+	} from 'aws-amplify/auth';
 	import { Amplify } from 'aws-amplify';
 	import config from '../../amplifyconfiguration.json';
 	Amplify.configure(config);
 
-	$: register = false;
+	$: state = 'signIn' as 'signIn' | 'signUp' | 'forgotPassword';
+	$: confirmForgotPassword = false;
 	$: confirm = false;
 	$: username = '';
 	$: password = '';
 	$: confirmationCode = '';
+
+	function handleResetPasswordNextSteps(output: ResetPasswordOutput) {
+		const { nextStep } = output;
+		switch (nextStep.resetPasswordStep) {
+			case 'CONFIRM_RESET_PASSWORD_WITH_CODE':
+				const codeDeliveryDetails = nextStep.codeDeliveryDetails;
+				console.log(`Confirmation code was sent to ${codeDeliveryDetails.deliveryMedium}`);
+				confirmForgotPassword = true;
+				// Collect the confirmation code from the user and pass to confirmResetPassword.
+				break;
+			case 'DONE':
+				confirmForgotPassword = false;
+				state = 'signIn';
+				break;
+		}
+	}
+
+	async function handleForgotPassword(forgotPasswordArgs: {
+		username: string;
+		confirmationCode?: string;
+		newPassword?: string;
+	}) {
+		if (!forgotPasswordArgs.username) {
+			throw new Error('No email specified');
+		}
+		try {
+			if (forgotPasswordArgs.confirmationCode! && forgotPasswordArgs.newPassword!) {
+				await confirmResetPassword(
+					forgotPasswordArgs as { username: string; confirmationCode: string; newPassword: string }
+				);
+				confirmForgotPassword = false;
+				state = 'signIn';
+			} else {
+				const output = await resetPassword(forgotPasswordArgs);
+				handleResetPasswordNextSteps(output);
+			}
+		} catch (error) {
+			console.log(error);
+		}
+	}
+
 	const registrationHandler = async () => {
 		await signUp({
 			username,
@@ -38,6 +87,7 @@
 		});
 		goto('/');
 	};
+
 	const tryOrAlert = async (fn: Function, args: {}) => {
 		try {
 			await fn(args);
@@ -48,15 +98,20 @@
 		}
 	};
 
-	const showRegistrationForm = () => {
-		register = true;
+	const showForgotPasswordForm = () => {
+		state = 'forgotPassword';
 	};
+
+	const showRegistrationForm = () => {
+		state = 'signUp';
+	};
+
 	const showLoginForm = () => {
-		register = false;
+		state = 'signIn';
 	};
 </script>
 
-{#if register}
+{#if state === 'signUp'}
 	<h1>Register</h1>
 	<form id="registrationForm">
 		<label for="email">Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
@@ -89,19 +144,53 @@
 		> instead
 	</p>{/if}
 
-{#if !register}
+{#if state === 'signIn'}
 	<h1>Log In</h1>
 	<form id="loginForm">
 		<label for="email">Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
 		<input required type="email" id="email" bind:value={username} />
 		<hr />
-
 		<label for="password">Password&nbsp;&nbsp;</label>
 		<input required type="password" id="password" bind:value={password} />
+		<a href="#" on:click={() => showForgotPasswordForm()}>forgot password?</a>
 		<hr />
 		<button type="submit" on:click={() => tryOrAlert(loginHandler, { username, password })}
 			>Log in</button
 		>
+	</form>
+	<p>
+		Not registered? <a
+			href="#loginForm"
+			aria-label="showRegistrationForm"
+			on:click={showRegistrationForm}>Create an Account</a
+		> instead
+	</p>{/if}
+
+{#if state === 'forgotPassword'}
+	<h1>Reset Password</h1>
+	<form id="forgotPasswordForm">
+		<label for="email">Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+		<input required type="email" id="email" bind:value={username} />
+		<hr />
+
+		{#if !confirmForgotPassword}
+			<button type="submit" on:click={() => tryOrAlert(handleForgotPassword, { username })}
+				>Send Reset Email</button
+			>
+		{/if}
+		{#if confirmForgotPassword}
+			<label for="confirmation">Confirmation Code</label>
+			<input required type="confirmation" id="confirmation" bind:value={confirmationCode} />
+			<label for="password">New Password&nbsp;&nbsp;</label>
+			<input required type="password" id="password" bind:value={password} />
+			<hr />
+			<button
+				type="submit"
+				on:click={() =>
+					tryOrAlert(handleForgotPassword, { username, confirmationCode, newPassword: password })}
+				>Confirm Password Reset</button
+			>
+		{/if}
 	</form>
 	<p>
 		Not registered? <a
