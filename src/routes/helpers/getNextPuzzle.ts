@@ -30,7 +30,7 @@ const getCluesFromPuzzle = (puzzle: Schema['Puzzle']) => {
 
 export const getNextPuzzle = async (profile: HydratedProfile): Promise<CrosswordClues> => {
 	const allCompletedPuzzleIds = await getCompletedPuzzleIds(profile);
-	const store = get(puzzleStore);
+	let store = get(puzzleStore);
 	if (!store.allPuzzles[profile.id]?.length) {
 		const puzzleResponse = await client.models.Puzzle.list({
 			limit: 10000
@@ -40,12 +40,15 @@ export const getNextPuzzle = async (profile: HydratedProfile): Promise<Crossword
 			...store,
 			allPuzzles: { [profile.id]: puzzleResponse.data }
 		});
+		store = get(puzzleStore);
 	}
 
+	console.log({ allCompletedPuzzleIds, storedPuzzles: store.allPuzzles[profile.id] });
 	const incompletePuzzles = store.allPuzzles[profile.id].filter((puzzle) => {
 		return !allCompletedPuzzleIds.includes(puzzle.id);
 	});
 
+	console.log({ incompletePuzzles });
 	const chosenPuzzle = incompletePuzzles[0]!;
 	console.log({ puzzles: incompletePuzzles, chosenPuzzle });
 	const clues = getCluesFromPuzzle(chosenPuzzle);

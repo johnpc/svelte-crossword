@@ -12,7 +12,7 @@ const client = generateClient<Schema>({
 });
 export const getAllUserPuzzles = async (profile: HydratedProfile, bypassCache = false) => {
 	const store = get(puzzleStore);
-	if (!bypassCache && store.userPuzzles[profile.id]?.length > 0) {
+	if (!bypassCache && store.userPuzzles[profile.id]) {
 		console.log({ cachedUserPuzzles: store.userPuzzles[profile.id] });
 		return store.userPuzzles[profile.id];
 	}

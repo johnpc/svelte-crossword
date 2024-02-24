@@ -5,10 +5,17 @@ import type { V6Client } from '@aws-amplify/api-graphql';
 import { puzzleStore } from './puzzleStore';
 import { get } from 'svelte/store';
 
-export const getOrCreateProfile = async (client: V6Client<Schema>): Promise<HydratedProfile> => {
+export const getOrCreateProfile = async (
+	client: V6Client<Schema>,
+	bypassCache = false
+): Promise<HydratedProfile> => {
 	const store = get(puzzleStore);
 	const currentUser = await getCurrentUser();
-	if (store.profile[currentUser.userId]?.id && store.profile[currentUser.userId]?.email) {
+	if (
+		!bypassCache &&
+		store.profile[currentUser.userId]?.id &&
+		store.profile[currentUser.userId]?.email
+	) {
 		console.log({ cachedProfile: store.profile[currentUser.userId] });
 		return store.profile[currentUser.userId];
 	}

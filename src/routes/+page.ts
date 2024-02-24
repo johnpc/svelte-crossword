@@ -9,32 +9,45 @@ import { get } from 'svelte/store';
 import { generateClient } from 'aws-amplify/api';
 import type { Schema } from '../../amplify/data/resource';
 import { getCurrentUser, type AuthUser } from 'aws-amplify/auth';
+import { getAllUserPuzzles } from './helpers/getAllUserPuzzles';
+import { getOrCreateProfile } from './helpers/getOrCreateProfile';
 const client = generateClient<Schema>({
-	authMode: 'iam'
+	authMode: 'userPool'
 });
 const store = get(puzzleStore);
-const storeShouldBeUpdated = (profileId: string) => {
-	const storeIsSet = !!store.lastUpdated[profileId] && store.allPuzzles[profileId].length > 0;
-	const moreThanADaySinceUpdate = store.lastUpdated[profileId] < Date.now() - 3600 * 1000;
-	return storeIsSet && moreThanADaySinceUpdate;
-};
-const maybeUpdateStore = async () => {
+const storeShouldBeUpdated = async () => {
 	let currentUser: AuthUser;
 	try {
 		currentUser = await getCurrentUser();
 	} catch {
 		return;
 	}
-	if (!storeShouldBeUpdated(currentUser.userId)) {
+
+	const storeIsSet =
+		!!store.lastUpdated[currentUser.userId] && store.allPuzzles[currentUser.userId].length > 0;
+	const moreThanADaySinceUpdate = store.lastUpdated[currentUser.userId] < Date.now() - 3600 * 1000;
+	return storeIsSet && moreThanADaySinceUpdate;
+};
+
+/**
+ * Periodically keep local state up to date with db, in the background.
+ */
+const maybeUpdateStore = async () => {
+	if (!(await storeShouldBeUpdated())) {
 		return;
 	}
+
 	const puzzleResponse = await client.models.Puzzle.list({
 		limit: 10000
 	});
-	console.log({ puzzleResponse });
+	const profile = await getOrCreateProfile(client, false);
+	const userPuzzles = await getAllUserPuzzles(profile);
 	puzzleStore.set({
 		...store,
-		allPuzzles: { [currentUser.userId]: puzzleResponse.data }
+		profile: { [profile.id]: profile },
+		userPuzzles: { [profile.id]: userPuzzles },
+		allPuzzles: { [profile.id]: puzzleResponse.data },
+		lastUpdated: { [profile.id]: Date.now() }
 	});
 };
 maybeUpdateStore();
