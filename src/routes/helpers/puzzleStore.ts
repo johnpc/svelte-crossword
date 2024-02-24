@@ -13,3 +13,12 @@ export const puzzleStore = persisted('puzzles', {
 	userPuzzles: defaultUserPuzzles,
 	lastUpdated: defaultLastUpdated
 });
+
+export const resetPuzzleStoreDefaults = () => {
+	puzzleStore.set({
+		allPuzzles: defaultAllPuzzles,
+		profile: defaultProfile,
+		userPuzzles: defaultUserPuzzles,
+		lastUpdated: defaultLastUpdated
+	});
+};

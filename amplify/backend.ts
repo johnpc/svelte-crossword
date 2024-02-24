@@ -1,5 +1,5 @@
-import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Function as LambdaFunction } from 'aws-cdk-lib/aws-lambda';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as events from 'aws-cdk-lib/aws-events';
 import { defineBackend, defineFunction } from '@aws-amplify/backend';
@@ -27,6 +27,8 @@ const backend = defineBackend({
 	data: data(authFunction)
 });
 
+const bucket = backend.storage.resources.bucket;
+
 // Set up custom authorizor lambda
 const underlyingAuthLambda = backend.authFunction.resources.lambda as LambdaFunction;
 underlyingAuthLambda.addEnvironment('ADMIN_API_KEY', process.env.ADMIN_API_KEY!);
@@ -34,6 +36,13 @@ underlyingAuthLambda.addEnvironment('ADMIN_API_KEY', process.env.ADMIN_API_KEY!)
 // Set up seed db lambda
 const underlyingSeedLambda = backend.seedPuzzleDbFunction.resources.lambda as LambdaFunction;
 underlyingSeedLambda.addEnvironment('ADMIN_API_KEY', process.env.ADMIN_API_KEY!);
+underlyingSeedLambda.addEnvironment('BUCKET_NAME', bucket.bucketName!);
+underlyingSeedLambda.addToRolePolicy(
+	new PolicyStatement({
+		actions: ['s3:PutObject'],
+		resources: [bucket.bucketArn]
+	})
+);
 const eventRule = new events.Rule(
 	backend.seedPuzzleDbFunction.resources.lambda.stack,
 	'scheduleRule',
@@ -42,26 +51,3 @@ const eventRule = new events.Rule(
 	}
 );
 eventRule.addTarget(new targets.LambdaFunction(backend.seedPuzzleDbFunction.resources.lambda));
-
-// Set up S3 Storage bucket
-const bucket = backend.storage.resources.bucket;
-// allow any authenticated user to read and write to the bucket
-const authRole = backend.auth.resources.authenticatedUserIamRole;
-bucket.grantReadWrite(authRole);
-
-// allow any guest (unauthenticated) user to read from the bucket
-const unauthRole = backend.auth.resources.unauthenticatedUserIamRole;
-bucket.grantReadWrite(unauthRole);
-(bucket as s3.Bucket).addCorsRule({
-	allowedHeaders: ['*'],
-	allowedMethods: [
-		s3.HttpMethods.GET,
-		s3.HttpMethods.HEAD,
-		s3.HttpMethods.PUT,
-		s3.HttpMethods.POST,
-		s3.HttpMethods.DELETE
-	],
-	allowedOrigins: ['*'],
-	exposedHeaders: ['x-amz-server-side-encryption', 'x-amz-request-id', 'x-amz-id-2', 'ETag'],
-	maxAge: 3000
-});

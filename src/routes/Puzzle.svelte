@@ -10,7 +10,7 @@
 	import { getOrCreateProfile } from './helpers/getOrCreateProfile';
 	import type { Clue, HydratedProfile } from './helpers/types/types';
 	import { getNextPuzzle } from './helpers/getNextPuzzle';
-	import { puzzleStore } from './helpers/puzzleStore';
+	import { puzzleStore, resetPuzzleStoreDefaults } from './helpers/puzzleStore';
 	import { get } from 'svelte/store';
 
 	const client = generateClient<Schema>({
@@ -114,6 +114,7 @@
 	};
 
 	const onSignOut = async () => {
+		resetPuzzleStoreDefaults();
 		await signOut();
 		goto('/login');
 	};

@@ -11,6 +11,7 @@
 	import config from '../../amplifyconfiguration.json';
 	import { getAllUserPuzzles } from '../helpers/getAllUserPuzzles';
 	import { getOrCreateProfile } from '../helpers/getOrCreateProfile';
+	import { resetPuzzleStoreDefaults } from '../helpers/puzzleStore';
 	Amplify.configure(config);
 	const client = generateClient<Schema>({
 		authMode: 'userPool'
@@ -48,6 +49,7 @@
 		if (!confirmed) {
 			return;
 		}
+		resetPuzzleStoreDefaults();
 		await deleteUser();
 		await signOut();
 		goto('/login');
