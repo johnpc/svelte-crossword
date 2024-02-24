@@ -73,7 +73,7 @@
 			username,
 			confirmationCode
 		});
-		register = false;
+		state = 'signIn';
 		if (password) {
 			return await loginHandler();
 		}
@@ -152,7 +152,7 @@
 		<hr />
 		<label for="password">Password&nbsp;&nbsp;</label>
 		<input required type="password" id="password" bind:value={password} />
-		<a href="#" on:click={() => showForgotPasswordForm()}>forgot password?</a>
+		<a href="#" on:click={() => showForgotPasswordForm()}>forgot?</a>
 		<hr />
 		<button type="submit" on:click={() => tryOrAlert(loginHandler, { username, password })}
 			>Log in</button
@@ -179,8 +179,11 @@
 			>
 		{/if}
 		{#if confirmForgotPassword}
+			<p>A confirmation code was sent to your email.</p>
+			<hr />
 			<label for="confirmation">Confirmation Code</label>
 			<input required type="confirmation" id="confirmation" bind:value={confirmationCode} />
+			<hr />
 			<label for="password">New Password&nbsp;&nbsp;</label>
 			<input required type="password" id="password" bind:value={password} />
 			<hr />
