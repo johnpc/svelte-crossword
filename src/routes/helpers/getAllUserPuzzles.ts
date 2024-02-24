@@ -4,14 +4,16 @@ import { Amplify } from 'aws-amplify';
 import config from '../../amplifyconfiguration.json';
 import { puzzleStore } from './puzzleStore';
 import { get } from 'svelte/store';
+import type { HydratedProfile } from './types/types';
 
 Amplify.configure(config);
 const client = generateClient<Schema>({
 	authMode: 'iam'
 });
-export const getAllUserPuzzles = async (profile: Schema['Profile']) => {
+export const getAllUserPuzzles = async (profile: HydratedProfile) => {
 	const store = get(puzzleStore);
 	if (store.userPuzzles[profile.id]?.length > 0) {
+		console.log({ cachedUserPuzzles: store.userPuzzles[profile.id] });
 		return store.userPuzzles[profile.id];
 	}
 
@@ -22,7 +24,7 @@ export const getAllUserPuzzles = async (profile: Schema['Profile']) => {
 		const completedPuzzlesResponse = (await client.models.UserPuzzle.list({
 			filter: {
 				profileCompletedPuzzlesId: {
-					eq: profile.userId
+					eq: profile.id
 				}
 			},
 			limit: 1000,

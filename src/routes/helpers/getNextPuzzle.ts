@@ -1,7 +1,7 @@
 import type { Schema } from '../../../amplify/data/resource';
 import { generateClient } from 'aws-amplify/data';
 import { getAllUserPuzzles } from './getAllUserPuzzles';
-import type { Clue, CrosswordClues } from './types/types';
+import type { Clue, CrosswordClues, HydratedProfile } from './types/types';
 import { puzzleStore } from './puzzleStore';
 import { get } from 'svelte/store';
 
@@ -9,11 +9,7 @@ const client = generateClient<Schema>({
 	authMode: 'userPool'
 });
 
-const getCompletedPuzzleIds = async (profile: Schema['Profile']): Promise<string[]> => {
-	// Unfortunately, this only contains 100 puzzles :(
-	// const maybe = profile.completedPuzzles.map(completedPuzzle => completedPuzzle.userPuzzlePuzzleId)
-	// console.log({maybe});
-
+const getCompletedPuzzleIds = async (profile: HydratedProfile): Promise<string[]> => {
 	const completedPuzzles = await getAllUserPuzzles(profile);
 	const completedPuzzleIds = completedPuzzles.map(
 		(completedPuzzle) => completedPuzzle.userPuzzlePuzzleId!
@@ -32,10 +28,10 @@ const getCluesFromPuzzle = (puzzle: Schema['Puzzle']) => {
 	return [...across, ...down];
 };
 
-export const getNextPuzzle = async (profile: Schema['Profile']): Promise<CrosswordClues> => {
+export const getNextPuzzle = async (profile: HydratedProfile): Promise<CrosswordClues> => {
 	const allCompletedPuzzleIds = await getCompletedPuzzleIds(profile);
 	const store = get(puzzleStore);
-	if (!store.allPuzzles.length) {
+	if (!store.allPuzzles[profile.id]?.length) {
 		const puzzleResponse = await client.models.Puzzle.list({
 			limit: 10000
 		});

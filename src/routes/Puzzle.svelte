@@ -56,9 +56,10 @@
 			profileCompletedPuzzlesId: profile.id
 		});
 		const store = get(puzzleStore);
+		const cachedUserPuzzles = store.userPuzzles[profile.id];
 		puzzleStore.set({
 			...store,
-			userPuzzles: [...store.userPuzzles, userPuzzleResponse.data]
+			userPuzzles: { [profile.id]: [...cachedUserPuzzles, userPuzzleResponse.data] }
 		});
 	};
 

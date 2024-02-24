@@ -6,7 +6,7 @@ export type Clue = {
 	y: number;
 };
 
-export type HydratedProfile = { id: string };
+export type HydratedProfile = { id: string; email: string };
 
 export type CrosswordClues = {
 	id: string;

@@ -9,10 +9,11 @@ export const getOrCreateProfile = async (client: V6Client<Schema>): Promise<Hydr
 	const store = get(puzzleStore);
 	const currentUser = await getCurrentUser();
 	if (store.profile[currentUser.userId]?.id) {
+		console.log({ cachedProfile: store.profile[currentUser.userId] });
 		return store.profile[currentUser.userId];
 	}
 
-	const selectionSet = ['id'] as readonly (
+	const selectionSet = ['id', 'email'] as readonly (
 		| 'id'
 		| 'email'
 		| 'userId'
