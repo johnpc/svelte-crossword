@@ -20,7 +20,7 @@
 			const profileResponse = await client.models.Profile.list();
 			const profileData = profileResponse.data.length ? profileResponse.data : [];
 			const profilesWithCompletedPuzzleCountPromises = profileData.map(async (profile) => {
-				const completedPuzzlesResponse = await getAllUserPuzzles(profile);
+				const completedPuzzlesResponse = await getAllUserPuzzles(profile, true);
 				const completedPuzzlesCount = completedPuzzlesResponse.length;
 				return { ...profile, completedPuzzlesCount };
 			});

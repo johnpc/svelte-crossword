@@ -10,9 +10,9 @@ Amplify.configure(config);
 const client = generateClient<Schema>({
 	authMode: 'iam'
 });
-export const getAllUserPuzzles = async (profile: HydratedProfile) => {
+export const getAllUserPuzzles = async (profile: HydratedProfile, bypassCache = false) => {
 	const store = get(puzzleStore);
-	if (store.userPuzzles[profile.id]?.length > 0) {
+	if (!bypassCache && store.userPuzzles[profile.id]?.length > 0) {
 		console.log({ cachedUserPuzzles: store.userPuzzles[profile.id] });
 		return store.userPuzzles[profile.id];
 	}
