@@ -13,7 +13,12 @@
 	"display": "standalone",
 	"scope": "/",
 	"theme_color": "palevioletred",
-	"features": ["Solve Unlimited Crosswords", "Review Puzzle History", "Monitor Statistics"],
+	"features": [
+		"Easy access",
+		"Offline capability",
+		"Improved performance",
+		"Support for push notifications"
+	],
 	"shortcuts": [
 		{
 			"name": "Solve a Mini",

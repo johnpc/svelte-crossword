@@ -8,7 +8,7 @@ import { get } from 'svelte/store';
 export const getOrCreateProfile = async (client: V6Client<Schema>): Promise<HydratedProfile> => {
 	const store = get(puzzleStore);
 	const currentUser = await getCurrentUser();
-	if (store.profile[currentUser.userId]?.id) {
+	if (store.profile[currentUser.userId]?.id && store.profile[currentUser.userId]?.email) {
 		console.log({ cachedProfile: store.profile[currentUser.userId] });
 		return store.profile[currentUser.userId];
 	}

@@ -8,17 +8,24 @@ import { puzzleStore } from './helpers/puzzleStore';
 import { get } from 'svelte/store';
 import { generateClient } from 'aws-amplify/api';
 import type { Schema } from '../../amplify/data/resource';
+import { getCurrentUser, type AuthUser } from 'aws-amplify/auth';
 const client = generateClient<Schema>({
 	authMode: 'iam'
 });
 const store = get(puzzleStore);
-const storeShouldBeUpdated = () => {
-	const storeIsSet = !!store.lastUpdated && store.allPuzzles.length > 0;
-	const moreThanADaySinceUpdate = store.lastUpdated < Date.now() - 3600 * 1000;
+const storeShouldBeUpdated = (profileId: string) => {
+	const storeIsSet = !!store.lastUpdated[profileId] && store.allPuzzles[profileId].length > 0;
+	const moreThanADaySinceUpdate = store.lastUpdated[profileId] < Date.now() - 3600 * 1000;
 	return storeIsSet && moreThanADaySinceUpdate;
 };
 const maybeUpdateStore = async () => {
-	if (!storeShouldBeUpdated()) {
+	let currentUser: AuthUser;
+	try {
+		currentUser = await getCurrentUser();
+	} catch {
+		return;
+	}
+	if (!storeShouldBeUpdated(currentUser.userId)) {
 		return;
 	}
 	const puzzleResponse = await client.models.Puzzle.list({
@@ -27,7 +34,7 @@ const maybeUpdateStore = async () => {
 	console.log({ puzzleResponse });
 	puzzleStore.set({
 		...store,
-		allPuzzles: puzzleResponse.data
+		allPuzzles: { [currentUser.userId]: puzzleResponse.data }
 	});
 };
 maybeUpdateStore();
