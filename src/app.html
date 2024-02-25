@@ -11,4 +11,21 @@
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
+	<script>
+		if ('storage' in navigator && 'estimate' in navigator.storage) {
+			navigator.storage
+				.estimate()
+				.then(({ usage, quota }) => {
+					console.log(
+						`Using ${usage} out of ${quota} bytes. (${Math.floor((usage / quota) * 100)}%)`
+					);
+				})
+				.catch((error) => {
+					console.error('Loading storage estimate failed:');
+					console.log(error.stack);
+				});
+		} else {
+			console.error('navigator.storage.estimate API unavailable.');
+		}
+	</script>
 </html>

@@ -47,7 +47,7 @@
 			} catch (e) {
 				goto('/preview');
 			}
-			profile = await getOrCreateProfile(client, true);
+			profile = await getOrCreateProfile(client);
 			console.log({ onMount: true, profile });
 			const puzzle = await getNextPuzzle(profile);
 			clues = puzzle.clues;

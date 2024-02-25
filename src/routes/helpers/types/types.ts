@@ -8,6 +8,8 @@ export type Clue = {
 
 export type HydratedProfile = { id: string; email: string };
 
+export type HydratedPuzzle = { id: string; clues: Clue[]; createdAt: string };
+
 export type HydratedUserPuzzle = {
 	id: string;
 	profileCompletedPuzzlesId: string;

@@ -4,13 +4,28 @@ import { Amplify } from 'aws-amplify';
 import config from '../../amplifyconfiguration.json';
 import { puzzleStore } from './puzzleStore';
 import { get } from 'svelte/store';
-import type { HydratedProfile } from './types/types';
+import type { Clue, HydratedProfile, HydratedPuzzle } from './types/types';
 
 Amplify.configure(config);
 const client = generateClient<Schema>({
 	authMode: 'iam'
 });
-export const getAllPuzzles = async (profile: HydratedProfile, bypassCache = false) => {
+
+const getCluesFromPuzzle = (puzzle: Schema['Puzzle']) => {
+	console.log({ time: Date.now(), invoking: 'getCluesFromPuzzle' });
+	if (!puzzle) {
+		return [];
+	}
+	const jsonAtIndex = JSON.parse(puzzle.puzJson as string);
+	const across = Object.values(jsonAtIndex.clues.across) as Clue[];
+	const down = Object.values(jsonAtIndex.clues.down) as Clue[];
+	return [...across, ...down];
+};
+
+export const getAllPuzzles = async (
+	profile: HydratedProfile,
+	bypassCache = false
+): Promise<HydratedPuzzle[]> => {
 	console.log({ time: Date.now(), invoking: 'getAllPuzzles' });
 	const store = get(puzzleStore);
 	if (!bypassCache && store.allPuzzles[profile.id]) {
@@ -31,15 +46,20 @@ export const getAllPuzzles = async (profile: HydratedProfile, bypassCache = fals
 		puzzles.push(...puzzleResponse.data);
 	} while (nextToken);
 	puzzles.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+	const hydratedPuzzles = puzzles.map((puzzle) => ({
+		id: puzzle.id,
+		clues: getCluesFromPuzzle(puzzle),
+		createdAt: puzzle.createdAt
+	}));
 
 	try {
 		puzzleStore.set({
 			...store,
-			allPuzzles: { [profile.id]: puzzles }
+			allPuzzles: { [profile.id]: hydratedPuzzles }
 		});
 	} catch (e) {
 		console.error('Failed to write to local storage', e);
 	}
 
-	return puzzles;
+	return hydratedPuzzles;
 };

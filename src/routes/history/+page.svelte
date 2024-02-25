@@ -29,8 +29,8 @@
 				goto('/login');
 			}
 			console.log({ currentUser });
-			const profile = await getOrCreateProfile(client, true);
-			const userPuzzleResponse = await getAllUserPuzzles(profile, true);
+			const profile = await getOrCreateProfile(client);
+			const userPuzzleResponse = await getAllUserPuzzles(profile);
 			console.log({ userPuzzleResponse });
 			completedPuzzles = userPuzzleResponse;
 			isLoading = false;
