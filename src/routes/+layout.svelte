@@ -1,6 +1,20 @@
 <script>
 	import Header from './Header.svelte';
+	import { resetPuzzleStoreDefaults } from './helpers/puzzleStore';
 	import './styles.css';
+	import { SvelteToast, toast } from '@zerodevx/svelte-toast';
+	const toastOptions = {
+		theme: {
+			'--toastBackground': 'palevioletred',
+			'--toastColor': 'white',
+			'--toastBarBackground': 'mediumVioletRed'
+		}
+	};
+
+	const clearCache = () => {
+		resetPuzzleStoreDefaults();
+		toast.push('Cache cleared.');
+	};
 </script>
 
 <div class="app">
@@ -11,6 +25,9 @@
 	</main>
 
 	<footer>
+		<SvelteToast options={toastOptions} />
+		<p>Problem? <a href="#" on:click={() => clearCache()}>clear cache</a></p>
+
 		<p>
 			Made with 🩷 in Ann Arbor, MI 🌳 <br />
 			Contact <a href="mailto:support@smallcrosswords.com">support@smallcrosswords.com</a> for support.

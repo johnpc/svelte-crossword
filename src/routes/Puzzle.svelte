@@ -13,18 +13,7 @@
 	import { puzzleStore, resetPuzzleStoreDefaults } from './helpers/puzzleStore';
 	import { get } from 'svelte/store';
 	import { getHumanReadableDuration } from './helpers/getHumanReadableDuration';
-	import { SvelteToast, toast } from '@zerodevx/svelte-toast';
-	const toastOptions = {
-		theme: {
-			'--toastBackground': 'palevioletred',
-			'--toastColor': 'white',
-			'--toastBarBackground': 'mediumVioletRed'
-		}
-	};
-	const clearCache = () => {
-		resetPuzzleStoreDefaults();
-		toast.push('Cache cleared.');
-	};
+
 	const client = generateClient<Schema>({
 		authMode: 'userPool'
 	});
@@ -188,8 +177,6 @@
 			{/if}
 		</div>
 	</Crossword>
-	<SvelteToast options={toastOptions} />
-	<p>Problem? <a href="#" on:click={() => clearCache()}>clear cache</a></p>
 {/if}
 
 <style>
