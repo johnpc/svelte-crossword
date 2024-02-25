@@ -42,7 +42,7 @@ export const getAllUserPuzzles = async (
 
 	let nextToken;
 	const completedPuzzleIds: string[] = [];
-	const userPuzzles = [] as Schema['UserPuzzle'][];
+	const userPuzzles = [] as HydratedUserPuzzle[];
 	do {
 		const completedPuzzlesResponse = (await client.models.UserPuzzle.list({
 			filter: {
@@ -55,7 +55,7 @@ export const getAllUserPuzzles = async (
 			nextToken
 		})) as {
 			nextToken: string | undefined;
-			data: Schema['UserPuzzle'][];
+			data: HydratedUserPuzzle[];
 		};
 		nextToken = completedPuzzlesResponse.nextToken;
 		const rawUserPuzzles = completedPuzzlesResponse.data;

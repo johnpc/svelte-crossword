@@ -30,7 +30,7 @@
 			}
 			console.log({ currentUser });
 			const profile = await getOrCreateProfile(client, true);
-			const userPuzzleResponse = await getAllUserPuzzles(profile);
+			const userPuzzleResponse = await getAllUserPuzzles(profile, true);
 			console.log({ userPuzzleResponse });
 			completedPuzzles = userPuzzleResponse;
 			isLoading = false;
