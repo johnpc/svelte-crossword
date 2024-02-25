@@ -10,7 +10,7 @@
 	$: completedPuzzles = [] as Schema['UserPuzzle'][];
 	onMount(() => {
 		const setup = async () => {
-			const completedPuzzlesResponse = await getAllUserPuzzles(profile);
+			const completedPuzzlesResponse = await getAllUserPuzzles(profile, true);
 			completedPuzzles = completedPuzzlesResponse;
 		};
 

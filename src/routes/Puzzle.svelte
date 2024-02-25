@@ -36,7 +36,7 @@
 			} catch (e) {
 				goto('/login');
 			}
-			profile = await getOrCreateProfile(client);
+			profile = await getOrCreateProfile(client, true);
 			console.log({ onMount: true, profile });
 			const puzzle = await getNextPuzzle(profile);
 			clues = puzzle.clues;
@@ -58,10 +58,14 @@
 		});
 		const store = get(puzzleStore);
 		const cachedUserPuzzles = store.userPuzzles[profile.id];
-		puzzleStore.set({
-			...store,
-			userPuzzles: { [profile.id]: [...cachedUserPuzzles, userPuzzleResponse.data] }
-		});
+		try {
+			puzzleStore.set({
+				...store,
+				userPuzzles: { [profile.id]: [...cachedUserPuzzles, userPuzzleResponse.data] }
+			});
+		} catch (e) {
+			console.error('Failed to write to local storage', e);
+		}
 	};
 
 	const tickTimer = () => {

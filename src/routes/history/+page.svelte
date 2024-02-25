@@ -28,8 +28,8 @@
 				goto('/login');
 			}
 			console.log({ currentUser });
-			const profile = await getOrCreateProfile(client);
-			const userPuzzleResponse = await getAllUserPuzzles(profile);
+			const profile = await getOrCreateProfile(client, true);
+			const userPuzzleResponse = await getAllUserPuzzles(profile, true);
 			console.log({ userPuzzleResponse });
 			completedPuzzles = userPuzzleResponse;
 			isLoading = false;

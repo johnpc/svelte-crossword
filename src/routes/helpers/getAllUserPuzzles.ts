@@ -44,9 +44,14 @@ export const getAllUserPuzzles = async (profile: HydratedProfile, bypassCache = 
 		}
 	} while (nextToken);
 	userPuzzles.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-	puzzleStore.set({
-		...store,
-		userPuzzles: { [profile.id]: userPuzzles }
-	});
+	try {
+		puzzleStore.set({
+			...store,
+			userPuzzles: { [profile.id]: userPuzzles }
+		});
+	} catch (e) {
+		console.error('Failed to write to local storage', e);
+	}
+
 	return userPuzzles;
 };

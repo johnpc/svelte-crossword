@@ -4,7 +4,7 @@ import type { Clue, CrosswordClues, HydratedProfile } from './types/types';
 import { getAllPuzzles } from './getAllPuzzles';
 
 const getCompletedPuzzleIds = async (profile: HydratedProfile): Promise<string[]> => {
-	const completedPuzzles = await getAllUserPuzzles(profile);
+	const completedPuzzles = await getAllUserPuzzles(profile, true);
 	const completedPuzzleIds = completedPuzzles.map(
 		(completedPuzzle) => completedPuzzle.userPuzzlePuzzleId!
 	);
@@ -24,7 +24,7 @@ const getCluesFromPuzzle = (puzzle: Schema['Puzzle']) => {
 
 export const getNextPuzzle = async (profile: HydratedProfile): Promise<CrosswordClues> => {
 	const allCompletedPuzzleIds = await getCompletedPuzzleIds(profile);
-	const allPuzzles = await getAllPuzzles(profile);
+	const allPuzzles = await getAllPuzzles(profile, true);
 	console.log({ allCompletedPuzzleIds, allStoredPuzzles: allPuzzles });
 	const incompletePuzzles = allPuzzles.filter((puzzle) => {
 		return !allCompletedPuzzleIds.includes(puzzle.id);

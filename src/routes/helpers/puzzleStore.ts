@@ -15,10 +15,14 @@ export const puzzleStore = persisted('puzzles', {
 });
 
 export const resetPuzzleStoreDefaults = () => {
-	puzzleStore.set({
-		allPuzzles: defaultAllPuzzles,
-		profile: defaultProfile,
-		userPuzzles: defaultUserPuzzles,
-		lastUpdated: defaultLastUpdated
-	});
+	try {
+		puzzleStore.set({
+			allPuzzles: defaultAllPuzzles,
+			profile: defaultProfile,
+			userPuzzles: defaultUserPuzzles,
+			lastUpdated: defaultLastUpdated
+		});
+	} catch (e) {
+		console.error('Failed to write to local storage', e);
+	}
 };

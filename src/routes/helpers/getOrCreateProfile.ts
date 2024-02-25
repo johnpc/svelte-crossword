@@ -36,10 +36,15 @@ export const getOrCreateProfile = async (
 		);
 		console.log({ getProfileResponse });
 		if (getProfileResponse?.data?.id) {
-			puzzleStore.set({
-				...store,
-				profile: { [getProfileResponse.data.id]: getProfileResponse.data as HydratedProfile }
-			});
+			try {
+				puzzleStore.set({
+					...store,
+					profile: { [getProfileResponse.data.id]: getProfileResponse.data as HydratedProfile }
+				});
+			} catch (e) {
+				console.error('Failed to write to local storage', e);
+			}
+
 			return getProfileResponse.data as HydratedProfile;
 		}
 	} catch (e) {
@@ -60,12 +65,16 @@ export const getOrCreateProfile = async (
 	);
 
 	const profile = hydratedProfile.data as HydratedProfile;
-	puzzleStore.set({
-		...store,
-		profile: {
-			[profile.id]: profile
-		}
-	});
+	try {
+		puzzleStore.set({
+			...store,
+			profile: {
+				[profile.id]: profile
+			}
+		});
+	} catch (e) {
+		console.error('Failed to write to local storage', e);
+	}
 
 	return profile;
 };

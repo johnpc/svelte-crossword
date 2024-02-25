@@ -41,12 +41,16 @@ const maybeUpdateStore = async () => {
 	const profile = await getOrCreateProfile(client, true);
 	const userPuzzles = await getAllUserPuzzles(profile, true);
 	const puzzles = await getAllPuzzles(profile, true);
-	puzzleStore.set({
-		...store,
-		profile: { [profile.id]: profile },
-		userPuzzles: { [profile.id]: userPuzzles },
-		allPuzzles: { [profile.id]: puzzles },
-		lastUpdated: { [profile.id]: Date.now() }
-	});
+	try {
+		puzzleStore.set({
+			...store,
+			profile: { [profile.id]: profile },
+			userPuzzles: { [profile.id]: userPuzzles },
+			allPuzzles: { [profile.id]: puzzles },
+			lastUpdated: { [profile.id]: Date.now() }
+		});
+	} catch (e) {
+		console.error('Failed to write to local storage', e);
+	}
 };
 maybeUpdateStore();
