@@ -14,7 +14,13 @@
 	import { get } from 'svelte/store';
 	import { getHumanReadableDuration } from './helpers/getHumanReadableDuration';
 	import { SvelteToast, toast } from '@zerodevx/svelte-toast';
-	const toastOptions = {};
+	const toastOptions = {
+		theme: {
+			'--toastBackground': 'palevioletred',
+			'--toastColor': 'white',
+			'--toastBarBackground': 'mediumVioletRed'
+		}
+	};
 	const clearCache = () => {
 		resetPuzzleStoreDefaults();
 		toast.push('Cache cleared.');
@@ -39,7 +45,7 @@
 			try {
 				await getCurrentUser();
 			} catch (e) {
-				goto('/login');
+				goto('/preview');
 			}
 			profile = await getOrCreateProfile(client, true);
 			console.log({ onMount: true, profile });

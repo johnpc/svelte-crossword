@@ -49,6 +49,7 @@
 			const across = Object.values(jsonAtIndex.clues.across) as Clue[];
 			const down = Object.values(jsonAtIndex.clues.down) as Clue[];
 			clues = [...across, ...down];
+			console.log({ clues });
 		};
 
 		setup();
