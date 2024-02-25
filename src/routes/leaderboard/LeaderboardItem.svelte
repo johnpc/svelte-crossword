@@ -4,10 +4,11 @@
 	import { Amplify } from 'aws-amplify';
 	import config from '../../amplifyconfiguration.json';
 	import { getAllUserPuzzles } from '../helpers/getAllUserPuzzles';
+	import type { HydratedUserPuzzle } from '../helpers/types/types';
 	Amplify.configure(config);
 	export let profile: Schema['Profile'];
 
-	$: completedPuzzles = [] as Schema['UserPuzzle'][];
+	$: completedPuzzles = [] as HydratedUserPuzzle[];
 	onMount(() => {
 		const setup = async () => {
 			const completedPuzzlesResponse = await getAllUserPuzzles(profile, true);

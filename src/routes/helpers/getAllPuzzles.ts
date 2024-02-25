@@ -11,6 +11,7 @@ const client = generateClient<Schema>({
 	authMode: 'iam'
 });
 export const getAllPuzzles = async (profile: HydratedProfile, bypassCache = false) => {
+	console.log({ time: Date.now(), invoking: 'getAllPuzzles' });
 	const store = get(puzzleStore);
 	if (!bypassCache && store.allPuzzles[profile.id]) {
 		console.log({ cachedAllPuzzles: store.allPuzzles[profile.id] });

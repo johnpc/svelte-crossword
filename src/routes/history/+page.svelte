@@ -13,11 +13,12 @@
 	import { getAllUserPuzzles } from '../helpers/getAllUserPuzzles';
 	import { getOrCreateProfile } from '../helpers/getOrCreateProfile';
 	import { resetPuzzleStoreDefaults } from '../helpers/puzzleStore';
+	import type { HydratedUserPuzzle } from '../helpers/types/types';
 	Amplify.configure(config);
 	const client = generateClient<Schema>({
 		authMode: 'userPool'
 	});
-	$: completedPuzzles = [] as Schema['UserPuzzle'][];
+	$: completedPuzzles = [] as HydratedUserPuzzle[];
 	$: currentUser = {} as AuthUser;
 	$: isLoading = true;
 	onMount(() => {
@@ -29,7 +30,7 @@
 			}
 			console.log({ currentUser });
 			const profile = await getOrCreateProfile(client, true);
-			const userPuzzleResponse = await getAllUserPuzzles(profile, true);
+			const userPuzzleResponse = await getAllUserPuzzles(profile);
 			console.log({ userPuzzleResponse });
 			completedPuzzles = userPuzzleResponse;
 			isLoading = false;

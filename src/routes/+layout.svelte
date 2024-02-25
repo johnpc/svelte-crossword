@@ -11,7 +11,7 @@
 	</main>
 
 	<footer>
-		<p style="text-align: center;">
+		<p>
 			Made with 🩷 in Ann Arbor, MI 🌳 <br />
 			Contact <a href="mailto:support@smallcrosswords.com">support@smallcrosswords.com</a> for support.
 		</p>
@@ -46,6 +46,10 @@
 
 	footer a {
 		font-weight: bold;
+	}
+
+	footer p {
+		text-align: center;
 	}
 
 	@media (min-width: 480px) {

@@ -9,6 +9,7 @@ export const getOrCreateProfile = async (
 	client: V6Client<Schema>,
 	bypassCache = false
 ): Promise<HydratedProfile> => {
+	console.log({ time: Date.now(), invoking: 'getOrCreateProfile' });
 	const store = get(puzzleStore);
 	const currentUser = await getCurrentUser();
 	if (

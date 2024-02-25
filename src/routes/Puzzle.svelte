@@ -8,12 +8,17 @@
 	import { onMount } from 'svelte';
 	import { signOut } from 'aws-amplify/auth';
 	import { getOrCreateProfile } from './helpers/getOrCreateProfile';
-	import type { Clue, HydratedProfile } from './helpers/types/types';
+	import type { Clue, HydratedProfile, HydratedUserPuzzle } from './helpers/types/types';
 	import { getNextPuzzle } from './helpers/getNextPuzzle';
 	import { puzzleStore, resetPuzzleStoreDefaults } from './helpers/puzzleStore';
 	import { get } from 'svelte/store';
 	import { getHumanReadableDuration } from './helpers/getHumanReadableDuration';
-
+	import { SvelteToast, toast } from '@zerodevx/svelte-toast';
+	const toastOptions = {};
+	const clearCache = () => {
+		resetPuzzleStoreDefaults();
+		toast.push('Cache cleared.');
+	};
 	const client = generateClient<Schema>({
 		authMode: 'userPool'
 	});
@@ -56,12 +61,27 @@
 			userPuzzlePuzzleId: puzzleId,
 			profileCompletedPuzzlesId: profile.id
 		});
+
 		const store = get(puzzleStore);
 		const cachedUserPuzzles = store.userPuzzles[profile.id];
 		try {
 			puzzleStore.set({
 				...store,
-				userPuzzles: { [profile.id]: [...cachedUserPuzzles, userPuzzleResponse.data] }
+				userPuzzles: {
+					[profile.id]: [
+						...cachedUserPuzzles,
+						{
+							id: userPuzzleResponse.data.id,
+							profileCompletedPuzzlesId: userPuzzleResponse.data.profileCompletedPuzzlesId,
+							timeInSeconds: userPuzzleResponse.data.timeInSeconds,
+							usedCheck: userPuzzleResponse.data.usedCheck,
+							usedClear: userPuzzleResponse.data.usedClear,
+							usedReveal: userPuzzleResponse.data.usedReveal,
+							userPuzzlePuzzleId: userPuzzleResponse.data.userPuzzlePuzzleId,
+							createdAt: userPuzzleResponse.data.createdAt
+						} as HydratedUserPuzzle
+					]
+				}
 			});
 		} catch (e) {
 			console.error('Failed to write to local storage', e);
@@ -162,6 +182,8 @@
 			{/if}
 		</div>
 	</Crossword>
+	<SvelteToast options={toastOptions} />
+	<p>Problem? <a href="#" on:click={() => clearCache()}>clear cache</a></p>
 {/if}
 
 <style>

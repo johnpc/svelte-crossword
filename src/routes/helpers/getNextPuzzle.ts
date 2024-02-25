@@ -4,7 +4,8 @@ import type { Clue, CrosswordClues, HydratedProfile } from './types/types';
 import { getAllPuzzles } from './getAllPuzzles';
 
 const getCompletedPuzzleIds = async (profile: HydratedProfile): Promise<string[]> => {
-	const completedPuzzles = await getAllUserPuzzles(profile, true);
+	console.log({ time: Date.now(), invoking: 'getCompletedPuzzleIds' });
+	const completedPuzzles = await getAllUserPuzzles(profile);
 	const completedPuzzleIds = completedPuzzles.map(
 		(completedPuzzle) => completedPuzzle.userPuzzlePuzzleId!
 	);
@@ -13,6 +14,7 @@ const getCompletedPuzzleIds = async (profile: HydratedProfile): Promise<string[]
 };
 
 const getCluesFromPuzzle = (puzzle: Schema['Puzzle']) => {
+	console.log({ time: Date.now(), invoking: 'getCluesFromPuzzle' });
 	if (!puzzle) {
 		return [];
 	}
@@ -23,8 +25,9 @@ const getCluesFromPuzzle = (puzzle: Schema['Puzzle']) => {
 };
 
 export const getNextPuzzle = async (profile: HydratedProfile): Promise<CrosswordClues> => {
+	console.log({ time: Date.now(), invoking: 'getNextPuzzle' });
 	const allCompletedPuzzleIds = await getCompletedPuzzleIds(profile);
-	const allPuzzles = await getAllPuzzles(profile, true);
+	const allPuzzles = await getAllPuzzles(profile);
 	console.log({ allCompletedPuzzleIds, allStoredPuzzles: allPuzzles });
 	const incompletePuzzles = allPuzzles.filter((puzzle) => {
 		return !allCompletedPuzzleIds.includes(puzzle.id);
