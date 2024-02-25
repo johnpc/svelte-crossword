@@ -70,14 +70,17 @@
 	tickTimer();
 
 	const onToolbarClear = (onClear: Function) => {
+		Haptics.impact({ style: ImpactStyle.Medium });
 		usedClear = true;
 		onClear();
 	};
 	const onToolbarReveal = (onReveal: Function) => {
+		Haptics.impact({ style: ImpactStyle.Medium });
 		usedReveal = true;
 		onReveal();
 	};
 	const onToolbarCheck = (onCheck: Function) => {
+		Haptics.impact({ style: ImpactStyle.Medium });
 		usedCheck = true;
 		onCheck();
 	};

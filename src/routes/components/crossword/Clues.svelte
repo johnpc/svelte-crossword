@@ -1,6 +1,7 @@
 <script>
 	import ClueList from './ClueList.svelte';
 	import ClueBar from './ClueBar.svelte';
+	import Clue from './Clue.svelte';
 
 	export let clues;
 	export let cellIndexMap;
@@ -29,11 +30,22 @@
 		const { direction, id } = clues[next];
 		onClueFocus({ direction, id });
 	}
+
+	function onClueBarClicked({ detail }) {
+		let currentClue = detail;
+		const { direction, id } = currentClue;
+
+		const [x, y] = id.split('-');
+		const oppositeDirection = direction === 'across' ? 'down' : 'across';
+		console.log({id, cellIndexMap, oppositeDirection, x, y});
+		// onClueFocus({direction: oppositeDirection, id});
+	}
+
 </script>
 
 <section class="clues" class:stacked class:is-loaded={isLoaded}>
 	<div class="clues--stacked">
-		<ClueBar {currentClue} on:nextClue={onNextClue} />
+		<ClueBar {currentClue} on:nextClue={onNextClue} on:clueBarClicked={onClueBarClicked} />
 	</div>
 
 	<div class="clues--list">

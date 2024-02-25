@@ -7,6 +7,10 @@ const config: CapacitorConfig = {
 	bundledWebRuntime: false,
 	server: {
 		androidScheme: 'https'
+	},
+	ios: {
+		contentInset: 'always',
+		backgroundColor: '#DB7093'
 	}
 };
 

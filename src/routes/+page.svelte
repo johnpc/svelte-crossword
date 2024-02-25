@@ -1,5 +1,6 @@
 <script>
 	import Puzzle from './Puzzle.svelte';
+	import { Capacitor } from '@capacitor/core';
 </script>
 
 <svelte:head>
@@ -11,13 +12,16 @@
 	<h1>
 		<span>Small Crosswords</span>
 	</h1>
+
 	<div>
+		{#if !Capacitor.isNativePlatform()}
 		<pwa-install>
 			<div style="text-align: center;">
 				<div style="margin-bottom: 15px;">works better as an app</div>
 				<button class="installButton">Install App</button>
 			</div>
 		</pwa-install>
+		{/if}
 	</div>
 	<Puzzle />
 	<p>Enjoy unlimited mini crossword puzzles!</p>

@@ -1,6 +1,15 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
+	import { Haptics, ImpactStyle } from '@capacitor/haptics';
 	const dispatch = createEventDispatcher();
+	const buttonHandler = (index) => {
+		Haptics.impact({ style: ImpactStyle.Medium });
+		dispatch('nextClue', index)
+	}
+
+	const handleClueBarClicked = (currentClue) => {
+		dispatch('clueBarClicked', currentClue)
+	}
 
 	export let currentClue = {};
 	$: clue = currentClue['clue'];
@@ -8,7 +17,7 @@
 </script>
 
 <div class="bar {custom}">
-	<button on:click={() => dispatch('nextClue', currentClue.index - 1)}>
+	<button on:click={() => buttonHandler(currentClue.index - 1)}>
 		<svg
 			width="24"
 			height="24"
@@ -23,8 +32,8 @@
 			<polyline points="15 18 9 12 15 6"></polyline>
 		</svg>
 	</button>
-	<p>{clue}</p>
-	<button on:click={() => dispatch('nextClue', currentClue.index + 1)}>
+	<p on:click={() => handleClueBarClicked(currentClue)}>{clue}</p>
+	<button on:click={() => buttonHandler(currentClue.index + 1)}>
 		<svg
 			width="24"
 			height="24"

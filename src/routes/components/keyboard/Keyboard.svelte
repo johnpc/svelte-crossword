@@ -4,6 +4,7 @@
 	import qwertyStandard from './layouts/qwerty/standard.js';
 	import qwertyCrossword from './layouts/qwerty/crossword.js';
 	import qwertyWordle from './layouts/qwerty/wordle.js';
+	import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 	import azertyStandard from './layouts/azerty/standard.js';
 	import azertyCrossword from './layouts/azerty/crossword.js';
@@ -52,6 +53,7 @@
 
 	const onKeyStart = (event, value) => {
 		event.preventDefault();
+		Haptics.impact({ style: ImpactStyle.Medium });
 		active = value;
 		if (value.includes('Page')) {
 			page = +value.substr(-1);

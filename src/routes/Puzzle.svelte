@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Haptics, ImpactStyle } from '@capacitor/haptics';
 	import Crossword from './components/crossword/Crossword.svelte';
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import type { Schema } from '../../amplify/data/resource';
@@ -48,6 +49,7 @@
 	});
 
 	const onPuzzleComplete = async () => {
+		await Haptics.vibrate();
 		const userPuzzleResponse = await client.models.UserPuzzle.create({
 			usedCheck,
 			usedClear,
@@ -106,14 +108,17 @@
 	tickTimer();
 
 	const onToolbarClear = (onClear: Function) => {
+		Haptics.impact({ style: ImpactStyle.Medium });
 		usedClear = true;
 		onClear();
 	};
 	const onToolbarReveal = (onReveal: Function) => {
+		Haptics.impact({ style: ImpactStyle.Medium });
 		usedReveal = true;
 		onReveal();
 	};
 	const onToolbarCheck = (onCheck: Function) => {
+		Haptics.impact({ style: ImpactStyle.Medium });
 		usedCheck = true;
 		onCheck();
 	};
@@ -121,6 +126,7 @@
 		goto('/history');
 	};
 	const onToolbarNextPuzzle = async () => {
+		Haptics.impact({ style: ImpactStyle.Medium });
 		console.log('Requested new puzzle!');
 		timeInSeconds = 0;
 		usedCheck = false;
@@ -134,6 +140,7 @@
 	};
 
 	const onSignOut = async () => {
+		Haptics.impact({ style: ImpactStyle.Medium });
 		resetPuzzleStoreDefaults();
 		await signOut();
 		goto('/login');
