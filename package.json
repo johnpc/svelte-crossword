@@ -49,6 +49,7 @@
 	"type": "module",
 	"dependencies": {
 		"@aws-sdk/client-s3": "^3.521.0",
+		"@capacitor/haptics": "^5.0.7",
 		"@capacitor/ios": "^5.6.0",
 		"@zerodevx/svelte-toast": "^0.9.5",
 		"aws-amplify": "^6.0.16",

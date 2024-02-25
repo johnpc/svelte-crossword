@@ -8,6 +8,7 @@
 	import { getHumanReadableDuration } from '../helpers/getHumanReadableDuration';
 	import { SvelteToast, toast } from '@zerodevx/svelte-toast';
 	import { previewClues } from './previewClues';
+	import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 	$: clues = [] as Clue[];
 	$: timeInSeconds = 0;
@@ -42,7 +43,9 @@
 		setup();
 	});
 
-	const onPuzzleComplete = async () => {};
+	const onPuzzleComplete = async () => {
+		await Haptics.vibrate();
+	};
 
 	const tickTimer = () => {
 		setTimeout(() => {
