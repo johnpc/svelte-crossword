@@ -14,6 +14,7 @@
 	import { puzzleStore, resetPuzzleStoreDefaults } from './helpers/puzzleStore';
 	import { get } from 'svelte/store';
 	import { getHumanReadableDuration } from './helpers/getHumanReadableDuration';
+	import { haptic, vibrate } from './helpers/haptics';
 
 	const client = generateClient<Schema>({
 		authMode: 'userPool'
@@ -49,11 +50,7 @@
 	});
 
 	const onPuzzleComplete = async () => {
-		try {
-			await Haptics.vibrate();
-		} catch (e) {
-			console.warn(`Unable to vibrate`, e);
-		}
+		vibrate();
 		const userPuzzleResponse = await client.models.UserPuzzle.create({
 			usedCheck,
 			usedClear,
@@ -112,17 +109,17 @@
 	tickTimer();
 
 	const onToolbarClear = (onClear: Function) => {
-		Haptics.impact({ style: ImpactStyle.Medium });
+		haptic();
 		usedClear = true;
 		onClear();
 	};
 	const onToolbarReveal = (onReveal: Function) => {
-		Haptics.impact({ style: ImpactStyle.Medium });
+		haptic();
 		usedReveal = true;
 		onReveal();
 	};
 	const onToolbarCheck = (onCheck: Function) => {
-		Haptics.impact({ style: ImpactStyle.Medium });
+		haptic();
 		usedCheck = true;
 		onCheck();
 	};
@@ -130,7 +127,7 @@
 		goto('/history');
 	};
 	const onToolbarNextPuzzle = async () => {
-		Haptics.impact({ style: ImpactStyle.Medium });
+		haptic();
 		console.log('Requested new puzzle!');
 		timeInSeconds = 0;
 		usedCheck = false;
@@ -144,7 +141,7 @@
 	};
 
 	const onSignOut = async () => {
-		Haptics.impact({ style: ImpactStyle.Medium });
+		haptic();
 		resetPuzzleStoreDefaults();
 		await signOut();
 		goto('/login');

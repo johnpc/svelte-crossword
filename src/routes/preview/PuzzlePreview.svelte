@@ -9,6 +9,7 @@
 	import { SvelteToast, toast } from '@zerodevx/svelte-toast';
 	import { previewClues } from './previewClues';
 	import { Haptics, ImpactStyle } from '@capacitor/haptics';
+	import { haptic, vibrate } from '../helpers/haptics';
 
 	$: clues = [] as Clue[];
 	$: timeInSeconds = 0;
@@ -44,11 +45,7 @@
 	});
 
 	const onPuzzleComplete = async () => {
-		try {
-			await Haptics.vibrate();
-		} catch (e) {
-			console.warn(`Unable to vibrate`, e);
-		}
+		vibrate();
 	};
 
 	const tickTimer = () => {
@@ -74,17 +71,17 @@
 	tickTimer();
 
 	const onToolbarClear = (onClear: Function) => {
-		Haptics.impact({ style: ImpactStyle.Medium });
+		haptic();
 		usedClear = true;
 		onClear();
 	};
 	const onToolbarReveal = (onReveal: Function) => {
-		Haptics.impact({ style: ImpactStyle.Medium });
+		haptic();
 		usedReveal = true;
 		onReveal();
 	};
 	const onToolbarCheck = (onCheck: Function) => {
-		Haptics.impact({ style: ImpactStyle.Medium });
+		haptic();
 		usedCheck = true;
 		onCheck();
 	};

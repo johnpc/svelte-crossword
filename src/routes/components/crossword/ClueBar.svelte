@@ -1,15 +1,16 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
 	import { Haptics, ImpactStyle } from '@capacitor/haptics';
+	import { haptic } from '../../helpers/haptics';
 	const dispatch = createEventDispatcher();
 	const buttonHandler = (index) => {
-		Haptics.impact({ style: ImpactStyle.Medium });
-		dispatch('nextClue', index)
-	}
+		haptic();
+		dispatch('nextClue', index);
+	};
 
 	const handleClueBarClicked = (currentClue) => {
-		dispatch('clueBarClicked', currentClue)
-	}
+		dispatch('clueBarClicked', currentClue);
+	};
 
 	export let currentClue = {};
 	$: clue = currentClue['clue'];

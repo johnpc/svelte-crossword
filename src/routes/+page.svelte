@@ -15,12 +15,12 @@
 
 	<div>
 		{#if !Capacitor.isNativePlatform()}
-		<pwa-install>
-			<div style="text-align: center;">
-				<div style="margin-bottom: 15px;">works better as an app</div>
-				<button class="installButton">Install App</button>
-			</div>
-		</pwa-install>
+			<pwa-install>
+				<div style="text-align: center;">
+					<div style="margin-bottom: 15px;">works better as an app</div>
+					<button class="installButton">Install App</button>
+				</div>
+			</pwa-install>
 		{/if}
 	</div>
 	<Puzzle />

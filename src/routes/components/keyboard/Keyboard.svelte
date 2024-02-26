@@ -4,14 +4,13 @@
 	import qwertyStandard from './layouts/qwerty/standard.js';
 	import qwertyCrossword from './layouts/qwerty/crossword.js';
 	import qwertyWordle from './layouts/qwerty/wordle.js';
-	import { Haptics, ImpactStyle } from '@capacitor/haptics';
-
 	import azertyStandard from './layouts/azerty/standard.js';
 	import azertyCrossword from './layouts/azerty/crossword.js';
 	import azertyWordle from './layouts/azerty/wordle.js';
 
 	import backspaceSVG from './svg/backspace.js';
 	import enterSVG from './svg/enter.js';
+	import { haptic } from '../../helpers/haptics';
 
 	// exposed props
 	export let custom;
@@ -53,7 +52,7 @@
 
 	const onKeyStart = (event, value) => {
 		event.preventDefault();
-		Haptics.impact({ style: ImpactStyle.Medium });
+		haptic();
 		active = value;
 		if (value.includes('Page')) {
 			page = +value.substr(-1);

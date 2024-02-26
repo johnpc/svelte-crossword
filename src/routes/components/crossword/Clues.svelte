@@ -37,10 +37,9 @@
 
 		const [x, y] = id.split('-');
 		const oppositeDirection = direction === 'across' ? 'down' : 'across';
-		console.log({id, cellIndexMap, oppositeDirection, x, y});
+		console.log({ id, cellIndexMap, oppositeDirection, x, y });
 		// onClueFocus({direction: oppositeDirection, id});
 	}
-
 </script>
 
 <section class="clues" class:stacked class:is-loaded={isLoaded}>
