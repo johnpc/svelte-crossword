@@ -38,6 +38,7 @@
 				const userAttributes = await fetchUserAttributes();
 				console.log({ currentUser, userAttributes });
 			} catch (e) {
+				console.log(`Not logged in. goto /preview`, e);
 				goto('/preview');
 			}
 			profile = await getOrCreateProfile(client);

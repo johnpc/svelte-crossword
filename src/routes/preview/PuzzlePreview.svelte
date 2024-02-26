@@ -35,7 +35,7 @@
 					goto('/');
 				}
 			} catch (e) {
-				console.log('Not logged in. Rendering preview.');
+				console.log('Not logged in. Rendering preview.', e);
 			}
 			clues = previewClues;
 			console.log({ onMount: true, clues });
