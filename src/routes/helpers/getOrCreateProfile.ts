@@ -56,7 +56,11 @@ export const getOrCreateProfile = async (
 		id: currentUser.userId,
 		userId: currentUser.userId,
 		email: currentUser.signInDetails?.loginId || userAttributes.email || currentUser.username,
-		name: currentUser.signInDetails?.loginId || userAttributes.name || currentUser.username
+		name:
+			currentUser.signInDetails?.loginId ||
+			userAttributes.name ||
+			userAttributes.email ||
+			currentUser.username
 	});
 	console.log({ createProfileResponse });
 	const hydratedProfile = await client.models.Profile.get(

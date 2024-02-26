@@ -143,10 +143,15 @@
 		tickTimer();
 	};
 
+	const sleep = (milliseconds: number) => {
+		return new Promise((resolve) => setTimeout(resolve, milliseconds));
+	};
+
 	const onSignOut = async () => {
 		haptic();
-		resetPuzzleStoreDefaults();
 		await signOut();
+		clues = [];
+		await sleep(500);
 		goto('/login');
 	};
 </script>
