@@ -44,7 +44,11 @@
 	});
 
 	const onPuzzleComplete = async () => {
-		await Haptics.vibrate();
+		try {
+			await Haptics.vibrate();
+		} catch (e) {
+			console.warn(`Unable to vibrate`, e);
+		}
 	};
 
 	const tickTimer = () => {
