@@ -5,7 +5,7 @@
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
-		"ios": "npm run build && cap sync ios && cap open ios",
+		"ios": "CAPACITOR_BUILD=1 npm run build && cap sync ios && cap open ios",
 		"seed": "vite-node amplify/data/helpers/seed.ts",
 		"sandbox": "amplify sandbox --config-out-dir ./src",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
