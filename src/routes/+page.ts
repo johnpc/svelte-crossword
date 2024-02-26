@@ -24,8 +24,7 @@ const storeShouldBeUpdated = async () => {
 		return;
 	}
 
-	const storeIsSet =
-		!!store.lastUpdated[currentUser.userId] && store.allPuzzles[currentUser.userId].length > 0;
+	const storeIsSet = !!store.lastUpdated[currentUser.userId] && store.allPuzzles?.length > 0;
 	const moreThanADaySinceUpdate = store.lastUpdated[currentUser.userId] < Date.now() - 3600 * 1000;
 	return storeIsSet && moreThanADaySinceUpdate;
 };
@@ -46,7 +45,7 @@ const maybeUpdateStore = async () => {
 			...store,
 			profile: { [profile.id]: profile },
 			userPuzzles: { [profile.id]: userPuzzles },
-			allPuzzles: { [profile.id]: puzzles },
+			allPuzzles: puzzles,
 			lastUpdated: { [profile.id]: Date.now() }
 		});
 	} catch (e) {

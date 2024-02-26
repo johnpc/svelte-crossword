@@ -28,9 +28,9 @@ export const getAllPuzzles = async (
 ): Promise<HydratedPuzzle[]> => {
 	console.log({ time: Date.now(), invoking: 'getAllPuzzles' });
 	const store = get(puzzleStore);
-	if (!bypassCache && store.allPuzzles[profile.id]) {
-		console.log({ cachedAllPuzzles: store.allPuzzles[profile.id] });
-		return store.allPuzzles[profile.id];
+	if (!bypassCache && store.allPuzzles?.length) {
+		console.log({ cachedAllPuzzles: store.allPuzzles });
+		return store.allPuzzles;
 	}
 
 	let nextToken;
@@ -55,7 +55,7 @@ export const getAllPuzzles = async (
 	try {
 		puzzleStore.set({
 			...store,
-			allPuzzles: { [profile.id]: hydratedPuzzles }
+			allPuzzles: hydratedPuzzles
 		});
 	} catch (e) {
 		console.error('Failed to write to local storage', e);

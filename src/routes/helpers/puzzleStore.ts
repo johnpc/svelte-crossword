@@ -1,7 +1,7 @@
 import { persisted } from 'svelte-persisted-store';
 import type { HydratedProfile, HydratedPuzzle, HydratedUserPuzzle } from './types/types';
 
-const defaultAllPuzzles = {} as { [profileId: string]: HydratedPuzzle[] };
+const defaultAllPuzzles = [] as HydratedPuzzle[];
 const defaultProfile = {} as { [profileId: string]: HydratedProfile };
 const defaultUserPuzzles = {} as { [profileId: string]: HydratedUserPuzzle[] };
 const defaultLastUpdated = {} as { [profileId: string]: number };
