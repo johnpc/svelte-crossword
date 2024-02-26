@@ -6,9 +6,12 @@
 		confirmSignUp,
 		resetPassword,
 		confirmResetPassword,
+		signInWithRedirect,
 		type ResetPasswordOutput
 	} from 'aws-amplify/auth';
+
 	import { Amplify } from 'aws-amplify';
+
 	import config from '../../amplifyconfiguration.json';
 	Amplify.configure(config);
 
@@ -32,6 +35,19 @@
 				confirmForgotPassword = false;
 				state = 'signIn';
 				break;
+		}
+	}
+	async function loginWithApple() {
+		try {
+			const thing = Amplify.getConfig().Auth?.Cognito;
+			console.log('redirecting...', { thing });
+			await signInWithRedirect({
+				provider: 'Apple'
+			});
+			console.log({ appleLogin: true });
+			goto('/');
+		} catch (error) {
+			console.log('error signing up:', error);
 		}
 	}
 
@@ -116,11 +132,11 @@
 	<form id="registrationForm">
 		<label for="email">Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
 		<input required type="email" id="email" bind:value={username} />
-		<hr />
+		<br /><br />
 		<label for="password">Password&nbsp;&nbsp;</label>
 		<input required type="password" id="password" bind:value={password} />
-		<hr />
 		{#if !confirm}
+			<hr />
 			<button type="submit" on:click={() => tryOrAlert(registrationHandler, { username, password })}
 				>Create account</button
 			>
@@ -146,10 +162,17 @@
 
 {#if state === 'signIn'}
 	<h1>Log In</h1>
+	<div style="text-align: center">
+		<button on:click={() => loginWithApple()} class="apple-sign-in">  Sign in with Apple </button>
+	</div>
+	<hr style="margin-inline: 0px;" />
+	<p style="text-align: center;">or</p>
+	<hr style="margin-inline: 0px;" />
 	<form id="loginForm">
 		<label for="email">Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
 		<input required type="email" id="email" bind:value={username} />
-		<hr />
+		<br />
+		<br />
 		<label for="password">Password&nbsp;&nbsp;</label>
 		<input required type="password" id="password" bind:value={password} />
 		<a href="#" on:click={() => showForgotPasswordForm()}>forgot?</a>
@@ -202,3 +225,19 @@
 			on:click={showRegistrationForm}>Create an Account</a
 		> instead
 	</p>{/if}
+
+<style>
+	.apple-sign-in {
+		appearance: none;
+		-webkit-appearance: none;
+		padding: 5px 10px;
+		margin: 10px;
+		border: none;
+		color: #fff;
+		background: #000;
+		font-size: 15px;
+		max-width: 50%;
+		cursor: pointer;
+		border-radius: 7px;
+	}
+</style>

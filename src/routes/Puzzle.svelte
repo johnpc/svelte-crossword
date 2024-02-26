@@ -5,7 +5,7 @@
 	import type { Schema } from '../../amplify/data/resource';
 	import { generateClient } from 'aws-amplify/data';
 	import { goto } from '$app/navigation';
-	import { getCurrentUser } from 'aws-amplify/auth';
+	import { fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
 	import { onMount } from 'svelte';
 	import { signOut } from 'aws-amplify/auth';
 	import { getOrCreateProfile } from './helpers/getOrCreateProfile';
@@ -34,7 +34,9 @@
 	onMount(() => {
 		const setup = async () => {
 			try {
-				await getCurrentUser();
+				const currentUser = await getCurrentUser();
+				const userAttributes = await fetchUserAttributes();
+				console.log({ currentUser, userAttributes });
 			} catch (e) {
 				goto('/preview');
 			}
