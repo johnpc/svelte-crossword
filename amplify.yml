@@ -14,6 +14,8 @@ frontend:
     build:
       commands:
         - npm run build
+        - cd build/compute/default/
+        - npm i --production
   artifacts:
     baseDirectory: build
     files:
