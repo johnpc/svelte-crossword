@@ -143,6 +143,18 @@
 
 {#if state === 'signUp'}
 	<h1>Register</h1>
+	<div style="text-align: center">
+		<button on:click={() => loginWithApple()} class="apple-sign-in">  Sign up with Apple </button>
+		<br />
+		<button on:click={() => loginWithGoogle()} type="button" class="login-with-google-btn">
+			Sign Up With Google
+		</button>
+	</div>
+	<div id="or-divider">
+		<hr style="margin-inline: 0px;" />
+		<p style="text-align: center;">or</p>
+		<hr style="margin-inline: 0px;" />
+	</div>
 	<form id="registrationForm">
 		<label for="email">Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
 		<input required type="email" id="email" bind:value={username} />
@@ -166,7 +178,7 @@
 			>
 		{/if}
 	</form>
-	<p>
+	<p style="text-align: center;">
 		Already registered? <a
 			href="#registrationForm"
 			aria-label="showLoginForm"
@@ -183,9 +195,11 @@
 			Sign In With Google
 		</button>
 	</div>
-	<hr style="margin-inline: 0px;" />
-	<p style="text-align: center;">or</p>
-	<hr style="margin-inline: 0px;" />
+	<div id="or-divider">
+		<hr style="margin-inline: 0px;" />
+		<p style="text-align: center;">or</p>
+		<hr style="margin-inline: 0px;" />
+	</div>
 	<form id="loginForm">
 		<label for="email">Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
 		<input required type="email" id="email" bind:value={username} />
@@ -199,7 +213,7 @@
 			>Log in</button
 		>
 	</form>
-	<p>
+	<p style="text-align: center;">
 		Not registered? <a
 			href="#loginForm"
 			aria-label="showRegistrationForm"
@@ -236,7 +250,7 @@
 			>
 		{/if}
 	</form>
-	<p>
+	<p style="text-align: center;">
 		Not registered? <a
 			href="#loginForm"
 			aria-label="showRegistrationForm"
@@ -245,6 +259,19 @@
 	</p>{/if}
 
 <style>
+	form,
+	#or-divider {
+		padding-left: 25%;
+		padding-right: 25%;
+	}
+	@media screen and (max-width: 600px) {
+		form,
+		#or-divider {
+			padding-left: 0%;
+			padding-right: 0%;
+		}
+	}
+
 	.apple-sign-in {
 		appearance: none;
 		-webkit-appearance: none;
