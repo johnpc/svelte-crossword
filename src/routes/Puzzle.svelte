@@ -188,7 +188,7 @@
 			>
 			{#if isPuzzleComplete}
 				<button class="next-puzzle-button" on:click={() => onToolbarNextPuzzle()}
-					>Next Puzzle</button
+					>Continue</button
 				>
 			{/if}
 		</div>
