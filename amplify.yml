@@ -3,8 +3,9 @@ backend:
   phases:
     build:
       commands:
+        - nvm use 18
         - npm ci
-        - npx amplify generate config --out-dir src --branch $AWS_BRANCH --app-id $AWS_APP_ID
+        - npx amplify generate config --out-dir src --branch $AWS_BRANCH --app-id $AWS_APP_ID || echo "{}" > amplifyconfiguration.json
         - npx amplify pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID --config-out-dir src
 frontend:
   phases:
