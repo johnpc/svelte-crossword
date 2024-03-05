@@ -30,7 +30,7 @@
 
 	onMount(() => {
 		const store = get(puzzleStore);
-		console.log({c: store.completedPreview});
+		console.log({ c: store.completedPreview });
 		isPuzzleComplete = store.completedPreview;
 		const setup = async () => {
 			try {

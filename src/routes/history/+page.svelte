@@ -14,11 +14,14 @@
 	import { getOrCreateProfile } from '../helpers/getOrCreateProfile';
 	import { resetPuzzleStoreDefaults } from '../helpers/puzzleStore';
 	import type { HydratedUserPuzzle } from '../helpers/types/types';
+	import { getStreakInfo, type StreakInfo } from '../helpers/getStreakInfo';
+
 	Amplify.configure(config);
 	const client = generateClient<Schema>({
 		authMode: 'userPool'
 	});
 	$: completedPuzzles = [] as HydratedUserPuzzle[];
+	$: streakInfo = {} as StreakInfo;
 	$: currentUser = {} as AuthUser;
 	$: isLoading = true;
 	onMount(() => {
@@ -31,6 +34,7 @@
 			console.log({ currentUser });
 			const profile = await getOrCreateProfile(client);
 			const userPuzzleResponse = await getAllUserPuzzles(profile);
+			streakInfo = await getStreakInfo(profile);
 			console.log({ userPuzzleResponse });
 			completedPuzzles = userPuzzleResponse;
 			isLoading = false;
@@ -106,6 +110,12 @@
 				You've used the "reveal" feature <strong
 					>{completedPuzzles.filter(({ usedReveal }) => usedReveal).length} times</strong
 				>.
+			</li>
+			<li>
+				Current streak <strong>{streakInfo.currentStreak} days</strong>.
+			</li>
+			<li>
+				Longest streak <strong>{streakInfo.longestStreak} days</strong>.
 			</li>
 		</ul>
 	</div>
