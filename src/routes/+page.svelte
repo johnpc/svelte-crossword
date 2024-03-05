@@ -24,7 +24,7 @@
 					</div>
 				</pwa-install>
 				<p style="text-align: center;">
-					<a href="https://apps.apple.com/us/app/small-crosswords/id6475174988"> Install for iOS</a>
+					<a href="https://apps.apple.com/us/app/small-crosswords/id6475174988"> Install from App Store</a>
 				</p>
 			</div>
 		{/if}
