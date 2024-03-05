@@ -187,9 +187,7 @@
 				>Check</button
 			>
 			{#if isPuzzleComplete}
-				<button class="next-puzzle-button" on:click={() => onToolbarNextPuzzle()}
-					>Continue</button
-				>
+				<button class="next-puzzle-button" on:click={() => onToolbarNextPuzzle()}>Continue</button>
 			{/if}
 		</div>
 	</Crossword>

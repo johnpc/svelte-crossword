@@ -15,12 +15,18 @@
 
 	<div>
 		{#if !Capacitor.isNativePlatform()}
-			<pwa-install>
-				<div style="text-align: center;">
-					<div style="margin-bottom: 15px;">works better as an app</div>
-					<button class="installButton">Install App</button>
-				</div>
-			</pwa-install>
+			<div>
+				<pwa-install>
+					<div style="text-align: center;">
+						<div style="margin-bottom: 15px;">works better as an app</div>
+						<button class="installButton">Install PWA</button>
+						<div>or</div>
+					</div>
+				</pwa-install>
+				<p style="text-align: center;">
+					<a href="https://apps.apple.com/us/app/small-crosswords/id6475174988"> Install for iOS</a>
+				</p>
+			</div>
 		{/if}
 	</div>
 	<Puzzle />
