@@ -1,8 +1,11 @@
 <script>
 	import Header from './Header.svelte';
+	import { getAllPuzzles } from './helpers/getAllPuzzles';
 	import { resetPuzzleStoreDefaults } from './helpers/puzzleStore';
 	import './styles.css';
 	import { SvelteToast, toast } from '@zerodevx/svelte-toast';
+	import { onMount } from 'svelte';
+
 	const toastOptions = {
 		theme: {
 			'--toastBackground': 'palevioletred',
@@ -10,6 +13,11 @@
 			'--toastBarBackground': 'mediumVioletRed'
 		}
 	};
+
+	onMount(() => {
+		// Warm puzzle cache
+		getAllPuzzles();
+	});
 
 	const clearCache = () => {
 		resetPuzzleStoreDefaults();

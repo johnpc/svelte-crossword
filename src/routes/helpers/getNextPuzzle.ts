@@ -15,7 +15,7 @@ const getCompletedPuzzleIds = async (profile: HydratedProfile): Promise<string[]
 export const getNextPuzzle = async (profile: HydratedProfile): Promise<CrosswordClues> => {
 	console.log({ time: Date.now(), invoking: 'getNextPuzzle' });
 	const allCompletedPuzzleIds = await getCompletedPuzzleIds(profile);
-	const allPuzzles = await getAllPuzzles(profile);
+	const allPuzzles = await getAllPuzzles();
 	console.log({ allCompletedPuzzleIds, allStoredPuzzles: allPuzzles });
 	const incompletePuzzles = allPuzzles.filter((puzzle) => {
 		return !allCompletedPuzzleIds.includes(puzzle.id);

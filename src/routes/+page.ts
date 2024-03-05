@@ -39,7 +39,7 @@ const maybeUpdateStore = async () => {
 
 	const profile = await getOrCreateProfile(client, true);
 	const userPuzzles = await getAllUserPuzzles(profile, true);
-	const puzzles = await getAllPuzzles(profile, true);
+	const puzzles = await getAllPuzzles(true);
 	try {
 		puzzleStore.set({
 			...store,

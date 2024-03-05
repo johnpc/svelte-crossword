@@ -7,6 +7,7 @@ const defaultUserPuzzles = {} as { [profileId: string]: HydratedUserPuzzle[] };
 const defaultLastUpdated = {} as { [profileId: string]: number };
 
 export const puzzleStore = persisted('puzzles', {
+	completedPreview: false,
 	allPuzzles: defaultAllPuzzles,
 	profile: defaultProfile,
 	userPuzzles: defaultUserPuzzles,
@@ -16,6 +17,7 @@ export const puzzleStore = persisted('puzzles', {
 export const resetPuzzleStoreDefaults = () => {
 	try {
 		puzzleStore.set({
+			completedPreview: false,
 			allPuzzles: defaultAllPuzzles,
 			profile: defaultProfile,
 			userPuzzles: defaultUserPuzzles,

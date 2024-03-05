@@ -4,7 +4,7 @@ import { Amplify } from 'aws-amplify';
 import config from '../../amplifyconfiguration.json';
 import { puzzleStore } from './puzzleStore';
 import { get } from 'svelte/store';
-import type { Clue, HydratedProfile, HydratedPuzzle } from './types/types';
+import type { Clue, HydratedPuzzle } from './types/types';
 
 Amplify.configure(config);
 const client = generateClient<Schema>({
@@ -22,10 +22,7 @@ const getCluesFromPuzzle = (puzzle: Schema['Puzzle']) => {
 	return [...across, ...down];
 };
 
-export const getAllPuzzles = async (
-	profile: HydratedProfile,
-	bypassCache = false
-): Promise<HydratedPuzzle[]> => {
+export const getAllPuzzles = async (bypassCache = false): Promise<HydratedPuzzle[]> => {
 	console.log({ time: Date.now(), invoking: 'getAllPuzzles' });
 	const store = get(puzzleStore);
 	if (!bypassCache && store.allPuzzles?.length) {

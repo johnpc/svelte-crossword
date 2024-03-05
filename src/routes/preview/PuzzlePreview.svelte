@@ -8,8 +8,9 @@
 	import { getHumanReadableDuration } from '../helpers/getHumanReadableDuration';
 	import { SvelteToast, toast } from '@zerodevx/svelte-toast';
 	import { previewClues } from './previewClues';
-	import { Haptics, ImpactStyle } from '@capacitor/haptics';
 	import { haptic, vibrate } from '../helpers/haptics';
+	import { puzzleStore } from '../helpers/puzzleStore';
+	import { get } from 'svelte/store';
 
 	$: clues = [] as Clue[];
 	$: timeInSeconds = 0;
@@ -28,6 +29,9 @@
 	};
 
 	onMount(() => {
+		const store = get(puzzleStore);
+		console.log({c: store.completedPreview});
+		isPuzzleComplete = store.completedPreview;
 		const setup = async () => {
 			try {
 				const currentUser = await getCurrentUser();
@@ -46,11 +50,18 @@
 
 	const onPuzzleComplete = async () => {
 		vibrate();
+		const store = get(puzzleStore);
+		console.log('settign store');
+		puzzleStore.set({
+			...store,
+			completedPreview: true
+		});
+		isPuzzleComplete = true;
 	};
 
 	const tickTimer = () => {
 		setTimeout(() => {
-			if (ref) {
+			if (ref && !isPuzzleComplete) {
 				const cells = ref?.$$?.ctx?.find(
 					(element: any) => Array.isArray(element) && element?.[0]?.cells
 				);
@@ -100,13 +111,13 @@
 {:else}
 	<h3>👋 You're not signed in!</h3>
 	<button id="signInButton" class="active" on:click={() => onSignIn()}>sign in/up </button>
-
 	<Crossword
 		bind:this={ref}
 		data={clues}
 		breakpoint={10000}
 		theme="pink"
 		showKeyboard={true}
+		revealed={isPuzzleComplete}
 		{keyboardStyle}
 	>
 		<div class="toolbar" slot="toolbar" let:onClear let:onReveal let:onCheck>
@@ -121,6 +132,7 @@
 				>Check</button
 			>
 			{#if isPuzzleComplete}
+				{onReveal() ? '' : ''}
 				<button class="next-puzzle-button" on:click={() => showToast()}>Continue</button>
 			{/if}
 		</div>
