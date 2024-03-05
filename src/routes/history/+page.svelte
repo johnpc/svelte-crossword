@@ -15,7 +15,10 @@
 	import { resetPuzzleStoreDefaults } from '../helpers/puzzleStore';
 	import type { HydratedUserPuzzle } from '../helpers/types/types';
 	import { getStreakInfo, type StreakInfo } from '../helpers/getStreakInfo';
-
+	import Calendar from '@event-calendar/core';
+	import DayGrid from '@event-calendar/day-grid';
+	import '@event-calendar/core/index.css';
+	const plugins = [DayGrid];
 	Amplify.configure(config);
 	const client = generateClient<Schema>({
 		authMode: 'userPool'
@@ -24,6 +27,22 @@
 	$: streakInfo = {} as StreakInfo;
 	$: currentUser = {} as AuthUser;
 	$: isLoading = true;
+	const getOptions = (streakInfo?: StreakInfo) => ({
+		view: 'dayGridMonth',
+		eventClassNames: ['event-override'],
+		events:
+			streakInfo?.allActivity.map((activityItem) => ({
+				title: `${activityItem.userPuzzles.length} ✓`,
+				editable: false,
+				startEditable: false,
+				durationEditable: false,
+				backgroundColor: 'palevioletred',
+				textColor: 'white',
+				start: activityItem.date,
+				allDay: true,
+				end: new Date(activityItem.date.getTime() + 1)
+			})) ?? []
+	});
 	onMount(() => {
 		const setup = async () => {
 			try {
@@ -67,6 +86,8 @@
 {:else if completedPuzzles.length === 0}
 	<p>You have not completed any puzzles. <a href="#" on:click={() => goto('/')}>Go Back</a></p>
 {:else}
+	<Calendar {plugins} options={getOptions(streakInfo)} />
+
 	{@const averagePuzzleTime = Math.floor(
 		completedPuzzles
 			.map(({ timeInSeconds }) => timeInSeconds)
