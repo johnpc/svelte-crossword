@@ -11,6 +11,7 @@
 	} from 'aws-amplify/auth';
 
 	import { Amplify } from 'aws-amplify';
+	import { Capacitor } from '@capacitor/core';
 
 	import config from '../../amplifyconfiguration.json';
 	Amplify.configure(config);
@@ -143,18 +144,22 @@
 
 {#if state === 'signUp'}
 	<h1>Register</h1>
-	<div style="text-align: center">
-		<button on:click={() => loginWithApple()} class="apple-sign-in">  Sign up with Apple </button>
-		<br />
-		<button on:click={() => loginWithGoogle()} type="button" class="login-with-google-btn">
-			Sign Up With Google
-		</button>
-	</div>
-	<div id="or-divider">
-		<hr style="margin-inline: 0px;" />
-		<p style="text-align: center;">or</p>
-		<hr style="margin-inline: 0px;" />
-	</div>
+	{#if !Capacitor.isNativePlatform()}
+		<div style="text-align: center">
+			<button on:click={() => loginWithApple()} class="apple-sign-in">
+				 Sign up with Apple
+			</button>
+			<br />
+			<button on:click={() => loginWithGoogle()} type="button" class="login-with-google-btn">
+				Sign Up With Google
+			</button>
+		</div>
+		<div id="or-divider">
+			<hr style="margin-inline: 0px;" />
+			<p style="text-align: center;">or</p>
+			<hr style="margin-inline: 0px;" />
+		</div>
+	{/if}
 	<form id="registrationForm">
 		<label for="email">Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
 		<input required type="email" id="email" bind:value={username} />
@@ -189,18 +194,22 @@
 
 {#if state === 'signIn'}
 	<h1>Log In</h1>
-	<div style="text-align: center">
-		<button on:click={() => loginWithApple()} class="apple-sign-in">  Sign in with Apple </button>
-		<br />
-		<button on:click={() => loginWithGoogle()} type="button" class="login-with-google-btn">
-			Sign In With Google
-		</button>
-	</div>
-	<div id="or-divider">
-		<hr style="margin-inline: 0px;" />
-		<p style="text-align: center;">or</p>
-		<hr style="margin-inline: 0px;" />
-	</div>
+	{#if !Capacitor.isNativePlatform()}
+		<div style="text-align: center">
+			<button on:click={() => loginWithApple()} class="apple-sign-in">
+				 Sign in with Apple
+			</button>
+			<br />
+			<button on:click={() => loginWithGoogle()} type="button" class="login-with-google-btn">
+				Sign In With Google
+			</button>
+		</div>
+		<div id="or-divider">
+			<hr style="margin-inline: 0px;" />
+			<p style="text-align: center;">or</p>
+			<hr style="margin-inline: 0px;" />
+		</div>
+	{/if}
 	<form id="loginForm">
 		<label for="email">Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
 		<input required type="email" id="email" bind:value={username} />
