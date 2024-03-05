@@ -168,6 +168,7 @@
 			>
 		{/if}
 		{#if confirm}
+			<hr />
 			<label for="confirmation">Confirmation Code</label>
 			<input required type="confirmation" id="confirmation" bind:value={confirmationCode} />
 			<hr />
