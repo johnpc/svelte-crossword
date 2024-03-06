@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Small Crosswords</string>
+    <string name="title_activity_main">Small Crosswords</string>
+    <string name="package_name">com.johncorser.crosswords</string>
+    <string name="custom_url_scheme">com.johncorser.crosswords</string>
+</resources>
