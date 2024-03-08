@@ -9,11 +9,20 @@
 		signInWithRedirect,
 		type ResetPasswordOutput
 	} from 'aws-amplify/auth';
-
 	import { Amplify } from 'aws-amplify';
 	import { Capacitor } from '@capacitor/core';
-
 	import config from '../../amplifyconfiguration.json';
+	import { SignInWithApple, type SignInWithAppleOptions } from '@capacitor-community/apple-sign-in/';
+
+	const siwaOptions: SignInWithAppleOptions = {
+		clientId: 'com.johncorser.smallcrosswordslogin',
+		redirectURI: 'https://smallcrosswordslogin.auth.us-west-2.amazoncognito.com/',
+		scopes: 'email name',
+		// state: '12345',
+		nonce: 'nonce'
+	};
+	// const signInResult = await SignInWithApple.authorize(siwaOptions);
+
 	Amplify.configure(config);
 
 	$: state = 'signIn' as 'signIn' | 'signUp' | 'forgotPassword';
@@ -40,13 +49,19 @@
 	}
 	async function loginWithApple() {
 		try {
-			const thing = Amplify.getConfig().Auth?.Cognito;
-			console.log('redirecting...', { thing });
-			await signInWithRedirect({
-				provider: 'Apple'
-			});
+			if (Capacitor.getPlatform() === 'ios') {
+				console.log('SIWA')
+				const signInResult = await SignInWithApple.authorize(siwaOptions);
+				console.log({signInResult});
+				// TODO: use `signInResult.authorizationCode` and `signInResult.identityToken` to authenticate via Amplify/Cognito.
+				throw new Error('Sign In With Apple is not supported on this platform yet.');
+			} else {
+				await signInWithRedirect({
+					provider: 'Apple'
+				});
+			}
 			console.log({ appleLogin: true });
-			goto('/');
+			// goto('/');
 		} catch (error) {
 			console.log('error signing up:', error);
 		}
@@ -144,22 +159,22 @@
 
 {#if state === 'signUp'}
 	<h1>Register</h1>
-	{#if !Capacitor.isNativePlatform()}
-		<div style="text-align: center">
-			<button on:click={() => loginWithApple()} class="apple-sign-in">
-				 Sign up with Apple
-			</button>
-			<br />
+	<div style="text-align: center">
+		{#if Capacitor.getPlatform() !== "android"}
+		<button on:click={() => loginWithApple()} class="apple-sign-in">  Sign up with Apple </button>
+		{/if}
+		<br />
+		{#if !Capacitor.isNativePlatform()}
 			<button on:click={() => loginWithGoogle()} type="button" class="login-with-google-btn">
 				Sign Up With Google
 			</button>
-		</div>
-		<div id="or-divider">
-			<hr style="margin-inline: 0px;" />
-			<p style="text-align: center;">or</p>
-			<hr style="margin-inline: 0px;" />
-		</div>
-	{/if}
+		{/if}
+	</div>
+	<div id="or-divider">
+		<hr style="margin-inline: 0px;" />
+		<p style="text-align: center;">or</p>
+		<hr style="margin-inline: 0px;" />
+	</div>
 	<form id="registrationForm">
 		<label for="email">Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
 		<input required type="email" id="email" bind:value={username} />
