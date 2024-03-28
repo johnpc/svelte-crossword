@@ -12,25 +12,22 @@
 	<h1>
 		<span>Small Crosswords</span>
 	</h1>
-	<Puzzle />
-	<p>Enjoy unlimited mini crossword puzzles!</p>
 	{#if !Capacitor.isNativePlatform()}
 		<div>
-			<hr />
-			<pwa-install>
-				<div style="text-align: center;">
-					<div style="margin-bottom: 15px;">works better as an app</div>
-					<button class="installButton">Install PWA</button>
-					<div>or</div>
-				</div>
-			</pwa-install>
 			<p style="text-align: center;">
 				<a href="https://apps.apple.com/us/app/small-crosswords/id6475174988"
 					> Install from App Store</a
 				>
 			</p>
+			<p style="text-align: center;">
+				<a href="https://play.google.com/store/apps/details?id=com.johncorser.crosswords"
+					>🤖 Install from Google Play</a
+				>
+			</p>
 		</div>
 	{/if}
+	<Puzzle />
+	<p>Enjoy unlimited mini crossword puzzles!</p>
 </section>
 
 <style>
