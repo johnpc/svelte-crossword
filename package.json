@@ -10,6 +10,7 @@
 		"android": "aws s3 cp s3://jpcbucket.com/smallcrosswords/smallcrosswords.keystore . && npm run build-android",
 		"seed": "vite-node amplify/data/helpers/seed.ts",
 		"sandbox": "amplify sandbox --config-out-dir ./src",
+		"prod-config": "amplify generate config --app-id d34i7evdsl4uqo --branch main --out-dir src --profile personal",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",

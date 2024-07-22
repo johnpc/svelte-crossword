@@ -41,7 +41,7 @@ const createDynamoRecord = async (buffer: Buffer, puzKey: string) => {
 	if (!isValid) {
 		return;
 	}
-	console.log({ isValid });
+	console.log({ isValid, puzKey });
 
 	const createdPuzzle = await client.models.Puzzle.create(
 		{

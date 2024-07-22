@@ -13,7 +13,7 @@ const dateRange = (startDate: string, endDate: string, steps = 1): Date[] => {
 	return dateArray;
 };
 
-const seedDates = dateRange('2021-01-01', '2024-02-24', 30);
+const seedDates = dateRange('2024-02-24', '2024-06-22', 30);
 // const seedDates = dateRange('2021-01-01', '2021-01-01');
 
 const main = async () => {

@@ -51,14 +51,16 @@ export const getAllUserPuzzles = async (
 				}
 			},
 			selectionSet,
-			limit: 1000,
+			limit: 10000,
 			nextToken
 		})) as {
 			nextToken: string | undefined;
 			data: HydratedUserPuzzle[];
 		};
 		nextToken = completedPuzzlesResponse.nextToken;
-		const rawUserPuzzles = completedPuzzlesResponse.data;
+		const rawUserPuzzles = completedPuzzlesResponse.data.length
+			? completedPuzzlesResponse.data
+			: [];
 		for (const rawUserPuzzle of rawUserPuzzles) {
 			if (completedPuzzleIds.includes(rawUserPuzzle.userPuzzlePuzzleId!)) {
 				continue;
