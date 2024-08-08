@@ -7,7 +7,7 @@
 	import { getCurrentUser } from 'aws-amplify/auth';
 	import type { AuthUser } from 'aws-amplify/auth';
 	import { goto } from '$app/navigation';
-	import config from '../../../amplifyconfiguration.json';
+	import config from '../../../amplify_outputs.json';
 	import { page } from '$app/stores';
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import { getHumanReadableDuration } from '../../helpers/getHumanReadableDuration';

@@ -1,7 +1,7 @@
 import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/data';
 import { Schema } from '../amplify/data/resource';
-import config from '../amplifyconfiguration.json';
+import config from '../amplify_outputs.json';
 import { getAllUserPuzzles } from '../src/routes/helpers/getAllUserPuzzles';
 import { getHumanReadableDuration } from '../src/routes/helpers/getHumanReadableDuration';
 import { getStreakInfo } from '../src/routes/helpers/getStreakInfo';

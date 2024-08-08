@@ -4,14 +4,11 @@ backend:
     build:
       commands:
         - nvm use 18
-        - npm ci
-        - npx amplify generate config --out-dir src --branch $AWS_BRANCH --app-id $AWS_APP_ID || echo "{}" > amplifyconfiguration.json
-        - npx amplify pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID --config-out-dir src
+        - npm ci --cache .npm --prefer-offline
+        - npx ampx generate outputs --out-dir src --branch $AWS_BRANCH --app-id $AWS_APP_ID || echo "{}" > amplify_outputs.json
+        - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID --outputs-out-dir src
 frontend:
   phases:
-    preBuild:
-      commands:
-        - npm ci
     build:
       commands:
         - npm run build
@@ -23,4 +20,4 @@ frontend:
       - '**/*'
   cache:
     paths:
-      - node_modules/**/*
+      - .npm/**/*

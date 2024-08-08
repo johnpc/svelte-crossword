@@ -8,7 +8,7 @@
 	import type { AuthUser } from 'aws-amplify/auth';
 	import { goto } from '$app/navigation';
 	import { signOut, deleteUser } from 'aws-amplify/auth';
-	import config from '../../amplifyconfiguration.json';
+	import config from '../../amplify_outputs.json';
 	import { getHumanReadableDuration } from '../helpers/getHumanReadableDuration';
 	import { getAllUserPuzzles } from '../helpers/getAllUserPuzzles';
 	import { getOrCreateProfile } from '../helpers/getOrCreateProfile';

@@ -3,7 +3,7 @@ import { Schema } from './resource';
 import { puzToJson } from './helpers/puz-to-json';
 import { Amplify } from 'aws-amplify';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import config from '../../src/amplifyconfiguration.json';
+import config from '../../src/amplify_outputs.json';
 // const config = {};
 import dotenv from 'dotenv';
 import validateClues from '../../src/routes/components/crossword/helpers/validateClues';
@@ -55,7 +55,15 @@ const createDynamoRecord = async (buffer: Buffer, puzKey: string) => {
 	);
 
 	if (createdPuzzle.errors) {
-		console.log({ msg: 'error creating puzzle', error: createdPuzzle.errors });
+		console.log({
+			msg: 'error creating puzzle',
+			error: JSON.stringify(createdPuzzle.errors, null, 2),
+			input: {
+				id: puzKey,
+				puzJson: JSON.stringify(json),
+				puzKey
+			}
+		});
 	}
 };
 

@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import type { Schema } from '../../../amplify/data/resource';
 	import { Amplify } from 'aws-amplify';
-	import config from '../../amplifyconfiguration.json';
+	import config from '../../amplify_outputs.json';
 	import { getAllUserPuzzles } from '../helpers/getAllUserPuzzles';
 	import type { HydratedUserPuzzle } from '../helpers/types/types';
 	import { getCurrentUser } from 'aws-amplify/auth';

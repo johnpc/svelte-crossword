@@ -12,41 +12,44 @@ const schema = a.schema({
 			userId: a.string().required(),
 			name: a.string().required(),
 			email: a.string().required(),
-			completedPuzzles: a.hasMany('UserPuzzle')
+			completedPuzzles: a.hasMany('UserPuzzle', 'profileCompletedPuzzlesId')
 		})
-		.authorization([
-			a.allow.owner(),
-			a.allow.custom(),
-			a.allow.private().to(['read']),
-			a.allow.private('iam').to(['read']),
-			a.allow.public('iam').to(['read'])
+		.authorization((allow) => [
+			allow.owner(),
+			allow.custom(),
+			allow.authenticated('identityPool').to(['read']),
+			allow.authenticated().to(['read']),
+			allow.guest().to(['read'])
 		]),
 	UserPuzzle: a
 		.model({
-			profile: a.belongsTo('Profile'),
-			puzzle: a.hasOne('Puzzle'),
+			profile: a.belongsTo('Profile', 'profileCompletedPuzzlesId'),
+			profileCompletedPuzzlesId: a.string().required(),
+			puzzle: a.belongsTo('Puzzle', 'userPuzzlePuzzleId'),
+			userPuzzlePuzzleId: a.string().required(),
 			usedCheck: a.boolean().required(),
 			usedReveal: a.boolean().required(),
 			usedClear: a.boolean().required(),
 			timeInSeconds: a.integer().required()
 		})
-		.authorization([
-			a.allow.owner(),
-			a.allow.custom(),
-			a.allow.private().to(['read']),
-			a.allow.private('iam').to(['read']),
-			a.allow.public('iam').to(['read'])
+		.authorization((allow) => [
+			allow.owner(),
+			allow.custom(),
+			allow.authenticated().to(['read']),
+			allow.authenticated('identityPool').to(['read']),
+			allow.guest().to(['read'])
 		]),
 	Puzzle: a
 		.model({
 			puzJson: a.json(),
-			puzKey: a.string()
+			puzKey: a.string(),
+			userPuzzles: a.hasMany('UserPuzzle', 'userPuzzlePuzzleId')
 		})
-		.authorization([
-			a.allow.custom(),
-			a.allow.private('userPools').to(['read']),
-			a.allow.public('iam').to(['read']),
-			a.allow.private('iam').to(['read'])
+		.authorization((allow) => [
+			allow.custom(),
+			allow.authenticated().to(['read']),
+			allow.authenticated('identityPool').to(['read']),
+			allow.guest().to(['read'])
 		])
 });
 

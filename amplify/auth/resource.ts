@@ -1,3 +1,4 @@
+// import { defineAuth } from '@aws-amplify/backend';
 import { defineAuth, secret } from '@aws-amplify/backend';
 import { ProviderAttribute } from 'aws-cdk-lib/aws-cognito';
 

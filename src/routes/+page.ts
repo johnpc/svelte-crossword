@@ -2,7 +2,7 @@
 // it so that it gets served as a static asset in production
 export const prerender = true;
 import { Amplify } from 'aws-amplify';
-import config from '../amplifyconfiguration.json';
+import config from '../amplify_outputs.json';
 Amplify.configure(config);
 import { puzzleStore } from './helpers/puzzleStore';
 import { get } from 'svelte/store';

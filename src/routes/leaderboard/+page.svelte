@@ -4,7 +4,7 @@
 	import type { Schema } from '../../../amplify/data/resource';
 	import { generateClient } from 'aws-amplify/data';
 	import { Amplify } from 'aws-amplify';
-	import config from '../../amplifyconfiguration.json';
+	import config from '../../amplify_outputs.json';
 	import LeaderboardItem from './LeaderboardItem.svelte';
 	import { getAllUserPuzzles } from '../helpers/getAllUserPuzzles';
 

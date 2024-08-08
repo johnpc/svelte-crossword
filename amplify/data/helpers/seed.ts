@@ -1,4 +1,6 @@
 import { handler } from '../build-puzzle-collection';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const dateRange = (startDate: string, endDate: string, steps = 1): Date[] => {
 	const dateArray = [] as Date[];
@@ -13,7 +15,7 @@ const dateRange = (startDate: string, endDate: string, steps = 1): Date[] => {
 	return dateArray;
 };
 
-const seedDates = dateRange('2024-02-24', '2024-06-22', 30);
+const seedDates = dateRange('2020-01-01', '2021-08-22', 30);
 // const seedDates = dateRange('2021-01-01', '2021-01-01');
 
 const main = async () => {

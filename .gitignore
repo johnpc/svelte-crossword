@@ -12,6 +12,7 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .amplify
 amplifyconfiguration*
+amplify_outputs.json
 .eslintcache
 AuthKey_4NHG57JY9Z.p8
 *.keystore

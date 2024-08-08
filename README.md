@@ -30,7 +30,7 @@ npm run sandbox
 
 in a terminal tab. This process will watch for changes in the `amplify/` directory and apply them to your AWS backend resources. This includes auth (Cognito), storage (S3), and api (AppSync/DynamoDb) resources.
 
-Once your resources are deployed, a file named `src/amplifyconfiguration.json` will be written. Now your app will use the AWS resources you've just deployed.
+Once your resources are deployed, a file named `src/amplify_outputs.json` will be written. Now your app will use the AWS resources you've just deployed.
 
 Start by seeding your database:
 

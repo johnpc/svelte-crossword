@@ -13,7 +13,7 @@
 	import { Amplify } from 'aws-amplify';
 	import { Capacitor } from '@capacitor/core';
 
-	import config from '../../amplifyconfiguration.json';
+	import config from '../../amplify_outputs.json';
 	Amplify.configure(config);
 
 	$: state = 'signIn' as 'signIn' | 'signUp' | 'forgotPassword';
