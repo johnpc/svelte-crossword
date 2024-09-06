@@ -18,7 +18,7 @@
 	onMount(() => {
 		const setup = async () => {
 			const profileResponse = await client.models.Profile.list({
-				limit: 10000,
+				limit: 10000
 			});
 			const profileData = profileResponse.data.length ? profileResponse.data : [];
 			const profilesWithCompletedPuzzleCountPromises = profileData.map(async (profile) => {
@@ -38,7 +38,7 @@
 			isLoading = false;
 		};
 
-		setup().catch((reason) => console.log({reason}));
+		setup().catch((reason) => console.log({ reason }));
 	});
 </script>
 

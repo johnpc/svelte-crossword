@@ -1,4 +1,19 @@
 # Ignore files for PNPM, NPM and YARN
+.gitignore
+.prettierignore
+.eslintignore
+.npmrc
+.env
+.env.*
+.husky/
 pnpm-lock.yaml
 package-lock.json
 yarn.lock
+*.png
+*.svg
+*.webp
+*.txt
+*.jpeg
+static/.well-known
+ios/
+android/

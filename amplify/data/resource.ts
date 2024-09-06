@@ -4,54 +4,57 @@ import type {
 	FunctionResources,
 	ResourceProvider
 } from '@aws-amplify/plugin-types';
+import { seedPuzzleDbFunction } from '../function/resource';
 
-const schema = a.schema({
-	Profile: a
-		.model({
-			id: a.string().required(),
-			userId: a.string().required(),
-			name: a.string().required(),
-			email: a.string().required(),
-			completedPuzzles: a.hasMany('UserPuzzle', 'profileCompletedPuzzlesId')
-		})
-		.authorization((allow) => [
-			allow.owner(),
-			allow.custom(),
-			allow.authenticated('identityPool').to(['read']),
-			allow.authenticated().to(['read']),
-			allow.guest().to(['read'])
-		]),
-	UserPuzzle: a
-		.model({
-			profile: a.belongsTo('Profile', 'profileCompletedPuzzlesId'),
-			profileCompletedPuzzlesId: a.string().required(),
-			puzzle: a.belongsTo('Puzzle', 'userPuzzlePuzzleId'),
-			userPuzzlePuzzleId: a.string().required(),
-			usedCheck: a.boolean().required(),
-			usedReveal: a.boolean().required(),
-			usedClear: a.boolean().required(),
-			timeInSeconds: a.integer().required()
-		})
-		.authorization((allow) => [
-			allow.owner(),
-			allow.custom(),
-			allow.authenticated().to(['read']),
-			allow.authenticated('identityPool').to(['read']),
-			allow.guest().to(['read'])
-		]),
-	Puzzle: a
-		.model({
-			puzJson: a.json(),
-			puzKey: a.string(),
-			userPuzzles: a.hasMany('UserPuzzle', 'userPuzzlePuzzleId')
-		})
-		.authorization((allow) => [
-			allow.custom(),
-			allow.authenticated().to(['read']),
-			allow.authenticated('identityPool').to(['read']),
-			allow.guest().to(['read'])
-		])
-});
+const schema = a
+	.schema({
+		Profile: a
+			.model({
+				id: a.string().required(),
+				userId: a.string().required(),
+				name: a.string().required(),
+				email: a.string().required(),
+				completedPuzzles: a.hasMany('UserPuzzle', 'profileCompletedPuzzlesId')
+			})
+			.authorization((allow) => [
+				allow.owner(),
+				allow.custom(),
+				allow.authenticated('identityPool').to(['read']),
+				allow.authenticated().to(['read']),
+				allow.guest().to(['read'])
+			]),
+		UserPuzzle: a
+			.model({
+				profile: a.belongsTo('Profile', 'profileCompletedPuzzlesId'),
+				profileCompletedPuzzlesId: a.string().required(),
+				puzzle: a.belongsTo('Puzzle', 'userPuzzlePuzzleId'),
+				userPuzzlePuzzleId: a.string().required(),
+				usedCheck: a.boolean().required(),
+				usedReveal: a.boolean().required(),
+				usedClear: a.boolean().required(),
+				timeInSeconds: a.integer().required()
+			})
+			.authorization((allow) => [
+				allow.owner(),
+				allow.custom(),
+				allow.authenticated().to(['read']),
+				allow.authenticated('identityPool').to(['read']),
+				allow.guest().to(['read'])
+			]),
+		Puzzle: a
+			.model({
+				puzJson: a.json(),
+				puzKey: a.string(),
+				userPuzzles: a.hasMany('UserPuzzle', 'userPuzzlePuzzleId')
+			})
+			.authorization((allow) => [
+				allow.custom(),
+				allow.authenticated().to(['read']),
+				allow.authenticated('identityPool').to(['read']),
+				allow.guest().to(['read'])
+			])
+	})
+	.authorization((allow) => allow.resource(seedPuzzleDbFunction).to(['query', 'mutate', 'listen']));
 
 export type Schema = ClientSchema<typeof schema>;
 

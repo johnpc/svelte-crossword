@@ -6,12 +6,12 @@ export const auth = defineAuth({
 	loginWith: {
 		email: true,
 		externalProviders: {
-			domainPrefix: 'smallcrosswordslogin',
+			// domainPrefix: 'smallcrosswordslogin',
 			google: {
 				clientId: secret('GOOGLE_CLIENT_ID'),
 				clientSecret: secret('GOOGLE_CLIENT_SECRET'),
 				attributeMapping: {
-					email: ProviderAttribute.GOOGLE_EMAIL
+					email: ProviderAttribute.GOOGLE_EMAIL.attributeName
 				},
 				scopes: ['profile', 'email']
 			},
@@ -21,7 +21,7 @@ export const auth = defineAuth({
 				privateKey: secret('SIWA_PRIVATE_KEY'),
 				teamId: secret('SIWA_TEAM_ID'),
 				attributeMapping: {
-					email: ProviderAttribute.APPLE_EMAIL
+					email: ProviderAttribute.APPLE_EMAIL.attributeName
 				},
 				scopes: ['name', 'email']
 			},

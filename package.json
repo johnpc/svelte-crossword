@@ -18,8 +18,8 @@
 		"prepare": "husky install"
 	},
 	"devDependencies": {
-		"@aws-amplify/backend": "^1.0.4",
-		"@aws-amplify/backend-cli": "^1.2.2",
+		"@aws-amplify/backend": "^1.2.1",
+		"@aws-amplify/backend-cli": "^1.2.5",
 		"@aws-amplify/plugin-types": "^1.1.0",
 		"@capacitor/android": "^5.7.1",
 		"@capacitor/assets": "^3.0.4",
@@ -60,7 +60,7 @@
 		"@event-calendar/core": "^2.6.1",
 		"@event-calendar/day-grid": "^2.6.1",
 		"@zerodevx/svelte-toast": "^0.9.5",
-		"aws-amplify": "^6.5.0",
+		"aws-amplify": "^6.6.0",
 		"svelte-loading-spinners": "^0.3.4",
 		"svelte-persisted-store": "^0.9.1"
 	},
