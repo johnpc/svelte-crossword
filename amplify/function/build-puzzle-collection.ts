@@ -183,11 +183,7 @@ const uploadPuzFile = async (
 	}
 };
 
-export const handler = async (event: Event) => {
-	console.log(`EVENT: ${JSON.stringify(event)}`);
-	const beforeCount = await countDynamoRecords();
-	const today = event.timeStamp ? new Date(event.timeStamp) : new Date();
-	console.log({ today, beforeCount });
+const handlerHelper = async (today: Date) => {
 	const miniPuzzleFeedUrl = getMiniPuzzleFeedUrl(today);
 	console.log({ miniPuzzleFeedUrl, newestPuzzleFeedUrl });
 	// const allPromises = [miniPuzzleFeedUrl, newestPuzzleFeedUrl, ...getUserPuzzleFeedUrls()].map(
@@ -248,11 +244,49 @@ export const handler = async (event: Event) => {
 		console.log(`Uploaded ${res.filter((result) => result).length} puzzles`);
 		return res.filter((result) => result).length;
 	});
-	const results = await Promise.all(allPromises);
+	return await Promise.all(allPromises);
+};
+
+const dateRange = (startDate: string, endDate: string, steps = 1): Date[] => {
+	const dateArray = [] as Date[];
+	const currentDate = new Date(startDate);
+
+	while (currentDate <= new Date(endDate)) {
+		const dateCopy = new Date(currentDate);
+		dateArray.push(dateCopy);
+		currentDate.setUTCDate(currentDate.getUTCDate() + steps);
+	}
+
+	return dateArray;
+};
+
+type BuildPuzzleCollectionEvent = Event & {
+	startDate?: string;
+	endDate?: string;
+};
+
+export const handler = async (event: BuildPuzzleCollectionEvent) => {
+	console.log(`EVENT: ${JSON.stringify(event)}`);
+	const beforeCount = await countDynamoRecords();
+	const today = event.timeStamp ? new Date(event.timeStamp) : new Date();
+	const startDate = event.startDate ? new Date(event.startDate) : undefined;
+	const endDate = event.endDate ? new Date(event.endDate) : undefined;
+	console.log({ today, startDate, endDate, beforeCount });
+
+	let results: number[] = [];
+	if (event.startDate && event.endDate) {
+		const seedDates = dateRange(event.startDate, event.endDate, 30);
+		for (const seedDate of seedDates) {
+			const res = await handlerHelper(seedDate);
+			results.concat(res);
+		}
+	} else {
+		results = await handlerHelper(today);
+	}
+
 	const sleep = (durationMs: number) => new Promise((resolve) => setTimeout(resolve, durationMs));
 	await sleep(1000);
 	const afterCount = await countDynamoRecords();
-
 	console.log({
 		beforeCount,
 		afterCount,
