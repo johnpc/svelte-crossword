@@ -46,7 +46,9 @@ export const getAllPuzzles = async (bypassCache = false): Promise<HydratedPuzzle
 	const hydratedPuzzles = puzzles.map((puzzle) => ({
 		id: puzzle.id,
 		clues: getCluesFromPuzzle(puzzle),
-		createdAt: puzzle.createdAt
+		createdAt: puzzle.createdAt,
+		title: JSON.parse(puzzle.puzJson as string)?.header?.title,
+		author: JSON.parse(puzzle.puzJson as string)?.header?.author
 	}));
 
 	try {

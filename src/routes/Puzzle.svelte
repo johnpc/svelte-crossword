@@ -22,6 +22,8 @@
 
 	$: clues = [] as Clue[];
 	$: puzzleId = '' as string;
+	$: puzzleTitle = '' as string;
+	$: puzzleAuthor = '' as string;
 	$: profile = {} as HydratedProfile;
 	$: timeInSeconds = 0;
 	$: isPuzzleComplete = false;
@@ -46,7 +48,9 @@
 			const puzzle = await getNextPuzzle(profile);
 			clues = puzzle.clues;
 			puzzleId = puzzle.id;
-			console.log({ onMount: true, clues });
+			puzzleTitle = puzzle.title || '';
+			puzzleAuthor = puzzle.author || '';
+			console.log({ onMount: true, clues, puzzleTitle, puzzleAuthor, puzzle });
 		};
 
 		setup();
@@ -140,6 +144,8 @@
 		const puzzle = await getNextPuzzle(profile);
 		clues = puzzle.clues;
 		puzzleId = puzzle.id;
+		puzzleTitle = puzzle.title || '';
+		puzzleAuthor = puzzle.author || '';
 		tickTimer();
 	};
 
@@ -163,6 +169,13 @@
 		👋 {profile.email.split('@')[0]}
 		<span id="logoutLink">(not you? <a href="#" on:click={() => onSignOut()}>sign out</a>)</span>
 	</h3>
+
+	{#if puzzleTitle || puzzleAuthor}
+		<div class="puzzle-info">
+			{#if puzzleTitle}<span class="puzzle-title">{puzzleTitle}</span>{/if}
+			{#if puzzleAuthor}<span class="puzzle-author">by {puzzleAuthor}</span>{/if}
+		</div>
+	{/if}
 
 	<Crossword
 		bind:this={ref}
@@ -194,6 +207,25 @@
 {/if}
 
 <style>
+	.puzzle-info {
+		margin-bottom: 0.5em;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25em;
+		font-family: var(--font);
+	}
+
+	.puzzle-title {
+		font-weight: 600;
+		font-size: 1.1em;
+	}
+
+	.puzzle-author {
+		font-size: 0.9em;
+		font-style: italic;
+		color: #666;
+	}
+
 	.toolbar {
 		margin-bottom: 1em;
 		padding: 1em 0;
