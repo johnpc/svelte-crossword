@@ -57,12 +57,29 @@
 
 		const dimension = focusedDirection == 'across' ? 'x' : 'y';
 		const clueIndex = cells[index].clueNumbers[focusedDirection];
-		const cellsInClue = cells.filter(
-			(cell) =>
-				cell.clueNumbers[focusedDirection] == clueIndex && (doReplaceFilledCells || !cell.value)
+		const allCellsInClue = cells.filter(
+			(cell) => cell.clueNumbers[focusedDirection] == clueIndex
 		);
-		const cellsInCluePositions = cellsInClue.map((cell) => cell[dimension]).filter(Number.isFinite);
+		const allCellsInClueFilled = allCellsInClue.every((cell) => cell.value);
+		
+		console.log('onCellUpdate', { 
+			index, 
+			clueIndex, 
+			allCellsInClueFilled, 
+			allCellsInClue: allCellsInClue.length,
+			currentPosition: cells[index][dimension]
+		});
+		
+		const cellsToCheck = allCellsInClueFilled ? allCellsInClue : allCellsInClue.filter(cell => !cell.value);
+		const cellsInCluePositions = cellsToCheck.map((cell) => cell[dimension]).filter(Number.isFinite);
 		const isAtEndOfClue = cells[index][dimension] == Math.max(...cellsInCluePositions);
+		
+		console.log('Navigation check', { 
+			cellsToCheck: cellsToCheck.length,
+			positions: cellsInCluePositions,
+			maxPosition: Math.max(...cellsInCluePositions),
+			isAtEndOfClue 
+		});
 
 		const newCells = [
 			...cells.slice(0, index),
@@ -77,9 +94,11 @@
 		cells = newCells;
 
 		if (isAtEndOfClue && diff > 0) {
+			console.log('At end of clue, calling onFocusClueDiff');
 			onFocusClueDiff(diff);
 		} else {
-			onFocusCellDiff(diff, doReplaceFilledCells);
+			console.log('Not at end, calling onFocusCellDiff with doReplaceFilledCells:', allCellsInClueFilled || doReplaceFilledCells);
+			onFocusCellDiff(diff, allCellsInClueFilled || doReplaceFilledCells);
 		}
 	}
 
@@ -124,9 +143,13 @@
 
 	function onFocusClueDiff(diff = 1) {
 		const currentNumber = focusedCell.clueNumbers[focusedDirection];
+		const allCluesInDirectionFilled = clues
+			.filter(clue => clue.direction === focusedDirection)
+			.every(clue => clue.isFilled);
+		
 		let nextCluesInDirection = clues.filter(
 			(clue) =>
-				!clue.isFilled &&
+				(allCluesInDirectionFilled || !clue.isFilled) &&
 				(diff > 0 ? clue.number > currentNumber : clue.number < currentNumber) &&
 				clue.direction == focusedDirection
 		);
@@ -140,7 +163,9 @@
 		}
 		const nextFocusedCell =
 			sortedCellsInDirection.find(
-				(cell) => !cell.value && cell.clueNumbers[focusedDirection] == nextClue.number
+				(cell) => (allCluesInDirectionFilled || !cell.value) && cell.clueNumbers[focusedDirection] == nextClue.number
+			) || sortedCellsInDirection.find(
+				(cell) => cell.clueNumbers[focusedDirection] == nextClue.number
 			) || {};
 		focusedCellIndex = nextFocusedCell.index || 0;
 	}
