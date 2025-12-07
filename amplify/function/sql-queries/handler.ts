@@ -124,6 +124,9 @@ export const handler: Handler = async (event) => {
 				[event.puzzleId]
 			);
 			const result = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+			if (result && typeof result === 'object' && 'puz_json' in result) {
+				result.puz_json = JSON.parse(result.puz_json as string);
+			}
 			return { statusCode: 200, body: JSON.stringify(result) };
 		}
 
