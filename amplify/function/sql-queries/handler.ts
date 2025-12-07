@@ -77,6 +77,38 @@ export const handler: Handler = async (event) => {
 			return { statusCode: 200, body: JSON.stringify(result) };
 		}
 
+		if (query === 'getUserHistory' && profileId) {
+			const [rows] = await conn.execute(
+				`
+				SELECT 
+					up.id,
+					up.profile_id,
+					up.puzzle_id,
+					up.used_check,
+					up.used_reveal,
+					up.used_clear,
+					up.time_in_seconds,
+					up.created_at,
+					p.title,
+					p.author
+				FROM user_puzzles up
+				LEFT JOIN puzzles p ON up.puzzle_id = p.id
+				WHERE up.profile_id = ?
+				ORDER BY up.created_at DESC
+			`,
+				[profileId]
+			);
+			return { statusCode: 200, body: JSON.stringify(rows) };
+		}
+
+		if (query === 'getStreakInfo' && profileId) {
+			const [rows] = await conn.execute(
+				'SELECT created_at FROM user_puzzles WHERE profile_id = ? ORDER BY created_at DESC',
+				[profileId]
+			);
+			return { statusCode: 200, body: JSON.stringify(rows) };
+		}
+
 		return { statusCode: 400, body: 'Unknown query' };
 	} finally {
 		await conn.end();

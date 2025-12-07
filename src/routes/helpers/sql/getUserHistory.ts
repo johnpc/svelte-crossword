@@ -1,7 +1,9 @@
-import type { Schema } from '../../../../amplify/data/resource';
-import { generateClient } from 'aws-amplify/data';
+import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
+import { fetchAuthSession } from 'aws-amplify/auth';
+import { Amplify } from 'aws-amplify';
+import config from '../../../amplify_outputs.json';
 
-const client = generateClient<Schema>({ authMode: 'userPool' });
+Amplify.configure(config);
 
 export type UserHistoryEntry = {
 	id: string;
@@ -17,31 +19,50 @@ export type UserHistoryEntry = {
 };
 
 export const getUserHistory = async (profileId: string): Promise<UserHistoryEntry[]> => {
-	const userPuzzles = await client.models.SqlUserPuzzle.list({
-		filter: { profile_id: { eq: profileId } },
-		limit: 10000
+	const session = await fetchAuthSession();
+	const lambda = new LambdaClient({
+		region: 'us-west-2',
+		credentials: session.credentials
 	});
 
-	const puzzleIds = Array.from(new Set(userPuzzles.data.map((up) => up.puzzle_id)));
-	const puzzles = await Promise.all(puzzleIds.map((id) => client.models.SqlPuzzle.get({ id })));
+	const functionName = (config.custom as { sqlQueriesFunctionName?: string })
+		?.sqlQueriesFunctionName;
+	if (!functionName) {
+		throw new Error('SQL queries function name not found in config');
+	}
 
-	const puzzleMap = new Map(puzzles.map((p) => [p.data?.id, p.data]));
+	const command = new InvokeCommand({
+		FunctionName: functionName,
+		Payload: JSON.stringify({ query: 'getUserHistory', profileId })
+	});
 
-	return userPuzzles.data
-		.map((up) => {
-			const puzzle = puzzleMap.get(up.puzzle_id);
-			return {
-				id: up.id,
-				profileId: up.profile_id,
-				puzzleId: up.puzzle_id,
-				usedCheck: Boolean(up.used_check),
-				usedReveal: Boolean(up.used_reveal),
-				usedClear: Boolean(up.used_clear),
-				timeInSeconds: up.time_in_seconds,
-				createdAt: up.created_at,
-				puzzleTitle: puzzle?.title || undefined,
-				puzzleAuthor: puzzle?.author || undefined
-			};
+	const response = await lambda.send(command);
+	const payload = JSON.parse(new TextDecoder().decode(response.Payload));
+	const rows = JSON.parse(payload.body);
+
+	return rows.map(
+		(row: {
+			id: string;
+			profile_id: string;
+			puzzle_id: string;
+			used_check: number;
+			used_reveal: number;
+			used_clear: number;
+			time_in_seconds: number;
+			created_at: string;
+			title?: string;
+			author?: string;
+		}) => ({
+			id: row.id,
+			profileId: row.profile_id,
+			puzzleId: row.puzzle_id,
+			usedCheck: Boolean(row.used_check),
+			usedReveal: Boolean(row.used_reveal),
+			usedClear: Boolean(row.used_clear),
+			timeInSeconds: row.time_in_seconds,
+			createdAt: row.created_at,
+			puzzleTitle: row.title || undefined,
+			puzzleAuthor: row.author || undefined
 		})
-		.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+	);
 };

@@ -1,7 +1,9 @@
-import type { Schema } from '../../../../amplify/data/resource';
-import { generateClient } from 'aws-amplify/data';
+import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
+import { fetchAuthSession } from 'aws-amplify/auth';
+import { Amplify } from 'aws-amplify';
+import config from '../../../amplify_outputs.json';
 
-const client = generateClient<Schema>({ authMode: 'userPool' });
+Amplify.configure(config);
 
 export type StreakInfo = {
 	longestStreak: number;
@@ -15,14 +17,30 @@ const isSameDay = (a: Date, b: Date) =>
 	a.getFullYear() === b.getFullYear();
 
 export const getStreakInfo = async (profileId: string): Promise<StreakInfo> => {
-	const userPuzzles = await client.models.SqlUserPuzzle.list({
-		filter: { profile_id: { eq: profileId } },
-		limit: 10000
+	const session = await fetchAuthSession();
+	const lambda = new LambdaClient({
+		region: 'us-west-2',
+		credentials: session.credentials
 	});
 
+	const functionName = (config.custom as { sqlQueriesFunctionName?: string })
+		?.sqlQueriesFunctionName;
+	if (!functionName) {
+		throw new Error('SQL queries function name not found in config');
+	}
+
+	const command = new InvokeCommand({
+		FunctionName: functionName,
+		Payload: JSON.stringify({ query: 'getStreakInfo', profileId })
+	});
+
+	const response = await lambda.send(command);
+	const payload = JSON.parse(new TextDecoder().decode(response.Payload));
+	const rows = JSON.parse(payload.body);
+
 	const dateMap = new Map<string, number>();
-	userPuzzles.data.forEach((up) => {
-		const date = new Date(up.created_at).toDateString();
+	rows.forEach((row: { created_at: string }) => {
+		const date = new Date(row.created_at).toDateString();
 		dateMap.set(date, (dateMap.get(date) || 0) + 1);
 	});
 
