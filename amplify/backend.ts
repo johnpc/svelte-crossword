@@ -28,13 +28,22 @@ const backend = defineBackend({
 const underlyingAuthLambda = backend.authFunction.resources.lambda as LambdaFunction;
 underlyingAuthLambda.addEnvironment('ADMIN_API_KEY', process.env.ADMIN_API_KEY!);
 
-// Set up seed db lambda
-const underlyingSeedLambda = backend.seedPuzzleDbFunction.resources.lambda as LambdaFunction;
-underlyingSeedLambda.addEnvironment('ADMIN_API_KEY', process.env.ADMIN_API_KEY!);
-
 // Set up SQL queries lambda
 const underlyingSqlLambda = backend.sqlQueriesFunction.resources.lambda as LambdaFunction;
 underlyingSqlLambda.addEnvironment('SQL_CONNECTION_STRING', process.env.SQL_CONNECTION_STRING!);
+
+// Set up seed db lambda
+const underlyingSeedLambda = backend.seedPuzzleDbFunction.resources.lambda as LambdaFunction;
+underlyingSeedLambda.addEnvironment('ADMIN_API_KEY', process.env.ADMIN_API_KEY!);
+underlyingSeedLambda.addEnvironment('SQL_QUERIES_FUNCTION_NAME', underlyingSqlLambda.functionName);
+
+// Grant seed lambda permission to invoke SQL queries lambda
+underlyingSeedLambda.addToRolePolicy(
+	new cdk.aws_iam.PolicyStatement({
+		actions: ['lambda:InvokeFunction'],
+		resources: [underlyingSqlLambda.functionArn]
+	})
+);
 
 // Grant authenticated users permission to invoke SQL queries lambda
 backend.auth.resources.authenticatedUserIamRole.addToPrincipalPolicy(

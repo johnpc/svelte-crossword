@@ -3,6 +3,7 @@ import { Schema } from '../data/resource';
 import { puzToJson } from '../data/helpers/puz-to-json';
 import { Amplify } from 'aws-amplify';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 import dotenv from 'dotenv';
 // @ts-expect-error cannot parse js file
 import validateClues from '../../src/routes/components/crossword/helpers/validateClues';
@@ -14,6 +15,7 @@ import { listPuzzles } from './graphql/queries';
 
 dotenv.config();
 const s3 = new S3Client();
+const lambda = new LambdaClient({ region: env.AWS_REGION });
 Amplify.configure(
 	{
 		API: {
@@ -133,14 +135,21 @@ const createDynamoRecord = async (buffer: Buffer, puzKey: string): Promise<boole
 
 	// Also create in SQL
 	try {
-		const puzzleData = json as { title?: string; author?: string };
-		await client.models.SqlPuzzle.create({
-			id: puzKey,
-			puz_json: JSON.stringify(json),
-			puz_key: puzKey,
-			title: puzzleData.title || null,
-			author: puzzleData.author || null
+		const puzzleData = json as { header?: { title?: string; author?: string } };
+		const command = new InvokeCommand({
+			FunctionName: env.SQL_QUERIES_FUNCTION_NAME,
+			Payload: JSON.stringify({
+				query: 'createPuzzle',
+				puzzle: {
+					id: puzKey,
+					puz_json: JSON.stringify(json),
+					puz_key: puzKey,
+					title: puzzleData.header?.title || null,
+					author: puzzleData.header?.author || null
+				}
+			})
 		});
+		await lambda.send(command);
 	} catch (e) {
 		console.log({ msg: 'SQL insert failed (may already exist)', puzKey, error: e });
 	}

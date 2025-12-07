@@ -140,6 +140,15 @@ export const handler: Handler = async (event) => {
 			return { statusCode: 200, body: JSON.stringify({ success: true }) };
 		}
 
+		if (query === 'createPuzzle' && event.puzzle) {
+			const { id, puz_json, puz_key, title, author } = event.puzzle;
+			await conn.execute(
+				'INSERT IGNORE INTO puzzles (id, puz_json, puz_key, title, author) VALUES (?, ?, ?, ?, ?)',
+				[id, puz_json, puz_key, title, author]
+			);
+			return { statusCode: 200, body: JSON.stringify({ success: true }) };
+		}
+
 		return { statusCode: 400, body: 'Unknown query' };
 	} finally {
 		await conn.end();
