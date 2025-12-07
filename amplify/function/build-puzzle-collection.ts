@@ -136,20 +136,23 @@ const createDynamoRecord = async (buffer: Buffer, puzKey: string): Promise<boole
 	// Also create in SQL
 	try {
 		const puzzleData = json as { header?: { title?: string; author?: string } };
-		const command = new InvokeCommand({
-			FunctionName: env.SQL_QUERIES_FUNCTION_NAME,
-			Payload: JSON.stringify({
-				query: 'createPuzzle',
-				puzzle: {
-					id: puzKey,
-					puz_json: JSON.stringify(json),
-					puz_key: puzKey,
-					title: puzzleData.header?.title || null,
-					author: puzzleData.header?.author || null
-				}
-			})
-		});
-		await lambda.send(command);
+		const sqlFunctionName = process.env.SQL_QUERIES_FUNCTION_NAME;
+		if (sqlFunctionName) {
+			const command = new InvokeCommand({
+				FunctionName: sqlFunctionName,
+				Payload: JSON.stringify({
+					query: 'createPuzzle',
+					puzzle: {
+						id: puzKey,
+						puz_json: JSON.stringify(json),
+						puz_key: puzKey,
+						title: puzzleData.header?.title || null,
+						author: puzzleData.header?.author || null
+					}
+				})
+			});
+			await lambda.send(command);
+		}
 	} catch (e) {
 		console.log({ msg: 'SQL insert failed (may already exist)', puzKey, error: e });
 	}
