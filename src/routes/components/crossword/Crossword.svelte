@@ -172,7 +172,7 @@
 	article {
 		position: relative;
 		background-color: transparent;
-		font-size: 16px;
+		font-size: 1rem;
 	}
 
 	.play {

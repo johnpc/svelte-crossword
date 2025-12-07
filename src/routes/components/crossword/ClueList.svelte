@@ -42,7 +42,7 @@
 		text-transform: uppercase;
 		padding-left: calc(2.5em + 6px);
 		padding-bottom: 0.5em;
-		font-size: 0.85em;
+		font-size: 1.1em;
 		border-bottom: 1px solid var(--accent-color);
 		margin: 0;
 	}

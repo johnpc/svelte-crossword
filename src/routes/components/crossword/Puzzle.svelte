@@ -29,6 +29,7 @@
 	let secondarilyFocusedCells = [];
 	let isMobile = false;
 	let isPuzzleFocused = false;
+	let hiddenInput;
 
 	const numberOfStatesInHistory = 10;
 	$: w = Math.max(...cells.map((d) => d.x)) + 1;
@@ -39,6 +40,10 @@
 	$: sortedCellsInDirection = [...cells].sort((a, b) =>
 		focusedDirection == 'down' ? a.x - b.x || a.y - b.y : a.y - b.y || a.x - b.x
 	);
+
+	$: if (!keyboardVisible && hiddenInput) {
+		setTimeout(() => hiddenInput?.focus(), 100);
+	}
 
 	onMount(() => {
 		isMobile = checkMobile();
@@ -112,12 +117,19 @@
 	function onFocusCell(index) {
 		if (isPuzzleFocused && index == focusedCellIndex) {
 			onFlipDirection();
+			if (!keyboardVisible && hiddenInput) {
+				setTimeout(() => hiddenInput?.focus(), 0);
+			}
 		} else {
 			focusedCellIndex = index;
 
 			if (!cells[focusedCellIndex].clueNumbers[focusedDirection]) {
 				const newDirection = focusedDirection === 'across' ? 'down' : 'across';
 				focusedDirection = newDirection;
+			}
+
+			if (!keyboardVisible && hiddenInput) {
+				hiddenInput.focus();
 			}
 
 			focusedCellIndexHistory = [
@@ -200,12 +212,44 @@
 		onCellUpdate(focusedCellIndex, value, diff, doReplaceFilledCells);
 	}
 
+	function onNativeKeydown(e) {
+		if (e.ctrlKey || e.altKey) return;
+		
+		if (['Delete', 'Backspace'].includes(e.key)) {
+			onCellUpdate(focusedCellIndex, '', -1, true);
+			e.preventDefault();
+			setTimeout(() => hiddenInput?.focus(), 0);
+			return;
+		}
+
+		const isKeyInAlphabet = /^[a-zA-Z()]$/.test(e.key);
+		if (isKeyInAlphabet) {
+			onCellUpdate(focusedCellIndex, e.key.toUpperCase());
+			e.preventDefault();
+			setTimeout(() => hiddenInput?.focus(), 0);
+		}
+	}
+
 	function onClick() {
-		isPuzzleFocused = element.contains(document.activeElement);
+		isPuzzleFocused = element.contains(document.activeElement) || document.activeElement === hiddenInput;
 	}
 </script>
 
 <svelte:window on:click={onClick} />
+
+{#if !keyboardVisible}
+	<input
+		bind:this={hiddenInput}
+		on:keydown={onNativeKeydown}
+		style="position: fixed; left: -9999px; width: 1px; height: 1px;"
+		type="text"
+		inputmode="text"
+		autocomplete="off"
+		autocorrect="off"
+		autocapitalize="characters"
+		aria-hidden="true"
+	/>
+{/if}
 
 <section class="puzzle" class:stacked class:is-loaded={isLoaded} bind:this={element}>
 	<svg viewBox="0 0 {w} {h}">
@@ -223,6 +267,7 @@
 				{isChecking}
 				isFocused={focusedCellIndex == index && !isDisableHighlight}
 				isSecondarilyFocused={secondarilyFocusedCells.includes(index) && !isDisableHighlight}
+				preventFocus={!keyboardVisible}
 				{onFocusCell}
 				{onCellUpdate}
 				{onFocusClueDiff}

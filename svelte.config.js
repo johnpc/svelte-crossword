@@ -7,7 +7,10 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 const config = {
 	preprocess: vitePreprocess(),
 	kit: {
-		adapter: process.env.CAPACITOR_BUILD ? staticAdapter({ strict: false }) : adapter()
+		adapter: process.env.CAPACITOR_BUILD ? staticAdapter({ strict: false }) : adapter(),
+		csrf: {
+			checkOrigin: false
+		}
 	}
 };
 

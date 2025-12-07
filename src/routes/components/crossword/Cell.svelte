@@ -11,6 +11,7 @@
 	export let isChecking = false;
 	export let isFocused = false;
 	export let isSecondarilyFocused = false;
+	export let preventFocus = false;
 	export let onFocusCell = () => {};
 	export let onCellUpdate = () => {};
 	export let onFocusClueDiff = () => {};
@@ -26,7 +27,7 @@
 
 	function onFocusSelf() {
 		if (!element) return;
-		if (isFocused) element.focus();
+		if (isFocused && !preventFocus) element.focus();
 	}
 
 	function onKeydown(e) {

@@ -11,7 +11,7 @@
 	text-align: center !important;
 }
 :root {
-	--font-body: Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+	--font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
 		Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 	--font-mono: 'Fira Mono', monospace;
 	--color-bg-0: rgb(202, 216, 228);
@@ -20,18 +20,66 @@
 	--color-theme-1: palevioletred;
 	--color-theme-2: #4075a6;
 	--color-text: rgba(0, 0, 0, 0.7);
+	--color-bg-body: #eee8aa;
+	--color-bg-pre: rgba(255, 255, 255, 0.45);
 	--column-width: 42rem;
 	--column-margin-top: 4rem;
 	font-family: var(--font-body);
 	color: var(--color-text);
 }
 
+html {
+	font-size: 100%;
+	-webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	* {
+		animation-duration: 0.01ms !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+
+@media (prefers-contrast: more) {
+	:root {
+		--color-text: rgba(0, 0, 0, 0.95);
+	}
+	:root[data-theme='dark'] {
+		--color-text: rgba(255, 255, 255, 1);
+	}
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) {
+		--color-bg-0: rgb(40, 50, 60);
+		--color-bg-1: hsl(209, 20%, 20%);
+		--color-bg-2: hsl(224, 20%, 15%);
+		--color-theme-1: #ff69b4;
+		--color-theme-2: #6ba3d4;
+		--color-text: rgba(255, 255, 255, 0.87);
+		--color-bg-body: #1a1a1a;
+		--color-bg-pre: rgba(0, 0, 0, 0.45);
+	}
+}
+
+:root[data-theme='dark'] {
+	--color-bg-0: rgb(40, 50, 60);
+	--color-bg-1: hsl(209, 20%, 20%);
+	--color-bg-2: hsl(224, 20%, 15%);
+	--color-theme-1: #ff69b4;
+	--color-theme-2: #6ba3d4;
+	--color-text: rgba(255, 255, 255, 0.87);
+	--color-bg-body: #1a1a1a;
+	--color-bg-pre: rgba(0, 0, 0, 0.45);
+}
+
 body {
 	min-height: 100vh;
 	margin: 0;
 	background-attachment: fixed;
-	background-color: #eee8aa;
+	background-color: var(--color-bg-body);
 	background-size: 100vw 100vh;
+	font-size: 1rem;
 }
 
 h1,
@@ -65,7 +113,7 @@ h2 {
 pre {
 	font-size: 16px;
 	font-family: var(--font-mono);
-	background-color: rgba(255, 255, 255, 0.45);
+	background-color: var(--color-bg-pre);
 	border-radius: 3px;
 	box-shadow: 2px 2px 6px rgb(255 255 255 / 25%);
 	padding: 0.5em;
@@ -117,4 +165,27 @@ button:focus:not(:focus-visible) {
 
 .keyboard button.single.svelte-n3ouos {
 	padding: 1rem 0.5rem;
+}
+
+.svelte-keyboard button {
+	--background: #eee;
+	--color: #111;
+	--active-background: #ccc;
+	--active-color: #111;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) .svelte-keyboard button {
+		--background: #333;
+		--color: #eee;
+		--active-background: #555;
+		--active-color: #fff;
+	}
+}
+
+:root[data-theme='dark'] .svelte-keyboard button {
+	--background: #333;
+	--color: #eee;
+	--active-background: #555;
+	--active-color: #fff;
 }

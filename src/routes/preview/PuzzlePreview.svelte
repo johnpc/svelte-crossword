@@ -19,6 +19,7 @@
 	$: usedReveal = false;
 	$: usedClear = false;
 	$: keyboardStyle = 'outline' as 'outline' | 'depth';
+	let showAppKeyboard = true;
 	let ref: any;
 	const toastOptions = {
 		theme: {
@@ -29,6 +30,7 @@
 	};
 
 	onMount(() => {
+		showAppKeyboard = localStorage.getItem('showAppKeyboard') !== 'false';
 		const store = get(puzzleStore);
 		console.log({ c: store.completedPreview });
 		isPuzzleComplete = store.completedPreview;
@@ -96,6 +98,10 @@
 		usedCheck = true;
 		onCheck();
 	};
+	const toggleKeyboard = () => {
+		showAppKeyboard = !showAppKeyboard;
+		localStorage.setItem('showAppKeyboard', String(showAppKeyboard));
+	};
 	const onSignIn = () => {
 		goto('/login');
 	};
@@ -116,12 +122,15 @@
 		data={clues}
 		breakpoint={10000}
 		theme="pink"
-		showKeyboard={true}
+		showKeyboard={showAppKeyboard}
 		revealed={isPuzzleComplete}
 		{keyboardStyle}
 	>
 		<div class="toolbar" slot="toolbar" let:onClear let:onReveal let:onCheck>
 			<p id="timer">{getHumanReadableDuration(timeInSeconds)}</p>
+			<button on:click={toggleKeyboard} title="Toggle keyboard">
+				{showAppKeyboard ? '⌨️' : '📱'}
+			</button>
 			<button class={usedClear ? 'active' : ''} on:click={() => onToolbarClear(onClear)}
 				>Clear</button
 			>

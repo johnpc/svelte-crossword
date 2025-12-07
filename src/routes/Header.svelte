@@ -2,6 +2,28 @@
 	import { page } from '$app/stores';
 	import logo from '$lib/images/logo.png';
 	import github from '$lib/images/github.svg';
+	import { onMount } from 'svelte';
+
+	let theme = 'system';
+
+	onMount(() => {
+		theme = localStorage.getItem('theme') || 'system';
+		applyTheme(theme);
+	});
+
+	function applyTheme(t) {
+		if (t === 'system') {
+			document.documentElement.removeAttribute('data-theme');
+		} else {
+			document.documentElement.setAttribute('data-theme', t);
+		}
+		localStorage.setItem('theme', t);
+	}
+
+	function toggleTheme() {
+		theme = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light';
+		applyTheme(theme);
+	}
 </script>
 
 <header>
@@ -21,6 +43,11 @@
 			</li>
 			<li aria-current={$page.url.pathname === '/leaderboard' ? 'page' : undefined}>
 				<a href="/leaderboard">Leaderboard</a>
+			</li>
+			<li>
+				<button on:click={toggleTheme} title="Toggle theme">
+					{theme === 'light' ? '☀️' : theme === 'dark' ? '🌙' : '💻'}
+				</button>
 			</li>
 		</ul>
 		<svg viewBox="0 0 2 3" aria-hidden="true">
@@ -122,5 +149,16 @@
 
 	a:hover {
 		color: var(--color-theme-1);
+	}
+
+	button {
+		background: none;
+		border: none;
+		cursor: pointer;
+		font-size: 1.2rem;
+		padding: 0 0.5rem;
+		height: 100%;
+		display: flex;
+		align-items: center;
 	}
 </style>

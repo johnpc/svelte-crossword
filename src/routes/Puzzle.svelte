@@ -31,9 +31,11 @@
 	$: usedReveal = false;
 	$: usedClear = false;
 	$: keyboardStyle = 'outline' as 'outline' | 'depth';
+	let showAppKeyboard = true;
 	let ref: any;
 
 	onMount(() => {
+		showAppKeyboard = localStorage.getItem('showAppKeyboard') !== 'false';
 		const setup = async () => {
 			try {
 				const currentUser = await getCurrentUser();
@@ -130,6 +132,10 @@
 		usedCheck = true;
 		onCheck();
 	};
+	const toggleKeyboard = () => {
+		showAppKeyboard = !showAppKeyboard;
+		localStorage.setItem('showAppKeyboard', String(showAppKeyboard));
+	};
 	const onToolbarHistory = () => {
 		goto('/history');
 	};
@@ -182,7 +188,7 @@
 		data={clues}
 		breakpoint={10000}
 		theme="pink"
-		showKeyboard={true}
+		showKeyboard={showAppKeyboard}
 		{keyboardStyle}
 	>
 		<div class="toolbar" slot="toolbar" let:onClear let:onReveal let:onCheck>
@@ -190,6 +196,9 @@
 			{#if !isPuzzleComplete}
 				<button class="history-button" on:click={onToolbarHistory}>History</button>
 			{/if}
+			<button on:click={toggleKeyboard} title="Toggle keyboard">
+				{showAppKeyboard ? '⌨️' : '📱'}
+			</button>
 			<button class={usedClear ? 'active' : ''} on:click={() => onToolbarClear(onClear)}
 				>Clear</button
 			>

@@ -64,6 +64,7 @@
 		padding: 0 1em;
 		line-height: 1.325;
 		font-family: var(--font);
+		font-size: 1.2em;
 	}
 
 	button {

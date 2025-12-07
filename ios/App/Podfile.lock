@@ -1,8 +1,8 @@
 PODS:
-  - Capacitor (5.6.0):
+  - Capacitor (5.7.8):
     - CapacitorCordova
-  - CapacitorCordova (5.6.0)
-  - CapacitorHaptics (5.0.7):
+  - CapacitorCordova (5.7.8)
+  - CapacitorHaptics (5.0.8):
     - Capacitor
 
 DEPENDENCIES:
@@ -19,10 +19,10 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/haptics"
 
 SPEC CHECKSUMS:
-  Capacitor: ebfc16cdb8116d04c101686b080342872da42d43
-  CapacitorCordova: 931b48fcdbc9bc985fc2f16cec9f77c794a27729
-  CapacitorHaptics: 7c7c206f0c96a628fed073830c96d28c4b2e772e
+  Capacitor: 9686e5711b48a1aa84671ede795d0175848abcba
+  CapacitorCordova: 31ab98dca2ddcee051027a1afe7e8c85c82f7297
+  CapacitorHaptics: acd823c6ed0ec2cd968a09316768144b0495a1e7
 
 PODFILE CHECKSUM: 3346ba736fdd47d9f612cddf261790d224344cf9
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2
