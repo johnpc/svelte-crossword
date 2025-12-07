@@ -58,11 +58,14 @@ const ddbSchema = a
 	})
 	.authorization((allow) => allow.resource(seedPuzzleDbFunction).to(['query', 'mutate', 'listen']));
 
-// SQL schema with authorization
-const sqlSchema = generatedSqlSchema.authorization((allow) => [
-	allow.authenticated().to(['read']),
-	allow.guest().to(['read'])
-]);
+// SQL schema with authorization and renamed models
+const sqlSchema = generatedSqlSchema
+	.authorization((allow) => [allow.authenticated().to(['read']), allow.guest().to(['read'])])
+	.renameModels(() => [
+		['profiles', 'SqlProfile'],
+		['puzzles', 'SqlPuzzle'],
+		['user_puzzles', 'SqlUserPuzzle']
+	]);
 
 // Combine both schemas
 const combinedSchema = a.combine([ddbSchema, sqlSchema]);

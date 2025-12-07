@@ -17,7 +17,7 @@ async function migrateProfiles() {
 
 		for (const profile of response.data) {
 			try {
-				await client.models.profiles.create({
+				await client.models.SqlProfile.create({
 					id: profile.id,
 					user_id: profile.userId,
 					name: profile.name,
@@ -55,7 +55,7 @@ async function migratePuzzles() {
 		for (const puzzle of response.data) {
 			try {
 				const puzData = JSON.parse(puzzle.puzJson as string);
-				await client.models.puzzles.create({
+				await client.models.SqlPuzzle.create({
 					id: puzzle.id,
 					puz_json: puzzle.puzJson as string,
 					puz_key: puzzle.puzKey || null,
@@ -93,7 +93,7 @@ async function migrateUserPuzzles() {
 
 		for (const userPuzzle of response.data) {
 			try {
-				await client.models.user_puzzles.create({
+				await client.models.SqlUserPuzzle.create({
 					id: userPuzzle.id,
 					profile_id: userPuzzle.profileCompletedPuzzlesId,
 					puzzle_id: userPuzzle.userPuzzlePuzzleId,

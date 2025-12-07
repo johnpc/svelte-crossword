@@ -29,7 +29,7 @@ async function testMigration() {
 
 		log('   Attempting to create in SQL...');
 		// @ts-expect-error - SQL models might not be in types yet
-		await client.models.profiles.create({
+		await client.models.SqlProfile.create({
 			id: profile.id + '-test',
 			user_id: profile.userId,
 			name: profile.name,
@@ -52,7 +52,7 @@ async function testMigration() {
 
 		log('   Attempting to create in SQL...');
 		// @ts-expect-error - SQL models might not be in types yet
-		await client.models.puzzles.create({
+		await client.models.SqlPuzzle.create({
 			id: puzzle.id + '-test',
 			puz_json: puzzle.puzJson as string,
 			puz_key: puzzle.puzKey || null,
@@ -75,7 +75,7 @@ async function testMigration() {
 
 		log('   Attempting to create in SQL...');
 		// @ts-expect-error - SQL models might not be in types yet
-		await client.models.user_puzzles.create({
+		await client.models.SqlUserPuzzle.create({
 			id: userPuzzle.id + '-test',
 			profile_id: userPuzzle.profileCompletedPuzzlesId,
 			puzzle_id: userPuzzle.userPuzzlePuzzleId,
