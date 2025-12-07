@@ -39,17 +39,16 @@ export const handler: Handler = async (event) => {
 				`
 				SELECT p.id, p.puz_json as puzJson
 				FROM puzzles p
-				WHERE p.id NOT IN (
-					SELECT puzzle_id FROM user_puzzles WHERE profile_id = ?
-				)
+				LEFT JOIN user_puzzles up ON p.id = up.puzzle_id AND up.profile_id = ?
+				WHERE up.id IS NULL
 				ORDER BY p.created_at DESC
 				LIMIT 1
 			`,
 				[profileId]
 			);
-			const result: any = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
-			if (result) {
-				result.puzJson = JSON.parse(result.puzJson);
+			const result = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+			if (result && typeof result === 'object' && 'puzJson' in result) {
+				result.puzJson = JSON.parse(result.puzJson as string);
 			}
 			return { statusCode: 200, body: JSON.stringify(result) };
 		}
