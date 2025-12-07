@@ -9,7 +9,7 @@
 		"build-android": "CAPACITOR_BUILD=1 npm run build && cap sync android && cap open android",
 		"android": "aws s3 cp s3://jpcbucket.com/smallcrosswords/smallcrosswords.keystore . && npm run build-android",
 		"seed": "vite-node amplify/data/helpers/seed.ts",
-		"sandbox": "ampx sandbox --outputs-out-dir ./src",
+		"sandbox": "ampx sandbox --outputs-out-dir ./src --profile personal --once",
 		"prod-config": "ampx generate outputs --app-id d34i7evdsl4uqo --branch main --out-dir src --profile personal",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
