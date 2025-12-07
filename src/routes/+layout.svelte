@@ -1,10 +1,7 @@
 <script>
 	import Header from './Header.svelte';
-	import { getAllPuzzles } from './helpers/getAllPuzzles';
-	import { resetPuzzleStoreDefaults } from './helpers/puzzleStore';
 	import './styles.css';
-	import { SvelteToast, toast } from '@zerodevx/svelte-toast';
-	import { onMount } from 'svelte';
+	import { SvelteToast } from '@zerodevx/svelte-toast';
 
 	const toastOptions = {
 		theme: {
@@ -12,16 +9,6 @@
 			'--toastColor': 'white',
 			'--toastBarBackground': 'mediumVioletRed'
 		}
-	};
-
-	onMount(() => {
-		// Warm puzzle cache
-		getAllPuzzles();
-	});
-
-	const clearCache = () => {
-		resetPuzzleStoreDefaults();
-		toast.push('Cache cleared.');
 	};
 </script>
 
@@ -34,7 +21,6 @@
 
 	<footer>
 		<SvelteToast options={toastOptions} />
-		<p>Problem? <a href="#" on:click={() => clearCache()}>clear cache</a></p>
 
 		<p>
 			Made with 🩷 in Ann Arbor, MI 🌳 <br />

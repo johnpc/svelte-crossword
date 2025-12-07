@@ -1,29 +1,11 @@
-import { persisted } from 'svelte-persisted-store';
-import type { HydratedProfile, HydratedPuzzle, HydratedUserPuzzle } from './types/types';
+import { writable } from 'svelte/store';
 
-const defaultAllPuzzles = [] as HydratedPuzzle[];
-const defaultProfile = {} as { [profileId: string]: HydratedProfile };
-const defaultUserPuzzles = {} as { [profileId: string]: HydratedUserPuzzle[] };
-const defaultLastUpdated = {} as { [profileId: string]: number };
-
-export const puzzleStore = persisted('puzzles', {
-	completedPreview: false,
-	allPuzzles: defaultAllPuzzles,
-	profile: defaultProfile,
-	userPuzzles: defaultUserPuzzles,
-	lastUpdated: defaultLastUpdated
+export const puzzleStore = writable({
+	completedPreview: false
 });
 
 export const resetPuzzleStoreDefaults = () => {
-	try {
-		puzzleStore.set({
-			completedPreview: false,
-			allPuzzles: defaultAllPuzzles,
-			profile: defaultProfile,
-			userPuzzles: defaultUserPuzzles,
-			lastUpdated: defaultLastUpdated
-		});
-	} catch (e) {
-		console.error('Failed to write to local storage', e);
-	}
+	puzzleStore.set({
+		completedPreview: false
+	});
 };

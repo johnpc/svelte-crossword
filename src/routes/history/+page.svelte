@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import { onMount } from 'svelte';
-	import type { Schema } from '../../../amplify/data/resource';
-	import { generateClient } from 'aws-amplify/data';
 	import { Amplify } from 'aws-amplify';
 	import { getCurrentUser } from 'aws-amplify/auth';
 	import type { AuthUser } from 'aws-amplify/auth';
@@ -10,29 +8,28 @@
 	import { signOut, deleteUser } from 'aws-amplify/auth';
 	import config from '../../amplify_outputs.json';
 	import { getHumanReadableDuration } from '../helpers/getHumanReadableDuration';
-	import { getAllUserPuzzles } from '../helpers/getAllUserPuzzles';
-	import { getOrCreateProfile } from '../helpers/getOrCreateProfile';
 	import { resetPuzzleStoreDefaults } from '../helpers/puzzleStore';
-	import type { HydratedUserPuzzle } from '../helpers/types/types';
-	import { getStreakInfo, type StreakInfo } from '../helpers/getStreakInfo';
+	import { getStreakInfo, type StreakInfo } from '../helpers/sql/getStreakInfo';
+	import { getUserHistory, type UserHistoryEntry } from '../helpers/sql/getUserHistory';
+	import { getOrCreateProfile } from '../helpers/sql/getOrCreateProfile';
 	import Calendar from '@event-calendar/core';
 	import DayGrid from '@event-calendar/day-grid';
 	import '@event-calendar/core/index.css';
+
 	const plugins = [DayGrid];
 	Amplify.configure(config);
-	const client = generateClient<Schema>({
-		authMode: 'userPool'
-	});
-	$: completedPuzzles = [] as HydratedUserPuzzle[];
+
+	$: completedPuzzles = [] as UserHistoryEntry[];
 	$: streakInfo = {} as StreakInfo;
 	$: currentUser = {} as AuthUser;
 	$: isLoading = true;
+
 	const getOptions = (streakInfo?: StreakInfo) => ({
 		view: 'dayGridMonth',
 		eventClassNames: ['event-override'],
 		events:
 			streakInfo?.allActivity.map((activityItem) => ({
-				title: `${activityItem.userPuzzles.length} ✓`,
+				title: `${activityItem.count} ✓`,
 				editable: false,
 				startEditable: false,
 				durationEditable: false,
@@ -43,6 +40,7 @@
 				end: new Date(activityItem.date.getTime() + 1)
 			})) ?? []
 	});
+
 	onMount(() => {
 		const setup = async () => {
 			try {
@@ -50,23 +48,22 @@
 			} catch (e) {
 				goto('/login');
 			}
-			console.log({ currentUser });
-			const profile = await getOrCreateProfile(client);
-			const userPuzzleResponse = await getAllUserPuzzles(profile);
-			streakInfo = await getStreakInfo(profile);
-			console.log({ userPuzzleResponse });
-			completedPuzzles = userPuzzleResponse;
+			const profile = await getOrCreateProfile();
+			completedPuzzles = await getUserHistory(profile.id);
+			streakInfo = await getStreakInfo(profile.id);
 			isLoading = false;
 		};
 
 		setup();
 	});
+
 	const getHumanReadableDate = (date: Date) => {
 		const timeSuffix = date.getHours() < 12 ? 'am' : 'pm';
 		const hours = date.getHours() > 12 ? date.getHours() - 12 : date.getHours();
 		const minutes = date.getMinutes() < 10 ? `0${date.getMinutes()}` : date.getMinutes();
 		return `${date.toDateString()} at ${hours}:${minutes}${timeSuffix}`;
 	};
+
 	const handleDeleteAllData = async () => {
 		const confirmed = confirm(
 			'Are you sure? This will destroy your account and log you out immediately. It cannot be undone.'

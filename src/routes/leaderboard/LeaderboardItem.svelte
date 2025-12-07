@@ -1,32 +1,24 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { Schema } from '../../../amplify/data/resource';
 	import { Amplify } from 'aws-amplify';
 	import config from '../../amplify_outputs.json';
-	import { getAllUserPuzzles } from '../helpers/getAllUserPuzzles';
-	import type { HydratedUserPuzzle } from '../helpers/types/types';
 	import { getCurrentUser } from 'aws-amplify/auth';
+	import type { LeaderboardEntry } from '../helpers/sql/getLeaderboard';
+
 	Amplify.configure(config);
-	export let profile: Schema['Profile'];
+	export let profile: LeaderboardEntry;
 
 	$: currentUserId = '';
-	$: completedPuzzles = [] as HydratedUserPuzzle[];
-	onMount(() => {
-		const setup = async () => {
-			const completedPuzzlesResponse = await getAllUserPuzzles(profile, true);
-			completedPuzzles = completedPuzzlesResponse;
-			try {
-				const currentUser = await getCurrentUser();
-				currentUserId = currentUser.userId;
-			} catch {}
-		};
-
-		setup();
+	onMount(async () => {
+		try {
+			const currentUser = await getCurrentUser();
+			currentUserId = currentUser.userId;
+		} catch {}
 	});
 </script>
 
-<li class={currentUserId === profile.userId ? 'loggedInProfile' : ''}>
-	{profile.name.split('@')[0]} ({completedPuzzles.length})
+<li class={currentUserId === profile.id ? 'loggedInProfile' : ''}>
+	{profile.name.split('@')[0]} ({profile.completedCount})
 </li>
 
 <style>

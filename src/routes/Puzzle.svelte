@@ -9,8 +9,8 @@
 	import { onMount } from 'svelte';
 	import { signOut } from 'aws-amplify/auth';
 	import { getOrCreateProfile } from './helpers/getOrCreateProfile';
-	import type { Clue, HydratedProfile, HydratedUserPuzzle } from './helpers/types/types';
-	import { getNextPuzzle } from './helpers/getNextPuzzle';
+	import type { Clue, HydratedProfile } from './helpers/types/types';
+	import { getNextPuzzle } from './helpers/sql/getNextPuzzle';
 	import { puzzleStore, resetPuzzleStoreDefaults } from './helpers/puzzleStore';
 	import { get } from 'svelte/store';
 	import { getHumanReadableDuration } from './helpers/getHumanReadableDuration';
@@ -47,7 +47,7 @@
 			}
 			profile = await getOrCreateProfile(client);
 			console.log({ onMount: true, profile });
-			const puzzle = await getNextPuzzle(profile);
+			const puzzle = await getNextPuzzle(profile.id);
 			clues = puzzle.clues;
 			puzzleId = puzzle.id;
 			puzzleTitle = puzzle.title || '';
@@ -60,6 +60,8 @@
 
 	const onPuzzleComplete = async () => {
 		vibrate();
+
+		// Create in DynamoDB
 		const userPuzzleResponse = await client.models.UserPuzzle.create({
 			usedCheck,
 			usedClear,
@@ -69,29 +71,19 @@
 			profileCompletedPuzzlesId: profile.id
 		});
 
-		const store = get(puzzleStore);
-		const cachedUserPuzzles = store.userPuzzles[profile.id];
+		// Also create in SQL
 		try {
-			puzzleStore.set({
-				...store,
-				userPuzzles: {
-					[profile.id]: [
-						...cachedUserPuzzles,
-						{
-							id: userPuzzleResponse.data.id,
-							profileCompletedPuzzlesId: userPuzzleResponse.data.profileCompletedPuzzlesId,
-							timeInSeconds: userPuzzleResponse.data.timeInSeconds,
-							usedCheck: userPuzzleResponse.data.usedCheck,
-							usedClear: userPuzzleResponse.data.usedClear,
-							usedReveal: userPuzzleResponse.data.usedReveal,
-							userPuzzlePuzzleId: userPuzzleResponse.data.userPuzzlePuzzleId,
-							createdAt: userPuzzleResponse.data.createdAt
-						} as HydratedUserPuzzle
-					]
-				}
+			await client.models.SqlUserPuzzle.create({
+				id: userPuzzleResponse.data.id,
+				profile_id: profile.id,
+				puzzle_id: puzzleId,
+				used_check: usedCheck,
+				used_clear: usedClear,
+				used_reveal: usedReveal,
+				time_in_seconds: timeInSeconds
 			});
 		} catch (e) {
-			console.error('Failed to write to local storage', e);
+			console.log({ msg: 'SQL insert failed', error: e });
 		}
 	};
 

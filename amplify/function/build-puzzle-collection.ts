@@ -104,6 +104,8 @@ const createDynamoRecord = async (buffer: Buffer, puzKey: string): Promise<boole
 		return false;
 	}
 	console.log({ isValid, puzKey });
+
+	// Create in DynamoDB
 	const createdPuzzle = await client.graphql({
 		query: createPuzzle,
 		variables: {
@@ -126,8 +128,20 @@ const createDynamoRecord = async (buffer: Buffer, puzKey: string): Promise<boole
 				puzKey
 			}
 		});
-
 		return false;
+	}
+
+	// Also create in SQL
+	try {
+		await client.models.SqlPuzzle.create({
+			id: puzKey,
+			puz_json: JSON.stringify(json),
+			puz_key: puzKey,
+			title: json.title || null,
+			author: json.author || null
+		});
+	} catch (e) {
+		console.log({ msg: 'SQL insert failed (may already exist)', puzKey, error: e });
 	}
 
 	return true;

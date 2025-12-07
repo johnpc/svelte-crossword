@@ -2,25 +2,14 @@ import type { Schema } from '../../../amplify/data/resource';
 import { generateClient } from 'aws-amplify/data';
 import { Amplify } from 'aws-amplify';
 import config from '../../amplify_outputs.json';
-import { puzzleStore } from './puzzleStore';
-import { get } from 'svelte/store';
 import type { HydratedProfile, HydratedUserPuzzle } from './types/types';
 
 Amplify.configure(config);
-const client = generateClient<Schema>({
-	authMode: 'iam'
-});
-export const getAllUserPuzzles = async (
-	profile: HydratedProfile,
-	bypassCache = false
-): Promise<HydratedUserPuzzle[]> => {
-	console.log({ time: Date.now(), invoking: 'getAllUserPuzzles' });
-	const store = get(puzzleStore);
-	if (!bypassCache && store.userPuzzles[profile.id]) {
-		console.log({ cachedUserPuzzles: store.userPuzzles[profile.id] });
-		return store.userPuzzles[profile.id];
-	}
+const client = generateClient<Schema>({ authMode: 'iam' });
 
+export const getAllUserPuzzles = async (
+	profile: HydratedProfile
+): Promise<HydratedUserPuzzle[]> => {
 	const selectionSet = [
 		'id',
 		'profileCompletedPuzzlesId',
@@ -43,6 +32,7 @@ export const getAllUserPuzzles = async (
 	let nextToken;
 	const completedPuzzleIds: string[] = [];
 	const userPuzzles = [] as HydratedUserPuzzle[];
+
 	do {
 		const completedPuzzlesResponse = (await client.models.UserPuzzle.list({
 			filter: {
@@ -69,17 +59,8 @@ export const getAllUserPuzzles = async (
 			userPuzzles.push(rawUserPuzzle);
 		}
 	} while (nextToken);
-	userPuzzles.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-	try {
-		puzzleStore.set({
-			...store,
-			userPuzzles: { [profile.id]: userPuzzles }
-		});
-	} catch (e) {
-		console.error('Failed to write to local storage', e);
-	}
 
-	console.log({ allUserPuzzles: userPuzzles });
+	userPuzzles.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
 	return userPuzzles;
 };

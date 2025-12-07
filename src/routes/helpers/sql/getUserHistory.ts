@@ -1,28 +1,47 @@
+import type { Schema } from '../../../../amplify/data/resource';
 import { generateClient } from 'aws-amplify/data';
-import type { SqlSchema } from '../../../../amplify/data/sql-resource';
 
-const client = generateClient<SqlSchema>({ authMode: 'userPool' });
+const client = generateClient<Schema>({ authMode: 'userPool' });
 
-export async function getUserHistory(profileId: string) {
-	// Single query with join - no client-side filtering needed
-	const result = await client.queries.custom({
-		query: `
-      SELECT 
-        up.id,
-        up.time_in_seconds,
-        up.used_check,
-        up.used_reveal,
-        up.used_clear,
-        up.created_at,
-        pz.title,
-        pz.author
-      FROM user_puzzles up
-      JOIN puzzles pz ON up.puzzle_id = pz.id
-      WHERE up.profile_id = ?
-      ORDER BY up.created_at DESC
-    `,
-		variables: [profileId]
+export type UserHistoryEntry = {
+	id: string;
+	profileId: string;
+	puzzleId: string;
+	usedCheck: boolean;
+	usedReveal: boolean;
+	usedClear: boolean;
+	timeInSeconds: number;
+	createdAt: string;
+	puzzleTitle?: string;
+	puzzleAuthor?: string;
+};
+
+export const getUserHistory = async (profileId: string): Promise<UserHistoryEntry[]> => {
+	const userPuzzles = await client.models.SqlUserPuzzle.list({
+		filter: { profile_id: { eq: profileId } },
+		limit: 10000
 	});
 
-	return result.data;
-}
+	const puzzleIds = Array.from(new Set(userPuzzles.data.map((up) => up.puzzle_id)));
+	const puzzles = await Promise.all(puzzleIds.map((id) => client.models.SqlPuzzle.get({ id })));
+
+	const puzzleMap = new Map(puzzles.map((p) => [p.data?.id, p.data]));
+
+	return userPuzzles.data
+		.map((up) => {
+			const puzzle = puzzleMap.get(up.puzzle_id);
+			return {
+				id: up.id,
+				profileId: up.profile_id,
+				puzzleId: up.puzzle_id,
+				usedCheck: Boolean(up.used_check),
+				usedReveal: Boolean(up.used_reveal),
+				usedClear: Boolean(up.used_clear),
+				timeInSeconds: up.time_in_seconds,
+				createdAt: up.created_at,
+				puzzleTitle: puzzle?.title || undefined,
+				puzzleAuthor: puzzle?.author || undefined
+			};
+		})
+		.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+};

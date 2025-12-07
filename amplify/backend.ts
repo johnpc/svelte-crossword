@@ -4,6 +4,7 @@ import { auth } from './auth/resource.js';
 import { data } from './data/resource.js';
 import { storage } from './storage/resource.js';
 import { seedPuzzleDbFunction } from './function/resource';
+import { sqlQueriesFunction } from './function/sql-queries/resource';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as cdk from 'aws-cdk-lib';
@@ -16,6 +17,7 @@ const authFunction = defineFunction({
 
 const backend = defineBackend({
 	seedPuzzleDbFunction,
+	sqlQueriesFunction,
 	authFunction,
 	auth,
 	storage,
@@ -29,6 +31,25 @@ underlyingAuthLambda.addEnvironment('ADMIN_API_KEY', process.env.ADMIN_API_KEY!)
 // Set up seed db lambda
 const underlyingSeedLambda = backend.seedPuzzleDbFunction.resources.lambda as LambdaFunction;
 underlyingSeedLambda.addEnvironment('ADMIN_API_KEY', process.env.ADMIN_API_KEY!);
+
+// Set up SQL queries lambda
+const underlyingSqlLambda = backend.sqlQueriesFunction.resources.lambda as LambdaFunction;
+underlyingSqlLambda.addEnvironment('SQL_CONNECTION_STRING', process.env.SQL_CONNECTION_STRING!);
+
+// Grant authenticated users permission to invoke SQL queries lambda
+backend.auth.resources.authenticatedUserIamRole.addToPrincipalPolicy(
+	new cdk.aws_iam.PolicyStatement({
+		actions: ['lambda:InvokeFunction'],
+		resources: [underlyingSqlLambda.functionArn]
+	})
+);
+
+// Add REST API for SQL queries
+backend.addOutput({
+	custom: {
+		sqlQueriesFunction: backend.sqlQueriesFunction.resources.lambda.functionName
+	}
+});
 
 // Set up RDS MySQL database
 const sqlStack = backend.createStack('crossword-sql-stack');
