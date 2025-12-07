@@ -16,8 +16,7 @@ export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
 		credentials: session.credentials
 	});
 
-	const functionName = (config.custom as { sqlQueriesFunctionName?: string })
-		?.sqlQueriesFunctionName;
+	const functionName = (config.custom as { sqlQueriesFunctionName?: string })?.sqlQueriesFunctionName;
 	if (!functionName) {
 		throw new Error('SQL queries function name not found in config');
 	}
@@ -28,6 +27,18 @@ export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
 	});
 
 	const response = await lambda.send(command);
-	const payload = JSON.parse(new TextDecoder().decode(response.Payload));
+	const payloadText = new TextDecoder().decode(response.Payload);
+	console.log('Lambda response:', payloadText);
+
+	if (!payloadText || payloadText === 'undefined') {
+		throw new Error('Lambda returned empty response');
+	}
+
+	const payload = JSON.parse(payloadText);
+	
+	if (payload.errorMessage) {
+		throw new Error(`Lambda error: ${payload.errorMessage}`);
+	}
+
 	return JSON.parse(payload.body);
 };

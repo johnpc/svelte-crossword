@@ -48,6 +48,9 @@ export const handler: Handler = async (event) => {
 				[profileId]
 			);
 			const result = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+			if (result) {
+				result.puzJson = JSON.parse(result.puzJson);
+			}
 			return { statusCode: 200, body: JSON.stringify(result) };
 		}
 
