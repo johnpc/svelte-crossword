@@ -38,21 +38,26 @@
 		const setup = async () => {
 			try {
 				const currentUser = await getCurrentUser();
-				const userAttributes = await fetchUserAttributes();
-				console.log({ currentUser, userAttributes });
+				console.log({ currentUser });
 			} catch (e) {
 				console.log(`Not logged in. goto /preview`, e);
 				goto('/preview');
 				return;
 			}
-			profile = await getOrCreateProfile();
-			console.log({ onMount: true, profile });
-			const puzzle = await getNextPuzzle(profile.id);
-			clues = puzzle.clues;
-			puzzleId = puzzle.id;
-			puzzleTitle = puzzle.title || '';
-			puzzleAuthor = puzzle.author || '';
-			console.log({ onMount: true, clues, puzzleTitle, puzzleAuthor, puzzle });
+
+			try {
+				profile = await getOrCreateProfile();
+				console.log({ onMount: true, profile });
+				const puzzle = await getNextPuzzle(profile.id);
+				clues = puzzle.clues;
+				puzzleId = puzzle.id;
+				puzzleTitle = puzzle.title || '';
+				puzzleAuthor = puzzle.author || '';
+				console.log({ onMount: true, clues, puzzleTitle, puzzleAuthor, puzzle });
+			} catch (e) {
+				console.error('Error loading profile or puzzle:', e);
+				alert('Error loading puzzle. Please try refreshing the page.');
+			}
 		};
 
 		setup();
