@@ -47,7 +47,7 @@ export const handler: Handler = async (event) => {
 			`,
 				[profileId]
 			);
-			const result = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+			const result: any = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
 			if (result) {
 				result.puzJson = JSON.parse(result.puzJson);
 			}
