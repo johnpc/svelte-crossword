@@ -44,6 +44,7 @@
 			} catch (e) {
 				console.log(`Not logged in. goto /preview`, e);
 				goto('/preview');
+				return;
 			}
 			profile = await getOrCreateProfile(client);
 			console.log({ onMount: true, profile });
@@ -77,9 +78,9 @@
 				id: userPuzzleResponse.data.id,
 				profile_id: profile.id,
 				puzzle_id: puzzleId,
-				used_check: usedCheck,
-				used_clear: usedClear,
-				used_reveal: usedReveal,
+				used_check: usedCheck ? 1 : 0,
+				used_clear: usedClear ? 1 : 0,
+				used_reveal: usedReveal ? 1 : 0,
 				time_in_seconds: timeInSeconds
 			});
 		} catch (e) {
@@ -139,7 +140,7 @@
 		usedReveal = false;
 		usedClear = false;
 		isPuzzleComplete = false;
-		const puzzle = await getNextPuzzle(profile);
+		const puzzle = await getNextPuzzle(profile.id);
 		clues = puzzle.clues;
 		puzzleId = puzzle.id;
 		puzzleTitle = puzzle.title || '';

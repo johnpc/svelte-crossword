@@ -34,7 +34,8 @@ export const schema = configure({
 			created_at: a.datetime(),
 			updated_at: a.datetime()
 		})
-		.identifier(['id']),
+		.identifier(['id'])
+		.authorization((allow) => [allow.authenticated(), allow.guest()]),
 	puzzles: a
 		.model({
 			id: a.string().required(),
@@ -45,7 +46,8 @@ export const schema = configure({
 			created_at: a.datetime(),
 			updated_at: a.datetime()
 		})
-		.identifier(['id']),
+		.identifier(['id'])
+		.authorization((allow) => [allow.authenticated(), allow.guest()]),
 	user_puzzles: a
 		.model({
 			id: a.string().required(),
@@ -59,4 +61,5 @@ export const schema = configure({
 			updated_at: a.datetime()
 		})
 		.identifier(['id'])
+		.authorization((allow) => [allow.authenticated()])
 });
