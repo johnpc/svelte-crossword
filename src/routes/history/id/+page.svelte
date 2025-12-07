@@ -1,20 +1,18 @@
 <script lang="ts">
 	import Crossword from '../../components/crossword/Crossword.svelte';
 	import { onMount } from 'svelte';
-	import type { Schema } from '../../../../amplify/data/resource';
-	import { generateClient } from 'aws-amplify/data';
 	import { Amplify } from 'aws-amplify';
-	import { getCurrentUser } from 'aws-amplify/auth';
+	import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 	import type { AuthUser } from 'aws-amplify/auth';
 	import { goto } from '$app/navigation';
 	import config from '../../../amplify_outputs.json';
 	import { page } from '$app/stores';
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import { getHumanReadableDuration } from '../../helpers/getHumanReadableDuration';
+	import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
+	
 	Amplify.configure(config);
-	const client = generateClient<Schema>({
-		authMode: 'userPool'
-	});
+	
 	type Clue = {
 		clue: string;
 		answer: string;
@@ -27,6 +25,7 @@
 	$: puzzle = {} as { puz_json: string };
 	$: currentUser = {} as AuthUser;
 	$: clues = [] as Clue[];
+	
 	onMount(() => {
 		const setup = async () => {
 			try {
@@ -37,14 +36,38 @@
 			console.log({ currentUser });
 			const userPuzzleId = $page.url.searchParams.get('id')!;
 			console.log({ userPuzzleId: userPuzzleId });
-			const userPuzzleResponse = await client.models.SqlUserPuzzle.get({
-				id: userPuzzleId
+			
+			const session = await fetchAuthSession();
+			const lambda = new LambdaClient({
+				region: 'us-west-2',
+				credentials: session.credentials
 			});
-			console.log({ userPuzzleResponse });
-			userPuzzle = userPuzzleResponse.data;
-			const puzzleResponse = await client.models.SqlPuzzle.get({ id: userPuzzle.puzzle_id });
-			console.log({ puzzleResponse });
-			puzzle = puzzleResponse.data!;
+
+			const functionName = (config.custom as { sqlQueriesFunctionName?: string })?.sqlQueriesFunctionName;
+			if (!functionName) {
+				throw new Error('SQL queries function name not found in config');
+			}
+
+			const userPuzzleCommand = new InvokeCommand({
+				FunctionName: functionName,
+				Payload: JSON.stringify({ query: 'getUserPuzzle', userPuzzleId })
+			});
+
+			const userPuzzleResponse = await lambda.send(userPuzzleCommand);
+			const userPuzzlePayload = JSON.parse(new TextDecoder().decode(userPuzzleResponse.Payload));
+			userPuzzle = JSON.parse(userPuzzlePayload.body);
+			console.log({ userPuzzle });
+
+			const puzzleCommand = new InvokeCommand({
+				FunctionName: functionName,
+				Payload: JSON.stringify({ query: 'getPuzzle', puzzleId: userPuzzle.puzzle_id })
+			});
+
+			const puzzleResponse = await lambda.send(puzzleCommand);
+			const puzzlePayload = JSON.parse(new TextDecoder().decode(puzzleResponse.Payload));
+			puzzle = JSON.parse(puzzlePayload.body);
+			console.log({ puzzle });
+			
 			const jsonAtIndex = JSON.parse(puzzle.puz_json as string);
 			const across = Object.values(jsonAtIndex.clues.across) as Clue[];
 			const down = Object.values(jsonAtIndex.clues.down) as Clue[];

@@ -109,6 +109,24 @@ export const handler: Handler = async (event) => {
 			return { statusCode: 200, body: JSON.stringify(rows) };
 		}
 
+		if (query === 'getUserPuzzle' && event.userPuzzleId) {
+			const [rows] = await conn.execute(
+				'SELECT id, profile_id, puzzle_id, used_check, used_reveal, used_clear, time_in_seconds, created_at FROM user_puzzles WHERE id = ?',
+				[event.userPuzzleId]
+			);
+			const result = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+			return { statusCode: 200, body: JSON.stringify(result) };
+		}
+
+		if (query === 'getPuzzle' && event.puzzleId) {
+			const [rows] = await conn.execute(
+				'SELECT id, puz_json, title, author FROM puzzles WHERE id = ?',
+				[event.puzzleId]
+			);
+			const result = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+			return { statusCode: 200, body: JSON.stringify(result) };
+		}
+
 		return { statusCode: 400, body: 'Unknown query' };
 	} finally {
 		await conn.end();
