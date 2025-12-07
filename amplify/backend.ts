@@ -55,7 +55,7 @@ backend.auth.resources.unauthenticatedUserIamRole.addToPrincipalPolicy(
 // Add REST API for SQL queries
 backend.addOutput({
 	custom: {
-		sqlQueriesFunction: backend.sqlQueriesFunction.resources.lambda.functionName
+		sqlQueriesFunctionName: underlyingSqlLambda.functionName
 	}
 });
 
