@@ -62,30 +62,16 @@
 	const onPuzzleComplete = async () => {
 		vibrate();
 
-		// Create in DynamoDB
-		const userPuzzleResponse = await client.models.UserPuzzle.create({
-			usedCheck,
-			usedClear,
-			usedReveal,
-			timeInSeconds,
-			userPuzzlePuzzleId: puzzleId,
-			profileCompletedPuzzlesId: profile.id
+		const userPuzzleId = crypto.randomUUID();
+		await client.models.SqlUserPuzzle.create({
+			id: userPuzzleId,
+			profile_id: profile.id,
+			puzzle_id: puzzleId,
+			used_check: usedCheck ? 1 : 0,
+			used_clear: usedClear ? 1 : 0,
+			used_reveal: usedReveal ? 1 : 0,
+			time_in_seconds: timeInSeconds
 		});
-
-		// Also create in SQL
-		try {
-			await client.models.SqlUserPuzzle.create({
-				id: userPuzzleResponse.data.id,
-				profile_id: profile.id,
-				puzzle_id: puzzleId,
-				used_check: usedCheck ? 1 : 0,
-				used_clear: usedClear ? 1 : 0,
-				used_reveal: usedReveal ? 1 : 0,
-				time_in_seconds: timeInSeconds
-			});
-		} catch (e) {
-			console.log({ msg: 'SQL insert failed', error: e });
-		}
 	};
 
 	const tickTimer = () => {

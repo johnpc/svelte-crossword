@@ -23,8 +23,8 @@
 		y: number;
 	};
 
-	$: userPuzzle = {} as Schema['UserPuzzle'];
-	$: puzzle = {} as Schema['Puzzle'];
+	$: userPuzzle = {} as { time_in_seconds: number; used_check: number; used_clear: number; used_reveal: number; puzzle_id: string };
+	$: puzzle = {} as { puz_json: string };
 	$: currentUser = {} as AuthUser;
 	$: clues = [] as Clue[];
 	onMount(() => {
@@ -37,15 +37,15 @@
 			console.log({ currentUser });
 			const userPuzzleId = $page.url.searchParams.get('id')!;
 			console.log({ userPuzzleId: userPuzzleId });
-			const userPuzzleResponse = await client.models.UserPuzzle.get({
+			const userPuzzleResponse = await client.models.SqlUserPuzzle.get({
 				id: userPuzzleId
 			});
 			console.log({ userPuzzleResponse });
 			userPuzzle = userPuzzleResponse.data;
-			const puzzleResponse = await userPuzzle.puzzle();
+			const puzzleResponse = await client.models.SqlPuzzle.get({ id: userPuzzle.puzzle_id });
 			console.log({ puzzleResponse });
 			puzzle = puzzleResponse.data!;
-			const jsonAtIndex = JSON.parse(puzzle.puzJson as string);
+			const jsonAtIndex = JSON.parse(puzzle.puz_json as string);
 			const across = Object.values(jsonAtIndex.clues.across) as Clue[];
 			const down = Object.values(jsonAtIndex.clues.down) as Clue[];
 			clues = [...across, ...down];
@@ -70,16 +70,16 @@
 	>
 		<div id="toolbar" class="toolbar" slot="toolbar" let:onReveal>
 			<p style="display: inline;">
-				Solved in {getHumanReadableDuration(userPuzzle.timeInSeconds)} seconds.
+				Solved in {getHumanReadableDuration(userPuzzle.time_in_seconds)} seconds.
 			</p>
 			{onReveal() ? '' : ''}
-			{#if userPuzzle.usedClear}
+			{#if userPuzzle.used_clear}
 				<span>Used Clear 🧹</span>
 			{/if}
-			{#if userPuzzle.usedReveal}
+			{#if userPuzzle.used_reveal}
 				<span>Used Reveal 🚨</span>
 			{/if}
-			{#if userPuzzle.usedCheck}
+			{#if userPuzzle.used_check}
 				<span>Used Check 🔎</span>
 			{/if}
 		</div>

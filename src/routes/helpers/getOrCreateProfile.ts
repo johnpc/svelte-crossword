@@ -7,21 +7,13 @@ export const getOrCreateProfile = async (client: V6Client<Schema>): Promise<Hydr
 	const currentUser = await getCurrentUser();
 	const userAttributes = await fetchUserAttributes();
 
-	const selectionSet = ['id', 'email'] as readonly (
-		| 'id'
-		| 'email'
-		| 'userId'
-		| 'name'
-		| 'completedPuzzles.*'
-	)[];
-
 	try {
-		const getProfileResponse = await client.models.Profile.get(
-			{ id: currentUser.userId },
-			{ selectionSet }
-		);
+		const getProfileResponse = await client.models.SqlProfile.get({ id: currentUser.userId });
 		if (getProfileResponse?.data?.id) {
-			return getProfileResponse.data as HydratedProfile;
+			return {
+				id: getProfileResponse.data.id,
+				email: getProfileResponse.data.email
+			};
 		}
 	} catch (e) {
 		console.warn(e);
@@ -34,30 +26,15 @@ export const getOrCreateProfile = async (client: V6Client<Schema>): Promise<Hydr
 		userAttributes.email ||
 		currentUser.username;
 
-	// Create in DynamoDB
-	await client.models.Profile.create({
+	await client.models.SqlProfile.create({
 		id: currentUser.userId,
-		userId: currentUser.userId,
+		user_id: currentUser.userId,
 		email,
 		name
 	});
 
-	// Also create in SQL
-	try {
-		await client.models.SqlProfile.create({
-			id: currentUser.userId,
-			user_id: currentUser.userId,
-			email,
-			name
-		});
-	} catch (e) {
-		console.log({ msg: 'SQL profile insert failed', error: e });
-	}
-
-	const hydratedProfile = await client.models.Profile.get(
-		{ id: currentUser.userId },
-		{ selectionSet }
-	);
-
-	return hydratedProfile.data as HydratedProfile;
+	return {
+		id: currentUser.userId,
+		email
+	};
 };
