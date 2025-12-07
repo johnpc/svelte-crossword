@@ -14,7 +14,7 @@ const getConnection = async () => {
 };
 
 export const handler: Handler = async (event) => {
-	const { query, profileId } = event;
+	const { query, profileId, userId, email, name } = event;
 	const conn = await getConnection();
 
 	try {
@@ -50,6 +50,30 @@ export const handler: Handler = async (event) => {
 			if (result && typeof result === 'object' && 'puzJson' in result) {
 				result.puzJson = JSON.parse(result.puzJson as string);
 			}
+			return { statusCode: 200, body: JSON.stringify(result) };
+		}
+
+		if (query === 'getProfile' && userId) {
+			const [rows] = await conn.execute(
+				'SELECT id, user_id, name, email FROM profiles WHERE id = ?',
+				[userId]
+			);
+			const result = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+			return { statusCode: 200, body: JSON.stringify(result) };
+		}
+
+		if (query === 'createProfile' && userId && email && name) {
+			await conn.execute('INSERT INTO profiles (id, user_id, name, email) VALUES (?, ?, ?, ?)', [
+				userId,
+				userId,
+				name,
+				email
+			]);
+			const [rows] = await conn.execute(
+				'SELECT id, user_id, name, email FROM profiles WHERE id = ?',
+				[userId]
+			);
+			const result = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
 			return { statusCode: 200, body: JSON.stringify(result) };
 		}
 
