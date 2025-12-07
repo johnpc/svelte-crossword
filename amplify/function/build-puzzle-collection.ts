@@ -133,12 +133,13 @@ const createDynamoRecord = async (buffer: Buffer, puzKey: string): Promise<boole
 
 	// Also create in SQL
 	try {
+		const puzzleData = json as { title?: string; author?: string };
 		await client.models.SqlPuzzle.create({
 			id: puzKey,
 			puz_json: JSON.stringify(json),
 			puz_key: puzKey,
-			title: json.title || null,
-			author: json.author || null
+			title: puzzleData.title || null,
+			author: puzzleData.author || null
 		});
 	} catch (e) {
 		console.log({ msg: 'SQL insert failed (may already exist)', puzKey, error: e });

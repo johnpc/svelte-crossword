@@ -47,7 +47,8 @@ export const handler: Handler = async (event) => {
 			`,
 				[profileId]
 			);
-			return { statusCode: 200, body: JSON.stringify(rows[0] || null) };
+			const result = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+			return { statusCode: 200, body: JSON.stringify(result) };
 		}
 
 		return { statusCode: 400, body: 'Unknown query' };
