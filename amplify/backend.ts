@@ -44,6 +44,14 @@ backend.auth.resources.authenticatedUserIamRole.addToPrincipalPolicy(
 	})
 );
 
+// Grant unauthenticated (guest) users permission to invoke SQL queries lambda
+backend.auth.resources.unauthenticatedUserIamRole.addToPrincipalPolicy(
+	new cdk.aws_iam.PolicyStatement({
+		actions: ['lambda:InvokeFunction'],
+		resources: [underlyingSqlLambda.functionArn]
+	})
+);
+
 // Add REST API for SQL queries
 backend.addOutput({
 	custom: {
