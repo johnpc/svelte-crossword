@@ -2,23 +2,22 @@
 	import { Haptics, ImpactStyle } from '@capacitor/haptics';
 	import Crossword from './components/crossword/Crossword.svelte';
 	import { SyncLoader } from 'svelte-loading-spinners';
-	import type { Schema } from '../../amplify/data/resource';
-	import { generateClient } from 'aws-amplify/data';
 	import { goto } from '$app/navigation';
-	import { fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
+	import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
 	import { onMount } from 'svelte';
 	import { signOut } from 'aws-amplify/auth';
-	import { getOrCreateProfile } from './helpers/getOrCreateProfile';
+	import { getOrCreateProfile } from './helpers/sql/getOrCreateProfile';
 	import type { Clue, HydratedProfile } from './helpers/types/types';
 	import { getNextPuzzle } from './helpers/sql/getNextPuzzle';
 	import { puzzleStore, resetPuzzleStoreDefaults } from './helpers/puzzleStore';
 	import { get } from 'svelte/store';
 	import { getHumanReadableDuration } from './helpers/getHumanReadableDuration';
 	import { haptic, vibrate } from './helpers/haptics';
+	import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
+	import { Amplify } from 'aws-amplify';
+	import config from '../amplify_outputs.json';
 
-	const client = generateClient<Schema>({
-		authMode: 'userPool'
-	});
+	Amplify.configure(config);
 
 	$: clues = [] as Clue[];
 	$: puzzleId = '' as string;
@@ -46,7 +45,7 @@
 				goto('/preview');
 				return;
 			}
-			profile = await getOrCreateProfile(client);
+			profile = await getOrCreateProfile();
 			console.log({ onMount: true, profile });
 			const puzzle = await getNextPuzzle(profile.id);
 			clues = puzzle.clues;
@@ -62,16 +61,36 @@
 	const onPuzzleComplete = async () => {
 		vibrate();
 
-		const userPuzzleId = crypto.randomUUID();
-		await client.models.SqlUserPuzzle.create({
-			id: userPuzzleId,
-			profile_id: profile.id,
-			puzzle_id: puzzleId,
-			used_check: usedCheck ? 1 : 0,
-			used_clear: usedClear ? 1 : 0,
-			used_reveal: usedReveal ? 1 : 0,
-			time_in_seconds: timeInSeconds
+		const session = await fetchAuthSession();
+		const lambda = new LambdaClient({
+			region: 'us-west-2',
+			credentials: session.credentials
 		});
+
+		const functionName = (config.custom as { sqlQueriesFunctionName?: string })
+			?.sqlQueriesFunctionName;
+		if (!functionName) {
+			throw new Error('SQL queries function name not found in config');
+		}
+
+		const userPuzzleId = crypto.randomUUID();
+		const command = new InvokeCommand({
+			FunctionName: functionName,
+			Payload: JSON.stringify({
+				query: 'createUserPuzzle',
+				userPuzzle: {
+					id: userPuzzleId,
+					profile_id: profile.id,
+					puzzle_id: puzzleId,
+					used_check: usedCheck ? 1 : 0,
+					used_clear: usedClear ? 1 : 0,
+					used_reveal: usedReveal ? 1 : 0,
+					time_in_seconds: timeInSeconds
+				}
+			})
+		});
+
+		await lambda.send(command);
 	};
 
 	const tickTimer = () => {

@@ -127,6 +127,16 @@ export const handler: Handler = async (event) => {
 			return { statusCode: 200, body: JSON.stringify(result) };
 		}
 
+		if (query === 'createUserPuzzle' && event.userPuzzle) {
+			const { id, profile_id, puzzle_id, used_check, used_clear, used_reveal, time_in_seconds } =
+				event.userPuzzle;
+			await conn.execute(
+				'INSERT INTO user_puzzles (id, profile_id, puzzle_id, used_check, used_clear, used_reveal, time_in_seconds) VALUES (?, ?, ?, ?, ?, ?, ?)',
+				[id, profile_id, puzzle_id, used_check, used_clear, used_reveal, time_in_seconds]
+			);
+			return { statusCode: 200, body: JSON.stringify({ success: true }) };
+		}
+
 		return { statusCode: 400, body: 'Unknown query' };
 	} finally {
 		await conn.end();
