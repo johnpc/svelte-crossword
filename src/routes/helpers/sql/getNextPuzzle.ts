@@ -26,8 +26,9 @@ export const getNextPuzzle = async (profileId: string): Promise<CrosswordClues> 
 
 	const response = await lambda.send(command);
 	const payload = JSON.parse(new TextDecoder().decode(response.Payload));
-	const puzzleData = JSON.parse(payload.body);
-	const puzData = JSON.parse(puzzleData.puzJson);
+	const puzzleData = typeof payload.body === 'string' ? JSON.parse(payload.body) : payload.body;
+	const puzData =
+		typeof puzzleData.puzJson === 'string' ? JSON.parse(puzzleData.puzJson) : puzzleData.puzJson;
 
 	const clues = [...Object.values(puzData.clues.across), ...Object.values(puzData.clues.down)];
 
