@@ -9,14 +9,20 @@ export type LeaderboardEntry = {
 	completedCount: number;
 };
 
-export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
+export type LeaderboardResponse = {
+	users: LeaderboardEntry[];
+	total: number;
+};
+
+export const getLeaderboard = async (): Promise<LeaderboardResponse> => {
 	const session = await fetchAuthSession();
 	const lambda = new LambdaClient({
 		region: 'us-west-2',
 		credentials: session.credentials
 	});
 
-	const functionName = (config.custom as { sqlQueriesFunctionName?: string })?.sqlQueriesFunctionName;
+	const functionName = (config.custom as { sqlQueriesFunctionName?: string })
+		?.sqlQueriesFunctionName;
 	if (!functionName) {
 		throw new Error('SQL queries function name not found in config');
 	}
@@ -35,7 +41,7 @@ export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
 	}
 
 	const payload = JSON.parse(payloadText);
-	
+
 	if (payload.errorMessage) {
 		throw new Error(`Lambda error: ${payload.errorMessage}`);
 	}

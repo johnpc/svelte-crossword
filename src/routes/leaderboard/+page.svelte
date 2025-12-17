@@ -8,11 +8,14 @@
 
 	Amplify.configure(config);
 	$: profiles = [] as LeaderboardEntry[];
+	$: totalUsers = 0;
 	$: isLoading = true;
 
 	onMount(() => {
 		const setup = async () => {
-			profiles = await getLeaderboard(100);
+			const result = await getLeaderboard();
+			profiles = result.users;
+			totalUsers = result.total;
 			isLoading = false;
 		};
 
@@ -37,5 +40,6 @@
 				<LeaderboardItem {profile} />
 			{/each}
 		</ol>
+		<p>Total users: {totalUsers}</p>
 	{/if}
 </div>

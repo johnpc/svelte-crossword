@@ -20,7 +20,7 @@ export const handler: Handler = async (event) => {
 	try {
 		if (query === 'leaderboard') {
 			const [rows] = await conn.execute(`
-				SELECT 
+				SELECT
 					p.id,
 					p.name,
 					p.email,
@@ -31,7 +31,12 @@ export const handler: Handler = async (event) => {
 				ORDER BY completedCount DESC
 				LIMIT 100
 			`);
-			return { statusCode: 200, body: JSON.stringify(rows) };
+			const [countResult] = await conn.execute('SELECT COUNT(*) as total FROM profiles');
+			const total =
+				Array.isArray(countResult) && countResult.length > 0
+					? (countResult[0] as { total: number }).total
+					: 0;
+			return { statusCode: 200, body: JSON.stringify({ users: rows, total }) };
 		}
 
 		if (query === 'nextPuzzle' && profileId) {
@@ -80,7 +85,7 @@ export const handler: Handler = async (event) => {
 		if (query === 'getUserHistory' && profileId) {
 			const [rows] = await conn.execute(
 				`
-				SELECT 
+				SELECT
 					up.id,
 					up.profile_id,
 					up.puzzle_id,

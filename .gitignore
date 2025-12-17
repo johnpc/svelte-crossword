@@ -17,3 +17,5 @@ amplify_outputs.json
 AuthKey_4NHG57JY9Z.p8
 *.keystore
 output.zip
+*.puz.json
+*.mjs
