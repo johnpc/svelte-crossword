@@ -51,6 +51,27 @@ npm run dev -- --open
 
 Now you can open http://localhost:5175/ to see your app in action (including hot reloading as you update the source code).
 
+## Deleting User Accounts
+
+To delete a user account (for GDPR/privacy requests):
+
+```bash
+# Dry-run mode (shows what would be deleted, but doesn't delete):
+npx tsx delete-user-account.ts user@example.com
+
+# Actually delete the account:
+DRY_RUN=false npx tsx delete-user-account.ts user@example.com
+```
+
+This script will:
+
+1. Find the user in Cognito by email
+2. Find their profile and completed puzzles in the SQL database
+3. Show what will be deleted (dry-run mode by default)
+4. Delete all user data when `DRY_RUN=false` (puzzles first, then profile, then Cognito account)
+
+Make sure your `.env` file has `SQL_CONNECTION_STRING` and `COGNITO_USER_POOL_ID` configured.
+
 ## Deploying
 
 Deploy this application to your own AWS account in one click:
