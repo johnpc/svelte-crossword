@@ -28,6 +28,11 @@
 	color: var(--color-text);
 }
 
+html, body {
+	overscroll-behavior-y: none;
+	-webkit-overflow-scrolling: touch;
+}
+
 html {
 	font-size: 100%;
 	-webkit-text-size-adjust: 100%;
