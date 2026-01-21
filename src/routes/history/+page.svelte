@@ -12,8 +12,8 @@
 	import { getStreakInfo, type StreakInfo } from '../helpers/sql/getStreakInfo';
 	import { getUserHistory, type UserHistoryEntry } from '../helpers/sql/getUserHistory';
 	import { getOrCreateProfile } from '../helpers/sql/getOrCreateProfile';
-	import Calendar from '@event-calendar/core';
-	import DayGrid from '@event-calendar/day-grid';
+	import { Calendar } from '@event-calendar/core';
+	import { DayGrid } from '@event-calendar/day-grid';
 	import '@event-calendar/core/index.css';
 
 	const plugins = [DayGrid];
