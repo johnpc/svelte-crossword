@@ -66,6 +66,10 @@
 		"svelte-persisted-store": "^0.12.0"
 	},
 	"lint-staged": {
+		"package.json": [
+			"node scripts/check-dependency-versions.cjs",
+			"prettier --write"
+		],
 		"*.ts": [
 			"prettier --write",
 			"eslint --cache --fix"
