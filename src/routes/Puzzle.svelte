@@ -26,6 +26,11 @@
 	$: profile = {} as HydratedProfile;
 	$: timeInSeconds = 0;
 	$: isPuzzleComplete = false;
+	let crosswordComplete = false;
+	$: if (crosswordComplete && !isPuzzleComplete) {
+		isPuzzleComplete = true;
+		onPuzzleComplete();
+	}
 	$: usedCheck = false;
 	$: usedReveal = false;
 	$: usedClear = false;
@@ -100,18 +105,6 @@
 
 	const tickTimer = () => {
 		setTimeout(() => {
-			if (ref) {
-				const cells = ref?.$$?.ctx?.find(
-					(element: any) => Array.isArray(element) && element?.[0]?.cells
-				);
-				if (!cells) {
-					return tickTimer();
-				}
-				isPuzzleComplete = cells.every((cell: any) => cell.isCorrect);
-				if (isPuzzleComplete) {
-					return onPuzzleComplete();
-				}
-			}
 			timeInSeconds++;
 			if (!isPuzzleComplete) {
 				tickTimer();
@@ -188,6 +181,7 @@
 
 	<Crossword
 		bind:this={ref}
+		bind:isComplete={crosswordComplete}
 		data={clues}
 		breakpoint={10000}
 		theme="pink"

@@ -65,12 +65,12 @@
 		setTimeout(() => {
 			if (ref && !isPuzzleComplete) {
 				const cells = ref?.$$?.ctx?.find(
-					(element: any) => Array.isArray(element) && element?.[0]?.cells
+					(element: any) => Array.isArray(element) && element?.[0]?.answer && element?.[0]?.value !== undefined
 				);
 				if (!cells) {
 					return tickTimer();
 				}
-				isPuzzleComplete = cells.every((cell: any) => cell.isCorrect);
+				isPuzzleComplete = cells.every((cell: any) => cell.answer === cell.value);
 				if (isPuzzleComplete) {
 					return onPuzzleComplete();
 				}

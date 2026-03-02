@@ -24,6 +24,11 @@ const backend = defineBackend({
 	data: data(authFunction)
 });
 
+// Extend refresh token validity to 10 years (max allowed)
+const { cfnUserPoolClient } = backend.auth.resources.cfnResources;
+cfnUserPoolClient.refreshTokenValidity = 3650;
+cfnUserPoolClient.tokenValidityUnits = { refreshToken: 'days' };
+
 // Set up custom authorizor lambda
 const underlyingAuthLambda = backend.authFunction.resources.lambda as LambdaFunction;
 underlyingAuthLambda.addEnvironment('ADMIN_API_KEY', process.env.ADMIN_API_KEY!);

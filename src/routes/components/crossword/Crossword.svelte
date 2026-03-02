@@ -48,6 +48,7 @@
 	$: focusedCell = cells[focusedCellIndex] || {};
 	$: cellIndexMap = fromPairs(cells.map((cell) => [cell.id, cell.index]));
 	$: percentCorrect = cells.filter((d) => d.answer === d.value).length / cells.length;
+	export let isComplete = false;
 	$: isComplete = percentCorrect == 1;
 	$: isDisableHighlight = isComplete && disableHighlight;
 	$: cells, (clues = checkClues());
