@@ -19,3 +19,7 @@ AuthKey_4NHG57JY9Z.p8
 output.zip
 *.puz.json
 *.mjs
+/coverage
+/test-results
+/playwright-report
+/.features-gen

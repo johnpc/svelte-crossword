@@ -1,350 +1,114 @@
 <script>
 	import { onMount } from 'svelte';
-	import Keyboard from '../keyboard/Keyboard.svelte';
-	import getSecondarilyFocusedCells from './helpers/getSecondarilyFocusedCells.js';
-	import getCellAfterDiff from './helpers/getCellAfterDiff.js';
+	import PuzzleGrid from './PuzzleGrid.svelte';
+	import PuzzleKeyboard from './PuzzleKeyboard.svelte';
 	import checkMobile from './helpers/checkMobile.js';
+	import { dispatch } from './helpers/puzzleController.js';
 
-	import Cell from './Cell.svelte';
+	export let clues, cells, focusedDirection, focusedCellIndex, focusedCell;
+	export let isRevealing,
+		isChecking,
+		isDisableHighlight,
+		stacked,
+		revealDuration = 0;
+	export let showKeyboard, isLoaded, keyboardStyle;
 
-	export let clues;
-	export let cells;
-	export let focusedDirection;
-	export let focusedCellIndex;
-	export let focusedCell;
-	export let isRevealing;
-	export let isChecking;
-	export let isDisableHighlight;
-	export let stacked;
-	export let revealDuration = 0;
-	export let showKeyboard;
-	export let isLoaded;
-	export let keyboardStyle;
-
-	let element;
-	let cellsHistoryIndex = 0;
-	let cellsHistory = [];
-	let focusedCellIndexHistoryIndex = 0;
-	let focusedCellIndexHistory = [];
-	let secondarilyFocusedCells = [];
-	let isMobile = false;
-	let isPuzzleFocused = false;
-	let hiddenInput;
-
+	let gridComponent,
+		hiddenInput,
+		cellsHistoryIndex = 0,
+		cellsHistory = [];
+	let focusedCellIndexHistoryIndex = 0,
+		focusedCellIndexHistory = [];
+	let isMobile = false,
+		isPuzzleFocused = false;
 	const numberOfStatesInHistory = 10;
+
 	$: w = Math.max(...cells.map((d) => d.x)) + 1;
 	$: h = Math.max(...cells.map((d) => d.y)) + 1;
 	$: keyboardVisible = typeof showKeyboard === 'boolean' ? showKeyboard : isMobile;
-
-	$: cells, focusedCellIndex, focusedDirection, updateSecondarilyFocusedCells();
 	$: sortedCellsInDirection = [...cells].sort((a, b) =>
 		focusedDirection == 'down' ? a.x - b.x || a.y - b.y : a.y - b.y || a.x - b.x
 	);
-
-	$: if (!keyboardVisible && hiddenInput) {
-		setTimeout(() => hiddenInput?.focus(), 100);
-	}
+	$: if (!keyboardVisible && hiddenInput) setTimeout(() => hiddenInput?.focus(), 100);
 
 	onMount(() => {
 		isMobile = checkMobile();
 	});
 
-	function updateSecondarilyFocusedCells() {
-		secondarilyFocusedCells = getSecondarilyFocusedCells({
+	function s() {
+		return {
 			cells,
+			cellsHistory,
+			cellsHistoryIndex,
 			focusedDirection,
-			focusedCell
-		});
-	}
-
-	function onCellUpdate(index, newValue, diff = 1, doReplaceFilledCells = false) {
-		doReplaceFilledCells = doReplaceFilledCells || !!cells[index].value;
-
-		const dimension = focusedDirection == 'across' ? 'x' : 'y';
-		const clueIndex = cells[index].clueNumbers[focusedDirection];
-		const allCellsInClue = cells.filter(
-			(cell) => cell.clueNumbers[focusedDirection] == clueIndex
-		);
-		const allCellsInClueFilled = allCellsInClue.every((cell) => cell.value);
-		
-		console.log('onCellUpdate', { 
-			index, 
-			clueIndex, 
-			allCellsInClueFilled, 
-			allCellsInClue: allCellsInClue.length,
-			currentPosition: cells[index][dimension]
-		});
-		
-		const cellsToCheck = allCellsInClueFilled ? allCellsInClue : allCellsInClue.filter(cell => !cell.value);
-		const cellsInCluePositions = cellsToCheck.map((cell) => cell[dimension]).filter(Number.isFinite);
-		const isAtEndOfClue = cells[index][dimension] == Math.max(...cellsInCluePositions);
-		
-		console.log('Navigation check', { 
-			cellsToCheck: cellsToCheck.length,
-			positions: cellsInCluePositions,
-			maxPosition: Math.max(...cellsInCluePositions),
-			isAtEndOfClue 
-		});
-
-		const newCells = [
-			...cells.slice(0, index),
-			{ ...cells[index], value: newValue.toUpperCase() },
-			...cells.slice(index + 1)
-		];
-		cellsHistory = [newCells, ...cellsHistory.slice(cellsHistoryIndex)].slice(
-			0,
+			focusedCellIndex,
+			focusedCell,
+			focusedCellIndexHistory,
+			focusedCellIndexHistoryIndex,
+			sortedCellsInDirection,
+			clues,
+			isPuzzleFocused,
 			numberOfStatesInHistory
-		);
-		cellsHistoryIndex = 0;
-		cells = newCells;
-
-		if (isAtEndOfClue && diff > 0) {
-			console.log('At end of clue, calling onFocusClueDiff');
-			onFocusClueDiff(diff);
-		} else {
-			console.log('Not at end, calling onFocusCellDiff with doReplaceFilledCells:', allCellsInClueFilled || doReplaceFilledCells);
-			onFocusCellDiff(diff, allCellsInClueFilled || doReplaceFilledCells);
-		}
+		};
 	}
-
-	function onHistoricalChange(diff) {
-		cellsHistoryIndex += -diff;
-		cells = cellsHistory[cellsHistoryIndex] || cells;
-		focusedCellIndexHistoryIndex += -diff;
-		focusedCellIndex = focusedCellIndexHistory[cellsHistoryIndex] || focusedCellIndex;
+	function fh() {
+		if (!keyboardVisible && hiddenInput) setTimeout(() => hiddenInput?.focus(), 0);
 	}
-
-	function onFocusCell(index) {
-		if (isPuzzleFocused && index == focusedCellIndex) {
-			onFlipDirection();
-			if (!keyboardVisible && hiddenInput) {
-				setTimeout(() => hiddenInput?.focus(), 0);
-			}
-		} else {
-			focusedCellIndex = index;
-
-			if (!cells[focusedCellIndex].clueNumbers[focusedDirection]) {
-				const newDirection = focusedDirection === 'across' ? 'down' : 'across';
-				focusedDirection = newDirection;
-			}
-
-			if (!keyboardVisible && hiddenInput) {
-				hiddenInput.focus();
-			}
-
-			focusedCellIndexHistory = [
-				index,
-				...focusedCellIndexHistory.slice(0, numberOfStatesInHistory)
-			];
-			focusedCellIndexHistoryIndex = 0;
-		}
+	function apply(p) {
+		if (!p) return;
+		if ('cells' in p) cells = p.cells;
+		if ('cellsHistory' in p) cellsHistory = p.cellsHistory;
+		if ('cellsHistoryIndex' in p) cellsHistoryIndex = p.cellsHistoryIndex;
+		if ('focusedCellIndex' in p) focusedCellIndex = p.focusedCellIndex;
+		if ('focusedDirection' in p) focusedDirection = p.focusedDirection;
+		if ('focusedCellIndexHistory' in p) focusedCellIndexHistory = p.focusedCellIndexHistory;
+		if ('focusedCellIndexHistoryIndex' in p)
+			focusedCellIndexHistoryIndex = p.focusedCellIndexHistoryIndex;
+		if (p._focusHidden) fh();
 	}
-
-	function onFocusCellDiff(diff, doReplaceFilledCells = true) {
-		const sortedCellsInDirectionFiltered = sortedCellsInDirection.filter((d) =>
-			doReplaceFilledCells ? true : !d.value
-		);
-		const currentCellIndex = sortedCellsInDirectionFiltered.findIndex(
-			(d) => d.index == focusedCellIndex
-		);
-		const nextCellIndex = (sortedCellsInDirectionFiltered[currentCellIndex + diff] || {}).index;
-		const nextCell = cells[nextCellIndex];
-		if (!nextCell) return;
-		onFocusCell(nextCellIndex);
+	function act(action) {
+		apply(dispatch(s(), action));
 	}
-
-	function onFocusClueDiff(diff = 1) {
-		const currentNumber = focusedCell.clueNumbers[focusedDirection];
-		const allCluesInDirectionFilled = clues
-			.filter(clue => clue.direction === focusedDirection)
-			.every(clue => clue.isFilled);
-		
-		let nextCluesInDirection = clues.filter(
-			(clue) =>
-				(allCluesInDirectionFilled || !clue.isFilled) &&
-				(diff > 0 ? clue.number > currentNumber : clue.number < currentNumber) &&
-				clue.direction == focusedDirection
-		);
-		if (diff < 0) {
-			nextCluesInDirection = nextCluesInDirection.reverse();
-		}
-		let nextClue = nextCluesInDirection[Math.abs(diff) - 1];
-		if (!nextClue) {
-			onFlipDirection();
-			nextClue = clues.filter((clue) => clue.direction == focusedDirection)[0];
-		}
-		const nextFocusedCell =
-			sortedCellsInDirection.find(
-				(cell) => (allCluesInDirectionFilled || !cell.value) && cell.clueNumbers[focusedDirection] == nextClue.number
-			) || sortedCellsInDirection.find(
-				(cell) => cell.clueNumbers[focusedDirection] == nextClue.number
-			) || {};
-		focusedCellIndex = nextFocusedCell.index || 0;
-	}
-
-	function onMoveFocus(direction, diff) {
-		if (focusedDirection != direction) {
-			const dimension = direction == 'across' ? 'x' : 'y';
-			focusedDirection = direction;
-		} else {
-			const nextCell = getCellAfterDiff({
-				diff,
-				cells,
-				direction,
-				focusedCell
-			});
-			if (!nextCell) return;
-			onFocusCell(nextCell.index);
-		}
-	}
-
-	function onFlipDirection() {
-		const newDirection = focusedDirection === 'across' ? 'down' : 'across';
-		const hasClueInNewDirection = !!focusedCell['clueNumbers'][newDirection];
-		if (hasClueInNewDirection) focusedDirection = newDirection;
-	}
-
 	function onKeydown({ detail }) {
-		const diff = detail === 'Backspace' ? -1 : 1;
-		const value = detail === 'Backspace' ? '' : detail;
-		const doReplaceFilledCells = detail === 'Backspace' ? true : false;
-
-		onCellUpdate(focusedCellIndex, value, diff, doReplaceFilledCells);
+		act({ type: 'keydown', detail });
 	}
-
 	function onNativeKeydown(e) {
-		if (e.ctrlKey || e.altKey) return;
-		
-		if (['Delete', 'Backspace'].includes(e.key)) {
-			onCellUpdate(focusedCellIndex, '', -1, true);
-			e.preventDefault();
-			setTimeout(() => hiddenInput?.focus(), 0);
-			return;
-		}
-
-		const isKeyInAlphabet = /^[a-zA-Z()]$/.test(e.key);
-		if (isKeyInAlphabet) {
-			onCellUpdate(focusedCellIndex, e.key.toUpperCase());
-			e.preventDefault();
-			setTimeout(() => hiddenInput?.focus(), 0);
-		}
+		const p = dispatch(s(), {
+			type: 'nativeKeydown',
+			key: e.key,
+			ctrlKey: e.ctrlKey,
+			altKey: e.altKey
+		});
+		if (!p) return;
+		e.preventDefault();
+		apply(p);
+		fh();
 	}
-
 	function onClick() {
-		isPuzzleFocused = element.contains(document.activeElement) || document.activeElement === hiddenInput;
+		const el = gridComponent?.getElement();
+		isPuzzleFocused =
+			(el && el.contains(document.activeElement)) || document.activeElement === hiddenInput;
 	}
 </script>
 
 <svelte:window on:click={onClick} />
-
-{#if !keyboardVisible}
-	<input
-		bind:this={hiddenInput}
-		on:keydown={onNativeKeydown}
-		style="position: fixed; left: -9999px; width: 1px; height: 1px;"
-		type="text"
-		inputmode="text"
-		autocomplete="off"
-		autocorrect="off"
-		autocapitalize="characters"
-		aria-hidden="true"
-	/>
-{/if}
-
-<section class="puzzle" class:stacked class:is-loaded={isLoaded} bind:this={element}>
-	<svg viewBox="0 0 {w} {h}">
-		{#each cells as { x, y, value, answer, index, number, custom }}
-			<Cell
-				{x}
-				{y}
-				{index}
-				{value}
-				{answer}
-				{number}
-				{custom}
-				changeDelay={isRevealing ? (revealDuration / cells.length) * index : 0}
-				{isRevealing}
-				{isChecking}
-				isFocused={focusedCellIndex == index && !isDisableHighlight}
-				isSecondarilyFocused={secondarilyFocusedCells.includes(index) && !isDisableHighlight}
-				preventFocus={!keyboardVisible}
-				{onFocusCell}
-				{onCellUpdate}
-				{onFocusClueDiff}
-				{onMoveFocus}
-				{onFlipDirection}
-				{onHistoricalChange}
-			/>
-		{/each}
-	</svg>
-</section>
-
-{#if keyboardVisible}
-	<div class="keyboard">
-		<Keyboard
-			layout="crossword"
-			style={keyboardStyle}
-			on:keydown={onKeydown}
-			--height="2.5rem"
-			--background="linen"
-			--color="currentColor"
-			--border="none"
-			--border-radius="1px"
-			--box-shadow="none"
-			--flex="1"
-			--font-family="sans-serif"
-			--font-size="12px"
-			--font-weight="normal"
-			--margin="0.125rem"
-			--min-width="1rem"
-			--opacity="1"
-			--stroke-width="1px"
-			--text-transform="none"
-			--active-background="palevioletred"
-			--active-border="none"
-			--active-box-shadow="none"
-			--active-color="currentColor"
-			--active-opacity="1"
-			--active-transform="none"
-		/>
-	</div>
-{/if}
-
-<style>
-	section {
-		position: sticky;
-		top: 1em;
-		order: 0;
-		flex: 1;
-		height: fit-content;
-	}
-
-	section.is-loaded.stacked {
-		position: relative;
-		top: auto;
-		height: auto;
-		order: -1;
-	}
-
-	svg {
-		width: 100%;
-		display: block;
-		font-size: 1px;
-		background: var(--main-color);
-		border: 4px solid var(--main-color);
-		box-sizing: border-box;
-	}
-
-	.keyboard {
-		order: 3;
-	}
-
-	@media only screen and (max-width: 720px) {
-		section:not(.is-loaded) {
-			position: relative;
-			top: auto;
-			height: auto;
-			order: -1;
-		}
-	}
-</style>
+<PuzzleGrid
+	bind:this={gridComponent}
+	bind:hiddenInputBinding={hiddenInput}
+	{cells}
+	{w}
+	{h}
+	{focusedCellIndex}
+	{focusedCell}
+	{focusedDirection}
+	{isRevealing}
+	{isChecking}
+	{isDisableHighlight}
+	{revealDuration}
+	{keyboardVisible}
+	{isLoaded}
+	{stacked}
+	{act}
+	{onNativeKeydown}
+/>
+{#if keyboardVisible}<PuzzleKeyboard {keyboardStyle} {onKeydown} />{/if}

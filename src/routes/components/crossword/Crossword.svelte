@@ -1,171 +1,108 @@
 <script>
 	import { onMount } from 'svelte';
 	import Toolbar from './Toolbar.svelte';
-	import Puzzle from './Puzzle.svelte';
-	import Clues from './Clues.svelte';
-	import CompletedMessage from './CompletedMessage.svelte';
-	import createClues from './helpers/createClues.js';
-	import createCells from './helpers/createCells.js';
-	import validateClues from './helpers/validateClues.js';
-	import { fromPairs } from './helpers/utils.js';
+	import CrosswordPlay from './CrosswordPlay.svelte';
+	import CrosswordComplete from './CrosswordComplete.svelte';
 	import themeStyles from './helpers/themeStyles.js';
+	import { checkClueCompletion } from './helpers/crosswordLogic.js';
+	import { initializeCrosswordData, processToolbarAction } from './helpers/crosswordActions.js';
 
-	export let data = [];
-	export let actions = ['clear', 'reveal', 'check'];
-	export let theme = 'classic';
-	export let revealDuration = 1000;
-	export let breakpoint = 720;
-	export let revealed = false;
-	export let disableHighlight = false;
-	export let showCompleteMessage = true;
-	export let showConfetti = true;
-	export let showKeyboard;
-	export let keyboardStyle = 'outline';
-
-	let width = 0;
-	let focusedDirection = 'across';
-	let focusedCellIndex = 0;
-	let isRevealing = false;
-	let isLoaded = false;
-	let isChecking = false;
-	let revealTimeout;
-	let clueCompletion;
-
-	let originalClues = [];
-	let validated = [];
-	let clues = [];
-	let cells = [];
-
-	const onDataUpdate = () => {
-		originalClues = createClues(data);
-		validated = validateClues(originalClues);
-		clues = originalClues.map((d) => ({ ...d }));
-		cells = createCells(originalClues);
-		reset();
-	};
-
-	$: data, onDataUpdate();
-	$: focusedCell = cells[focusedCellIndex] || {};
-	$: cellIndexMap = fromPairs(cells.map((cell) => [cell.id, cell.index]));
-	$: percentCorrect = cells.filter((d) => d.answer === d.value).length / cells.length;
+	export let data = [],
+		actions = ['clear', 'reveal', 'check'],
+		theme = 'classic';
+	export let revealDuration = 1000,
+		breakpoint = 720,
+		revealed = false;
+	export let disableHighlight = false,
+		showCompleteMessage = true,
+		showConfetti = true;
+	export let showKeyboard,
+		keyboardStyle = 'outline';
 	export let isComplete = false;
-	$: isComplete = percentCorrect == 1;
-	$: isDisableHighlight = isComplete && disableHighlight;
-	$: cells, (clues = checkClues());
-	$: cells, (revealed = !clues.filter((d) => !d.isCorrect).length);
-	$: stacked = width < breakpoint;
-	$: inlineStyles = themeStyles[theme];
 
-	onMount(() => {
-		isLoaded = true;
-	});
-
-	function checkClues() {
-		return clues.map((d) => {
-			const index = d.index;
-			const cellChecks = d.cells.map((c) => {
-				const { value } = cells.find((e) => e.id === c.id);
-				const hasValue = !!value;
-				const hasCorrect = value === c.answer;
-				return { hasValue, hasCorrect };
-			});
-			const isCorrect = cellChecks.filter((c) => c.hasCorrect).length === d.answer.length;
-			const isFilled = cellChecks.filter((c) => c.hasValue).length === d.answer.length;
-			return {
-				...d,
-				isCorrect,
-				isFilled
-			};
-		});
-	}
+	let width = 0,
+		focusedDirection = 'across',
+		focusedCellIndex = 0;
+	let isRevealing = false,
+		isLoaded = false,
+		isChecking = false,
+		revealTimeout;
+	let validated = [],
+		clues = [],
+		cells = [];
 
 	function reset() {
-		isRevealing = false;
-		isChecking = false;
+		isRevealing = isChecking = false;
 		focusedCellIndex = 0;
 		focusedDirection = 'across';
 	}
-
-	function onClear() {
+	function initData() {
+		const r = initializeCrosswordData(data);
+		validated = r.validated;
+		clues = r.clues;
+		cells = r.cells;
 		reset();
-		if (revealTimeout) clearTimeout(revealTimeout);
-		cells = cells.map((cell) => ({
-			...cell,
-			value: ''
-		}));
-	}
-
-	function onReveal() {
-		if (revealed) return true;
-		reset();
-		cells = cells.map((cell) => ({
-			...cell,
-			value: cell.answer
-		}));
-		startReveal();
-	}
-
-	function onCheck() {
-		isChecking = true;
-	}
-
-	function startReveal() {
-		isRevealing = true;
-		isChecking = false;
-		if (revealTimeout) clearTimeout(revealTimeout);
-		revealTimeout = setTimeout(() => {
-			isRevealing = false;
-		}, revealDuration + 250);
 	}
 
 	function onToolbarEvent({ detail }) {
-		if (detail === 'clear') onClear();
-		else if (detail === 'reveal') onReveal();
-		else if (detail === 'check') onCheck();
+		const ctx = {
+			cells,
+			revealed,
+			revealTimeout,
+			revealDuration,
+			endReveal: () => (isRevealing = false)
+		};
+		processToolbarAction(detail, ctx, (r) => {
+			if (r.cells) cells = r.cells;
+			if (r.isRevealing) isRevealing = true;
+			if (r.isChecking) isChecking = true;
+			if (r.revealTimeout) revealTimeout = r.revealTimeout;
+			if (r.reset) reset();
+		});
 	}
+
+	$: (data, initData());
+	$: isComplete = cells.filter((d) => d.answer === d.value).length === cells.length;
+	$: isDisableHighlight = isComplete && disableHighlight;
+	$: (cells, (clues = checkClueCompletion(clues, cells)));
+	$: (cells, (revealed = !clues.filter((d) => !d.isCorrect).length));
+	$: stacked = width < breakpoint;
+	onMount(() => (isLoaded = true));
 </script>
 
 {#if validated}
-	<article class="svelte-crossword" bind:offsetWidth={width} style={inlineStyles}>
-		<slot name="toolbar" {onClear} {onReveal} {onCheck}>
+	<article class="svelte-crossword" bind:offsetWidth={width} style={themeStyles[theme]}>
+		<slot
+			name="toolbar"
+			onClear={() => onToolbarEvent({ detail: 'clear' })}
+			onReveal={() => onToolbarEvent({ detail: 'reveal' })}
+			onCheck={() => onToolbarEvent({ detail: 'check' })}
+		>
 			<Toolbar {actions} on:event={onToolbarEvent} />
 		</slot>
-
-		<div class="play" class:stacked class:is-loaded={isLoaded}>
-			<Clues
-				{clues}
-				{cellIndexMap}
-				{stacked}
-				{isDisableHighlight}
-				{isLoaded}
-				bind:focusedCellIndex
-				bind:focusedCell
-				bind:focusedDirection
-			/>
-			<Puzzle
-				{clues}
-				{focusedCell}
-				{isRevealing}
-				{isChecking}
-				{isDisableHighlight}
-				{revealDuration}
-				{showKeyboard}
-				{stacked}
-				{isLoaded}
-				{keyboardStyle}
-				bind:cells
-				bind:focusedCellIndex
-				bind:focusedDirection
-			/>
-		</div>
-
-		{#if isComplete && !isRevealing && showCompleteMessage}
-			<CompletedMessage {showConfetti}>
-				<slot name="message">
-					<h3>You solved it!</h3>
-				</slot>
-			</CompletedMessage>
-		{/if}
+		<CrosswordPlay
+			{clues}
+			{stacked}
+			{isDisableHighlight}
+			{isLoaded}
+			{isRevealing}
+			{isChecking}
+			{revealDuration}
+			{showKeyboard}
+			{keyboardStyle}
+			bind:focusedCellIndex
+			bind:focusedDirection
+			bind:cells
+		/>
+		<CrosswordComplete
+			{isComplete}
+			{isRevealing}
+			{showCompleteMessage}
+			{showConfetti}
+			hasSlot={!!$$slots.message}
+		>
+			<slot name="message" />
+		</CrosswordComplete>
 	</article>
 {/if}
 
@@ -174,25 +111,5 @@
 		position: relative;
 		background-color: transparent;
 		font-size: 1rem;
-	}
-
-	.play {
-		display: flex;
-		flex-direction: var(--order, row);
-	}
-
-	.play.is-loaded.stacked {
-		flex-direction: column;
-	}
-
-	h3 {
-		margin: 0;
-		margin-bottom: 0.5em;
-	}
-
-	@media only screen and (max-width: 720px) {
-		.play:not(.is-loaded) {
-			flex-direction: column;
-		}
 	}
 </style>

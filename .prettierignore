@@ -17,3 +17,6 @@ yarn.lock
 static/.well-known
 ios/
 android/
+coverage/
+.features-gen/
+*.feature

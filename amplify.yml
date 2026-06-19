@@ -17,4 +17,3 @@ frontend:
     baseDirectory: build
     files:
       - '**/*'
-

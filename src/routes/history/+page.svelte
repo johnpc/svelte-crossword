@@ -7,11 +7,14 @@
 	import { goto } from '$app/navigation';
 	import { signOut, deleteUser } from 'aws-amplify/auth';
 	import config from '../../amplify_outputs.json';
-	import { getHumanReadableDuration } from '../helpers/getHumanReadableDuration';
 	import { resetPuzzleStoreDefaults } from '../helpers/puzzleStore';
 	import { getStreakInfo, type StreakInfo } from '../helpers/sql/getStreakInfo';
 	import { getUserHistory, type UserHistoryEntry } from '../helpers/sql/getUserHistory';
 	import { getOrCreateProfile } from '../helpers/sql/getOrCreateProfile';
+	import { getCalendarOptions } from './helpers/getCalendarOptions';
+	import { computeStats } from './helpers/computeStats';
+	import HistoryStats from './HistoryStats.svelte';
+	import HistoryEntry from './HistoryEntry.svelte';
 	import Calendar from '@event-calendar/core';
 	import DayGrid from '@event-calendar/day-grid';
 	import '@event-calendar/core/index.css';
@@ -23,23 +26,6 @@
 	$: streakInfo = {} as StreakInfo;
 	$: currentUser = {} as AuthUser;
 	$: isLoading = true;
-
-	const getOptions = (streakInfo?: StreakInfo) => ({
-		view: 'dayGridMonth',
-		eventClassNames: ['event-override'],
-		events:
-			streakInfo?.allActivity.map((activityItem) => ({
-				title: `${activityItem.count} ✓`,
-				editable: false,
-				startEditable: false,
-				durationEditable: false,
-				backgroundColor: 'palevioletred',
-				textColor: 'white',
-				start: activityItem.date,
-				allDay: true,
-				end: new Date(activityItem.date.getTime() + 1)
-			})) ?? []
-	});
 
 	onMount(() => {
 		const setup = async () => {
@@ -53,24 +39,14 @@
 			streakInfo = await getStreakInfo(profile.id);
 			isLoading = false;
 		};
-
 		setup();
 	});
-
-	const getHumanReadableDate = (date: Date) => {
-		const timeSuffix = date.getHours() < 12 ? 'am' : 'pm';
-		const hours = date.getHours() > 12 ? date.getHours() - 12 : date.getHours();
-		const minutes = date.getMinutes() < 10 ? `0${date.getMinutes()}` : date.getMinutes();
-		return `${date.toDateString()} at ${hours}:${minutes}${timeSuffix}`;
-	};
 
 	const handleDeleteAllData = async () => {
 		const confirmed = confirm(
 			'Are you sure? This will destroy your account and log you out immediately. It cannot be undone.'
 		);
-		if (!confirmed) {
-			return;
-		}
+		if (!confirmed) return;
 		resetPuzzleStoreDefaults();
 		await deleteUser();
 		await signOut();
@@ -83,82 +59,15 @@
 {:else if completedPuzzles.length === 0}
 	<p>You have not completed any puzzles. <a href="#" on:click={() => goto('/')}>Go Back</a></p>
 {:else}
-	<Calendar {plugins} options={getOptions(streakInfo)} />
-
-	{@const averagePuzzleTime = Math.floor(
-		completedPuzzles
-			.map(({ timeInSeconds }) => timeInSeconds)
-			.reduce((acc, cur) => {
-				return acc + cur;
-			}, 0) / completedPuzzles.length
-	)}
-	{@const checkPercent = Math.floor(
-		(completedPuzzles.filter(({ usedCheck }) => usedCheck).length / completedPuzzles.length) * 100
-	)}
-	{@const medianPuzzleTime = () => {
-		const sorted = [...completedPuzzles].sort((a, b) => a.timeInSeconds - b.timeInSeconds);
-		const middleIndex = Math.floor(sorted.length / 2);
-
-		if (sorted.length % 2 === 0) {
-			return (sorted[middleIndex - 1].timeInSeconds + sorted[middleIndex].timeInSeconds) / 2;
-		} else {
-			return sorted[middleIndex].timeInSeconds;
-		}
-	}}
-
-	<div>
-		<h1>You've completed {completedPuzzles.length} puzzles!</h1>
-		<ul>
-			<li>
-				You've been at it for <strong
-					>{getHumanReadableDuration(averagePuzzleTime * completedPuzzles.length)}</strong
-				>.
-			</li>
-			<li>
-				On average, a puzzle takes you <strong>{getHumanReadableDuration(averagePuzzleTime)}</strong
-				>.
-			</li>
-			<li>
-				A typical puzzle takes you <strong>{getHumanReadableDuration(medianPuzzleTime())}</strong>.
-			</li>
-			<li>
-				You use the "check" feature on <strong>{checkPercent}%</strong> of puzzles.
-			</li>
-			<li>
-				You've used the "reveal" feature <strong
-					>{completedPuzzles.filter(({ usedReveal }) => usedReveal).length} times</strong
-				>.
-			</li>
-			<li>
-				Current streak <strong>{streakInfo.currentStreak} days</strong>.
-			</li>
-			<li>
-				Longest streak <strong>{streakInfo.longestStreak} days</strong>.
-			</li>
-		</ul>
-	</div>
+	<Calendar {plugins} options={getCalendarOptions(streakInfo)} />
+	<HistoryStats
+		stats={computeStats(completedPuzzles)}
+		{streakInfo}
+		puzzleCount={completedPuzzles.length}
+	/>
 	<hr />
-	{#each completedPuzzles as { id, usedCheck, usedClear, usedReveal, timeInSeconds, createdAt }, i}
-		<div>
-			<h2>
-				<a href={`#${id}`} on:click={() => goto(`/history/id?id=${id}`)}
-					>Puzzle on {getHumanReadableDate(new Date(createdAt))}</a
-				>
-			</h2>
-			<span>Solved in {getHumanReadableDuration(timeInSeconds)} seconds.</span>
-			<ul {id}>
-				{#if usedClear}
-					<li>🧹 Used Clear 🧹</li>
-				{/if}
-				{#if usedCheck}
-					<li>🔎 Used Check 🔎</li>
-				{/if}
-				{#if usedReveal}
-					<li>🚨 Used Reveal 🚨</li>
-				{/if}
-			</ul>
-			<hr />
-		</div>
+	{#each completedPuzzles as puzzle}
+		<HistoryEntry {...puzzle} />
 	{/each}
 {/if}
 <hr />
@@ -168,10 +77,10 @@
 </div>
 
 <style>
-	ul {
+	:global(ul) {
 		list-style-type: none;
 	}
-	li {
+	:global(li) {
 		margin-bottom: 5px;
 	}
 	#privacy {

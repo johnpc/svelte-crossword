@@ -13,7 +13,7 @@ const checkDb = async (name: string, host: string) => {
 		const [profiles] = await conn.execute('SELECT COUNT(*) as count FROM profiles');
 		const [puzzles] = await conn.execute('SELECT COUNT(*) as count FROM puzzles');
 		const [userPuzzles] = await conn.execute('SELECT COUNT(*) as count FROM user_puzzles');
-		
+
 		console.log(`\n${name}:`);
 		console.log('  Profiles:', (profiles as any)[0].count);
 		console.log('  Puzzles:', (puzzles as any)[0].count);
@@ -24,8 +24,14 @@ const checkDb = async (name: string, host: string) => {
 };
 
 const main = async () => {
-	await checkDb('Main Branch DB', 'amplify-d34i7evdsl4uqo-main-br-crossworddb678d801a-aqzf68eplpji.crjmzvttlbaa.us-west-2.rds.amazonaws.com');
-	await checkDb('Sandbox DB', 'amplify-sveltecrosswordapp-xss-crossworddb678d801a-jg1wxdjytofe.crjmzvttlbaa.us-west-2.rds.amazonaws.com');
+	await checkDb(
+		'Main Branch DB',
+		'amplify-d34i7evdsl4uqo-main-br-crossworddb678d801a-aqzf68eplpji.crjmzvttlbaa.us-west-2.rds.amazonaws.com'
+	);
+	await checkDb(
+		'Sandbox DB',
+		'amplify-sveltecrosswordapp-xss-crossworddb678d801a-jg1wxdjytofe.crjmzvttlbaa.us-west-2.rds.amazonaws.com'
+	);
 };
 
 main();

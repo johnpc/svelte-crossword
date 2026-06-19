@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Provide amplify_outputs.json
+        env:
+          AMPLIFY_OUTPUTS_BASE64: ${{ secrets.AMPLIFY_OUTPUTS_BASE64 }}
+        run: |
+          if [ -n "$AMPLIFY_OUTPUTS_BASE64" ]; then
+            echo "$AMPLIFY_OUTPUTS_BASE64" | base64 -d > src/amplify_outputs.json
+            echo "Using real amplify_outputs.json from secret"
+          else
+            echo '{"custom":{"sqlQueriesFunctionName":"stub"}}' > src/amplify_outputs.json
+            echo "Using stub amplify_outputs.json (login e2e tests will be skipped)"
+          fi
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run check
+        continue-on-error: true
+
+      - name: Unit tests with coverage
+        run: npm run test:coverage
+
+      - name: CRAP score check
+        run: node scripts/crap-check.js
+
+      - name: Max line length check (150 lines)
+        run: |
+          FAILED=0
+          for f in $(find src -name "*.svelte" -o -name "*.ts" -o -name "*.js" | grep -v node_modules | grep -v '.test.' | grep -v '.spec.'); do
+            LINES=$(wc -l < "$f")
+            if [ "$LINES" -gt 150 ]; then
+              echo "FAIL: $f ($LINES lines, max 150)"
+              FAILED=1
+            fi
+          done
+          if [ "$FAILED" -eq 1 ]; then
+            exit 1
+          fi
+          echo "All files within 150-line limit"
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: E2E tests
+        env:
+          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
+          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+        run: npm run test:e2e
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/

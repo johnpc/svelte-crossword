@@ -8,7 +8,7 @@ const client = generateClient<Schema>({ authMode: 'iam' });
 
 const main = async () => {
 	console.log('Testing Amplify Data API connection...\n');
-	
+
 	try {
 		console.log('1. Listing SqlProfiles...');
 		const profiles = await Promise.race([
@@ -19,7 +19,7 @@ const main = async () => {
 	} catch (error) {
 		console.log('   Error:', error instanceof Error ? error.message : String(error));
 	}
-	
+
 	try {
 		console.log('\n2. Listing SqlPuzzles...');
 		const puzzles = await Promise.race([
