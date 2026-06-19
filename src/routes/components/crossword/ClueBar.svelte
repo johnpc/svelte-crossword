@@ -20,7 +20,7 @@
 </script>
 
 <div class="bar {custom}">
-	<button on:click={() => buttonHandler(currentClue.index! - 1)}>
+	<button aria-label="Previous clue" on:click={() => buttonHandler(currentClue.index! - 1)}>
 		<svg
 			width="24"
 			height="24"
@@ -35,8 +35,8 @@
 			<polyline points="15 18 9 12 15 6"></polyline>
 		</svg>
 	</button>
-	<p on:click={() => handleClueBarClicked(currentClue)}>{clue}</p>
-	<button on:click={() => buttonHandler(currentClue.index! + 1)}>
+	<button class="clue-text" on:click={() => handleClueBarClicked(currentClue)}>{clue}</button>
+	<button aria-label="Next clue" on:click={() => buttonHandler(currentClue.index! + 1)}>
 		<svg
 			width="24"
 			height="24"
@@ -62,11 +62,17 @@
 		align-items: center;
 	}
 
-	p {
+	.clue-text {
+		flex: 1;
 		padding: 0 1em;
 		line-height: 1.325;
 		font-family: var(--font);
 		font-size: 1.2em;
+		text-align: left;
+		cursor: pointer;
+		border: none;
+		color: var(--main-color);
+		background-color: transparent;
 	}
 
 	button {

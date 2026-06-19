@@ -36,25 +36,21 @@ describe('ClueBar', () => {
 
 	it('dispatches nextClue with the next index when the right button is clicked', async () => {
 		const onNextClue = vi.fn();
-		const { container } = render(ClueBar, {
+		const { getByLabelText } = render(ClueBar, {
 			props: { currentClue },
 			events: { nextClue: (e) => onNextClue(e.detail) }
 		});
-		const buttons = container.querySelectorAll('button');
-		// second button is the "next" (chevron-right) control
-		await fireEvent.click(buttons[1]);
+		await fireEvent.click(getByLabelText('Next clue'));
 		expect(onNextClue).toHaveBeenCalledWith(currentClue.index + 1);
 	});
 
 	it('dispatches nextClue with the previous index when the left button is clicked', async () => {
 		const onNextClue = vi.fn();
-		const { container } = render(ClueBar, {
+		const { getByLabelText } = render(ClueBar, {
 			props: { currentClue },
 			events: { nextClue: (e) => onNextClue(e.detail) }
 		});
-		const buttons = container.querySelectorAll('button');
-		// first button is the "prev" (chevron-left) control
-		await fireEvent.click(buttons[0]);
+		await fireEvent.click(getByLabelText('Previous clue'));
 		expect(onNextClue).toHaveBeenCalledWith(currentClue.index - 1);
 	});
 

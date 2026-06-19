@@ -6,6 +6,7 @@
 	export let showConfetti = true;
 
 	let isOpen = true;
+	const close = () => (isOpen = false);
 </script>
 
 {#if isOpen}
@@ -15,7 +16,7 @@
 				<slot />
 			</div>
 
-			<button on:click={() => (isOpen = false)}>View puzzle</button>
+			<button on:click={close}>View puzzle</button>
 		</div>
 
 		{#if showConfetti}
@@ -24,7 +25,15 @@
 			</div>
 		{/if}
 	</div>
-	<div class="curtain" transition:fade={{ duration: 250 }} on:click={() => (isOpen = false)}></div>
+	<div
+		class="curtain"
+		role="button"
+		tabindex="-1"
+		aria-label="Dismiss"
+		transition:fade={{ duration: 250 }}
+		on:click={close}
+		on:keydown={(e) => (e.key === 'Enter' || e.key === ' ' ? close() : null)}
+	></div>
 {/if}
 
 <style>

@@ -55,7 +55,10 @@
 {#if isLoading}
 	<p style="margin: auto"><SyncLoader size="60" color="palevioletred" unit="px" duration="1s" /></p>
 {:else if completedPuzzles.length === 0}
-	<p>You have not completed any puzzles. <a href="#" on:click={() => goto('/')}>Go Back</a></p>
+	<p>
+		You have not completed any puzzles.
+		<button type="button" class="link-button" on:click={() => goto('/')}>Go Back</button>
+	</p>
 {:else}
 	<Calendar {plugins} options={getCalendarOptions(streakInfo)} />
 	<HistoryStats
@@ -71,7 +74,11 @@
 <hr />
 <div id="privacy">
 	<p>We value your <a href="/privacy-policy.html">privacy</a>.</p>
-	<p><a href="#" on:click={() => handleDeleteAllData()}>Delete my account and all my data.</a></p>
+	<p>
+		<button type="button" class="link-button" on:click={() => handleDeleteAllData()}
+			>Delete my account and all my data.</button
+		>
+	</p>
 </div>
 
 <style>
@@ -82,6 +89,15 @@
 		margin-bottom: 5px;
 	}
 	#privacy {
-		text-size: xx-small;
+		font-size: xx-small;
+	}
+	.link-button {
+		background: none;
+		border: none;
+		padding: 0;
+		font: inherit;
+		color: inherit;
+		text-decoration: underline;
+		cursor: pointer;
 	}
 </style>
