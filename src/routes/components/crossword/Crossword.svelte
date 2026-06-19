@@ -16,7 +16,7 @@
 	export let disableHighlight = false,
 		showCompleteMessage = true,
 		showConfetti = true;
-	export let showKeyboard,
+	export let showKeyboard = undefined,
 		keyboardStyle = 'outline';
 	export let isComplete = false;
 

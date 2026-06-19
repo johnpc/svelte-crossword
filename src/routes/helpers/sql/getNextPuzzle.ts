@@ -1,4 +1,4 @@
-import type { CrosswordClues } from '../types/types';
+import type { Clue, CrosswordClues } from '../types/types';
 import { invokeSqlQuery } from './invokeSqlQuery';
 
 type RawPuzzle = { id: string; puzJson: string | object };
@@ -8,7 +8,10 @@ export const getNextPuzzle = async (profileId: string): Promise<CrosswordClues> 
 	const puzData =
 		typeof puzzleData.puzJson === 'string' ? JSON.parse(puzzleData.puzJson) : puzzleData.puzJson;
 
-	const clues = [...Object.values(puzData.clues.across), ...Object.values(puzData.clues.down)];
+	const clues = [
+		...Object.values(puzData.clues.across),
+		...Object.values(puzData.clues.down)
+	] as Clue[];
 
 	return {
 		id: puzzleData.id,

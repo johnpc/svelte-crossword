@@ -8,9 +8,9 @@
 	export let usedReveal: boolean;
 	export let usedCheck: boolean;
 	export let showAppKeyboard: boolean;
-	export let onClear: Function;
-	export let onReveal: Function;
-	export let onCheck: Function;
+	export let onClear: () => void;
+	export let onReveal: () => void;
+	export let onCheck: () => void;
 	export let onToggleKeyboard: () => void;
 	export let onNextPuzzle: () => void;
 

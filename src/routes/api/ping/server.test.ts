@@ -4,7 +4,7 @@ import { GET } from './+server';
 describe('GET /api/ping', () => {
 	it('returns a random number between min and max', async () => {
 		const url = new URL('http://localhost/api/ping?min=0&max=10');
-		const response = GET({ url } as Parameters<typeof GET>[0]);
+		const response = await GET({ url } as Parameters<typeof GET>[0]);
 		const text = await response.text();
 		const num = Number(text);
 		expect(num).toBeGreaterThanOrEqual(0);
@@ -13,7 +13,7 @@ describe('GET /api/ping', () => {
 
 	it('uses defaults of 0 and 1 when no params provided', async () => {
 		const url = new URL('http://localhost/api/ping');
-		const response = GET({ url } as Parameters<typeof GET>[0]);
+		const response = await GET({ url } as Parameters<typeof GET>[0]);
 		const text = await response.text();
 		const num = Number(text);
 		expect(num).toBeGreaterThanOrEqual(0);

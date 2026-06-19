@@ -14,7 +14,9 @@ describe('PuzzleKeyboard', () => {
 	});
 
 	it('renders the .keyboard wrapper containing the keyboard', () => {
-		const { container } = render(PuzzleKeyboard, { props: { onKeydown: vi.fn() } });
+		const { container } = render(PuzzleKeyboard, {
+			props: { onKeydown: vi.fn(), keyboardStyle: 'outline' }
+		});
 		const wrapper = container.querySelector('.keyboard');
 		expect(wrapper).toBeInTheDocument();
 		expect(wrapper?.querySelector('.svelte-keyboard')).toBeInTheDocument();
@@ -22,7 +24,9 @@ describe('PuzzleKeyboard', () => {
 
 	it('forwards a key press to the onKeydown callback', async () => {
 		const onKeydown = vi.fn();
-		const { getByText } = render(PuzzleKeyboard, { props: { onKeydown } });
+		const { getByText } = render(PuzzleKeyboard, {
+			props: { onKeydown, keyboardStyle: 'outline' }
+		});
 		await fireEvent.mouseDown(getByText('A'));
 		expect(onKeydown).toHaveBeenCalledOnce();
 		expect(onKeydown.mock.calls[0][0].detail).toBe('A');

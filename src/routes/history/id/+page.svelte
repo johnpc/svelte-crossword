@@ -48,7 +48,7 @@
 			<p style="display: inline;">
 				Solved in {getHumanReadableDuration(userPuzzle.time_in_seconds)} seconds.
 			</p>
-			{onReveal() ? '' : ''}
+			{void onReveal()}
 			{#if userPuzzle.used_clear}
 				<span>Used Clear 🧹</span>
 			{/if}
