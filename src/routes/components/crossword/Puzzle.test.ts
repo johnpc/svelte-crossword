@@ -18,9 +18,10 @@ vi.mock('@capacitor/haptics', () => ({
 }));
 
 import Puzzle from './Puzzle.svelte';
+import type { Cell, Clue, Direction } from './helpers/types';
 
 // 2x1 grid; ids/clueNumbers match the across clue below.
-const cells = [
+const cells: Cell[] = [
 	{
 		x: 0,
 		y: 0,
@@ -45,7 +46,7 @@ const cells = [
 	}
 ];
 
-const clues = [
+const clues: Clue[] = [
 	{
 		clue: 'Feline',
 		answer: 'CA',
@@ -64,7 +65,7 @@ const clues = [
 const makeProps = (overrides = {}) => ({
 	clues,
 	cells,
-	focusedDirection: 'across',
+	focusedDirection: 'across' as Direction,
 	focusedCellIndex: 0,
 	focusedCell: cells[0],
 	isRevealing: false,

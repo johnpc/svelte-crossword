@@ -1,24 +1,38 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import PuzzleGrid from './PuzzleGrid.svelte';
 	import PuzzleKeyboard from './PuzzleKeyboard.svelte';
 	import checkMobile from './helpers/checkMobile.js';
 	import { dispatch } from './helpers/puzzleController.js';
+	import type {
+		Cell,
+		Clue,
+		Direction,
+		PuzzleState,
+		StatePatch,
+		PuzzleAction
+	} from './helpers/types';
 
-	export let clues, cells, focusedDirection, focusedCellIndex, focusedCell;
-	export let isRevealing,
-		isChecking,
-		isDisableHighlight,
-		stacked,
-		revealDuration = 0;
-	export let showKeyboard, isLoaded, keyboardStyle;
+	export let clues: Clue[];
+	export let cells: Cell[];
+	export let focusedDirection: Direction;
+	export let focusedCellIndex: number;
+	export let focusedCell: Cell;
+	export let isRevealing: boolean;
+	export let isChecking: boolean;
+	export let isDisableHighlight: boolean;
+	export let stacked: boolean;
+	export let revealDuration = 0;
+	export let showKeyboard: boolean | undefined;
+	export let isLoaded: boolean;
+	export let keyboardStyle: string;
 
-	let gridComponent,
-		hiddenInput,
-		cellsHistoryIndex = 0,
-		cellsHistory = [];
+	let gridComponent: PuzzleGrid | undefined;
+	let hiddenInput: HTMLInputElement | undefined;
+	let cellsHistoryIndex = 0,
+		cellsHistory: Cell[][] = [];
 	let focusedCellIndexHistoryIndex = 0,
-		focusedCellIndexHistory = [];
+		focusedCellIndexHistory: number[] = [];
 	let isMobile = false,
 		isPuzzleFocused = false;
 	const numberOfStatesInHistory = 10;
@@ -32,10 +46,10 @@
 	$: if (!keyboardVisible && hiddenInput) setTimeout(() => hiddenInput?.focus(), 100);
 
 	onMount(() => {
-		isMobile = checkMobile();
+		isMobile = !!checkMobile();
 	});
 
-	function s() {
+	function s(): PuzzleState {
 		return {
 			cells,
 			cellsHistory,
@@ -54,25 +68,28 @@
 	function fh() {
 		if (!keyboardVisible && hiddenInput) setTimeout(() => hiddenInput?.focus(), 0);
 	}
-	function apply(p) {
+	function apply(p: StatePatch | null) {
 		if (!p) return;
-		if ('cells' in p) cells = p.cells;
-		if ('cellsHistory' in p) cellsHistory = p.cellsHistory;
-		if ('cellsHistoryIndex' in p) cellsHistoryIndex = p.cellsHistoryIndex;
-		if ('focusedCellIndex' in p) focusedCellIndex = p.focusedCellIndex;
-		if ('focusedDirection' in p) focusedDirection = p.focusedDirection;
-		if ('focusedCellIndexHistory' in p) focusedCellIndexHistory = p.focusedCellIndexHistory;
-		if ('focusedCellIndexHistoryIndex' in p)
+		if ('cells' in p && p.cells) cells = p.cells;
+		if ('cellsHistory' in p && p.cellsHistory) cellsHistory = p.cellsHistory;
+		if ('cellsHistoryIndex' in p && p.cellsHistoryIndex !== undefined)
+			cellsHistoryIndex = p.cellsHistoryIndex;
+		if ('focusedCellIndex' in p && p.focusedCellIndex !== undefined)
+			focusedCellIndex = p.focusedCellIndex;
+		if ('focusedDirection' in p && p.focusedDirection) focusedDirection = p.focusedDirection;
+		if ('focusedCellIndexHistory' in p && p.focusedCellIndexHistory)
+			focusedCellIndexHistory = p.focusedCellIndexHistory;
+		if ('focusedCellIndexHistoryIndex' in p && p.focusedCellIndexHistoryIndex !== undefined)
 			focusedCellIndexHistoryIndex = p.focusedCellIndexHistoryIndex;
 		if (p._focusHidden) fh();
 	}
-	function act(action) {
+	function act(action: PuzzleAction) {
 		apply(dispatch(s(), action));
 	}
-	function onKeydown({ detail }) {
+	function onKeydown({ detail }: CustomEvent<string>) {
 		act({ type: 'keydown', detail });
 	}
-	function onNativeKeydown(e) {
+	function onNativeKeydown(e: KeyboardEvent) {
 		const p = dispatch(s(), {
 			type: 'nativeKeydown',
 			key: e.key,
@@ -87,7 +104,7 @@
 	function onClick() {
 		const el = gridComponent?.getElement();
 		isPuzzleFocused =
-			(el && el.contains(document.activeElement)) || document.activeElement === hiddenInput;
+			(!!el && el.contains(document.activeElement)) || document.activeElement === hiddenInput;
 	}
 </script>
 

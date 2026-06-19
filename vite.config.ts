@@ -15,9 +15,9 @@ export default defineConfig({
 		setupFiles: ['./vitest-setup.ts'],
 		coverage: {
 			provider: 'istanbul',
-			// Instrument every included file, not just those imported by a test, so an
-			// untested file can't sneak in at an implicit 100%.
-			all: true,
+			// In Vitest 4 `include` governs instrumentation: every matching file is
+			// reported even if no test imports it, so an untested file shows as 0%
+			// rather than sneaking in at an implicit 100%.
 			reporter: ['text', 'json', 'html', 'json-summary'],
 			reportsDirectory: './coverage',
 			thresholds: {

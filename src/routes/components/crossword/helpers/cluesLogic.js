@@ -1,7 +1,7 @@
 /**
  * Returns the opposite crossword direction.
- * @param {string} direction - 'across' or 'down'
- * @returns {string}
+ * @param {import('./types').Direction} direction - 'across' or 'down'
+ * @returns {import('./types').Direction}
  */
 export function getOppositeDirection(direction) {
 	return direction === 'across' ? 'down' : 'across';
@@ -22,13 +22,13 @@ export function getNextClueIndex(index, totalClues) {
 /**
  * Computes the new focused direction and cell index after clicking a clue.
  * @param {object} params
- * @param {string} params.direction - Direction of the clicked clue
+ * @param {import('./types').Direction} params.direction - Direction of the clicked clue
  * @param {string} params.id - ID of the clicked clue
- * @param {object} params.cellIndexMap - Map of cell IDs to indices
- * @param {Array} params.clues - All clues
+ * @param {import('./types').CellIndexMap} params.cellIndexMap - Map of cell IDs to indices
+ * @param {import('./types').Clue[]} params.clues - All clues
  * @param {number} params.focusedCellIndex - Currently focused cell index
- * @param {string} params.focusedDirection - Currently focused direction
- * @returns {{ focusedDirection: string, focusedCellIndex: number }}
+ * @param {import('./types').Direction} params.focusedDirection - Currently focused direction
+ * @returns {{ focusedDirection: import('./types').Direction, focusedCellIndex: number }}
  */
 export function getClueTarget({
 	direction,

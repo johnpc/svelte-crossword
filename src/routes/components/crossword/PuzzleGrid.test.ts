@@ -12,10 +12,31 @@ vi.stubGlobal(
 );
 
 import PuzzleGrid from './PuzzleGrid.svelte';
+import type { Cell, Direction } from './helpers/types';
 
-const cells = [
-	{ x: 0, y: 0, index: 0, value: '', answer: 'C', number: 1, custom: '', id: '0-0' },
-	{ x: 1, y: 0, index: 1, value: '', answer: 'A', number: 0, custom: '', id: '1-0' }
+const cells: Cell[] = [
+	{
+		x: 0,
+		y: 0,
+		index: 0,
+		value: '',
+		answer: 'C',
+		number: 1,
+		custom: '',
+		id: '0-0',
+		clueNumbers: {}
+	},
+	{
+		x: 1,
+		y: 0,
+		index: 1,
+		value: '',
+		answer: 'A',
+		number: 0,
+		custom: '',
+		id: '1-0',
+		clueNumbers: {}
+	}
 ];
 
 const makeProps = (overrides = {}) => ({
@@ -24,7 +45,7 @@ const makeProps = (overrides = {}) => ({
 	h: 1,
 	focusedCellIndex: 0,
 	focusedCell: cells[0],
-	focusedDirection: 'across',
+	focusedDirection: 'across' as Direction,
 	isRevealing: false,
 	isChecking: false,
 	isDisableHighlight: false,

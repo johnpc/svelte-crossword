@@ -1,8 +1,14 @@
+/**
+ * @param {string[][]} rows
+ * @param {number} [page]
+ * @returns {import('../../keyboardLogic.js').KeyDef[]}
+ */
 const keys = (rows, page) =>
 	rows.flatMap((values, row) =>
 		values.map((value) => (page !== undefined ? { row, value, page } : { row, value }))
 	);
 
+/** @type {import('../../keyboardLogic.js').KeyDef[]} */
 export default [
 	...keys([
 		['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],

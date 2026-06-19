@@ -1,4 +1,11 @@
+/**
+ * Validates enriched clues: required prop types and consistent cell answers.
+ *
+ * @param {import('./types').Clue[]} data - Enriched clues with a `cells` array
+ * @returns {boolean} true when all clues pass validation
+ */
 export default function validateClues(data) {
+	/** @type {{ prop: string; type: string }[]} */
 	const props = [
 		{
 			prop: 'clue',
@@ -32,8 +39,10 @@ export default function validateClues(data) {
 	);
 
 	let failedCell = false;
-	const cells = [].concat(...data.map((d) => d.cells));
+	/** @type {import('./types').Cell[]} */
+	const cells = /** @type {import('./types').Cell[]} */ ([]).concat(...data.map((d) => d.cells));
 
+	/** @type {Record<string, string>} */
 	let dict = {};
 	cells.forEach((d) => {
 		if (!dict[d.id]) {

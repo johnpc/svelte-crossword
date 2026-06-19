@@ -5,9 +5,9 @@
 
 /**
  * Check each clue's completion status against current cell values.
- * @param {Array} clues - array of clue objects with cells and answer
- * @param {Array} cells - array of cell objects with id, value, answer
- * @returns {Array} clues annotated with isCorrect and isFilled
+ * @param {import('./types').Clue[]} clues - array of clue objects with cells and answer
+ * @param {import('./types').Cell[]} cells - array of cell objects with id, value, answer
+ * @returns {import('./types').Clue[]} clues annotated with isCorrect and isFilled
  */
 export function checkClueCompletion(clues, cells) {
 	return clues.map((d) => {
@@ -30,8 +30,8 @@ export function checkClueCompletion(clues, cells) {
 
 /**
  * Clear all cell values.
- * @param {Array} cells - array of cell objects
- * @returns {Array} new cells with value set to ''
+ * @param {import('./types').Cell[]} cells - array of cell objects
+ * @returns {import('./types').Cell[]} new cells with value set to ''
  */
 export function clearCells(cells) {
 	return cells.map((cell) => ({
@@ -42,8 +42,8 @@ export function clearCells(cells) {
 
 /**
  * Reveal all cell answers.
- * @param {Array} cells - array of cell objects with answer property
- * @returns {Array} new cells with value set to answer
+ * @param {import('./types').Cell[]} cells - array of cell objects with answer property
+ * @returns {import('./types').Cell[]} new cells with value set to answer
  */
 export function revealCells(cells) {
 	return cells.map((cell) => ({
@@ -54,13 +54,13 @@ export function revealCells(cells) {
 
 /**
  * Get the default reset state for the crossword.
- * @returns {object} { isRevealing, isChecking, focusedCellIndex, focusedDirection }
+ * @returns {{ isRevealing: boolean, isChecking: boolean, focusedCellIndex: number, focusedDirection: import('./types').Direction }}
  */
 export function getInitialState() {
 	return {
 		isRevealing: false,
 		isChecking: false,
 		focusedCellIndex: 0,
-		focusedDirection: 'across'
+		focusedDirection: /** @type {import('./types').Direction} */ ('across')
 	};
 }

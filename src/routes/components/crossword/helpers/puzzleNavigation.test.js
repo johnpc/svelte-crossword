@@ -7,12 +7,13 @@ import {
 } from './puzzleNavigation.js';
 
 describe('getNextCellInDirection', () => {
-	const sorted = [
+	/** @type {import('./types').Cell[]} */
+	const sorted = /** @type {any} */ ([
 		{ index: 0, value: '' },
 		{ index: 1, value: 'A' },
 		{ index: 2, value: '' },
 		{ index: 3, value: '' }
-	];
+	]);
 
 	it('returns next cell index moving forward', () => {
 		const result = getNextCellInDirection({
@@ -59,7 +60,7 @@ describe('getFlippedDirection', () => {
 	it('flips from across to down when clue exists', () => {
 		const result = getFlippedDirection({
 			focusedDirection: 'across',
-			focusedCell: { clueNumbers: { across: 1, down: 2 } }
+			focusedCell: /** @type {any} */ ({ clueNumbers: { across: 1, down: 2 } })
 		});
 		expect(result).toBe('down');
 	});
@@ -67,7 +68,7 @@ describe('getFlippedDirection', () => {
 	it('flips from down to across when clue exists', () => {
 		const result = getFlippedDirection({
 			focusedDirection: 'down',
-			focusedCell: { clueNumbers: { across: 1, down: 2 } }
+			focusedCell: /** @type {any} */ ({ clueNumbers: { across: 1, down: 2 } })
 		});
 		expect(result).toBe('across');
 	});
@@ -75,24 +76,26 @@ describe('getFlippedDirection', () => {
 	it('returns null when no clue in other direction', () => {
 		const result = getFlippedDirection({
 			focusedDirection: 'across',
-			focusedCell: { clueNumbers: { across: 1, down: undefined } }
+			focusedCell: /** @type {any} */ ({ clueNumbers: { across: 1, down: undefined } })
 		});
 		expect(result).toBeNull();
 	});
 });
 
 describe('getNextClueCell', () => {
-	const cells = [
+	/** @type {import('./types').Cell[]} */
+	const cells = /** @type {any} */ ([
 		{ index: 0, value: '', clueNumbers: { across: 1, down: 1 } },
 		{ index: 1, value: 'A', clueNumbers: { across: 1, down: null } },
 		{ index: 2, value: '', clueNumbers: { across: 2, down: null } },
 		{ index: 3, value: 'B', clueNumbers: { across: 2, down: null } }
-	];
-	const clues = [
+	]);
+	/** @type {import('./types').Clue[]} */
+	const clues = /** @type {any} */ ([
 		{ number: 1, direction: 'across', isFilled: false, cells: [cells[0], cells[1]] },
 		{ number: 2, direction: 'across', isFilled: false, cells: [cells[2], cells[3]] },
 		{ number: 1, direction: 'down', isFilled: false, cells: [cells[0]] }
-	];
+	]);
 	const sorted = [...cells];
 
 	it('advances to next clue forward', () => {
@@ -146,17 +149,19 @@ describe('getNextClueCell', () => {
 	});
 
 	it('falls back to any cell with matching clue number when all are filled', () => {
-		const filledCells = [
+		/** @type {import('./types').Cell[]} */
+		const filledCells = /** @type {any} */ ([
 			{ index: 0, value: 'X', clueNumbers: { across: 1, down: 1 } },
 			{ index: 1, value: 'Y', clueNumbers: { across: 1, down: null } },
 			{ index: 2, value: 'Z', clueNumbers: { across: 2, down: null } },
 			{ index: 3, value: 'W', clueNumbers: { across: 2, down: null } }
-		];
-		const partialClues = [
+		]);
+		/** @type {import('./types').Clue[]} */
+		const partialClues = /** @type {any} */ ([
 			{ number: 1, direction: 'across', isFilled: false },
 			{ number: 2, direction: 'across', isFilled: false },
 			{ number: 1, direction: 'down', isFilled: false }
-		];
+		]);
 		const result = getNextClueCell({
 			clues: partialClues,
 			cells: filledCells,
@@ -176,34 +181,36 @@ describe('getMoveFocusResult', () => {
 			diff: 1,
 			cells: [],
 			focusedDirection: 'across',
-			focusedCell: { x: 0, y: 0 }
+			focusedCell: /** @type {any} */ ({ x: 0, y: 0 })
 		});
 		expect(result).toEqual({ focusedDirection: 'down' });
 	});
 
 	it('returns null when no next cell in same direction', () => {
-		const cells = [{ x: 0, y: 0, index: 0 }];
+		/** @type {import('./types').Cell[]} */
+		const cells = /** @type {any} */ ([{ x: 0, y: 0, index: 0 }]);
 		const result = getMoveFocusResult({
 			direction: 'across',
 			diff: 1,
 			cells,
 			focusedDirection: 'across',
-			focusedCell: { x: 0, y: 0 }
+			focusedCell: /** @type {any} */ ({ x: 0, y: 0 })
 		});
 		expect(result).toBeNull();
 	});
 
 	it('returns cell index when next cell exists', () => {
-		const cells = [
+		/** @type {import('./types').Cell[]} */
+		const cells = /** @type {any} */ ([
 			{ x: 0, y: 0, index: 0 },
 			{ x: 1, y: 0, index: 1 }
-		];
+		]);
 		const result = getMoveFocusResult({
 			direction: 'across',
 			diff: 1,
 			cells,
 			focusedDirection: 'across',
-			focusedCell: { x: 0, y: 0 }
+			focusedCell: /** @type {any} */ ({ x: 0, y: 0 })
 		});
 		expect(result).toEqual({ focusedCellIndex: 1 });
 	});

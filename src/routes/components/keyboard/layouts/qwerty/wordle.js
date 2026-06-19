@@ -1,3 +1,7 @@
+/**
+ * @param {string[][]} rows
+ * @returns {import('../../keyboardLogic.js').KeyDef[]}
+ */
 const keys = (rows) => rows.flatMap((values, row) => values.map((value) => ({ row, value })));
 
 export default keys([

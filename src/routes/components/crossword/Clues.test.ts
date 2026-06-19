@@ -8,9 +8,10 @@ vi.mock('@capacitor/haptics', () => ({
 }));
 
 import Clues from './Clues.svelte';
+import type { Cell, Clue, Direction } from './helpers/types';
 
 // Minimal clues fixture matching the enriched Clue shape used by the engine.
-const clues = [
+const clues: Clue[] = [
 	{
 		clue: 'Feline',
 		answer: 'CAT',
@@ -57,9 +58,9 @@ const cellIndexMap = { '0-0': 0, '0-1': 3 };
 const base = {
 	clues,
 	cellIndexMap,
-	focusedDirection: 'across',
+	focusedDirection: 'across' as Direction,
 	focusedCellIndex: 0,
-	focusedCell: { clueNumbers: { across: 1, down: 1 } },
+	focusedCell: { clueNumbers: { across: 1, down: 1 } } as unknown as Cell,
 	stacked: false,
 	isDisableHighlight: false,
 	isLoaded: false

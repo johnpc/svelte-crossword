@@ -2,11 +2,42 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
 
 import PuzzleCells from './PuzzleCells.svelte';
+import type { Cell } from './helpers/types';
 
-const makeCells = () => [
-	{ x: 0, y: 0, index: 0, value: '', answer: 'C', number: 1, custom: '' },
-	{ x: 1, y: 0, index: 1, value: 'A', answer: 'A', number: 0, custom: '' },
-	{ x: 2, y: 0, index: 2, value: '', answer: 'T', number: 0, custom: '' }
+const makeCells = (): Cell[] => [
+	{
+		id: '0-0',
+		x: 0,
+		y: 0,
+		index: 0,
+		value: '',
+		answer: 'C',
+		number: 1,
+		custom: '',
+		clueNumbers: {}
+	},
+	{
+		id: '1-0',
+		x: 1,
+		y: 0,
+		index: 1,
+		value: 'A',
+		answer: 'A',
+		number: 0,
+		custom: '',
+		clueNumbers: {}
+	},
+	{
+		id: '2-0',
+		x: 2,
+		y: 0,
+		index: 2,
+		value: '',
+		answer: 'T',
+		number: 0,
+		custom: '',
+		clueNumbers: {}
+	}
 ];
 
 const makeProps = (overrides = {}) => ({

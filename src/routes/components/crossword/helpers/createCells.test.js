@@ -2,11 +2,16 @@ import { describe, it, expect } from 'vitest';
 import createCells from './createCells.js';
 import createClues from './createClues.js';
 
+/** @type {import('./types').ClueInput[]} */
 const sampleClues = [
 	{ answer: 'CAT', clue: 'A feline', x: 0, y: 0, direction: 'across' },
 	{ answer: 'COP', clue: 'An officer', x: 0, y: 0, direction: 'down' }
 ];
 
+/**
+ * @param {import('./types').ClueInput[]} data
+ * @returns {import('./types').Clue[]}
+ */
 function getProcessedClues(data) {
 	return createClues(data);
 }
@@ -23,7 +28,7 @@ describe('createCells', () => {
 	it('consolidates clue numbers for intersecting cells', () => {
 		const clues = getProcessedClues(sampleClues);
 		const cells = createCells(clues);
-		const originCell = cells.find((c) => c.id === '0-0');
+		const originCell = /** @type {import('./types').Cell} */ (cells.find((c) => c.id === '0-0'));
 		expect(originCell.clueNumbers).toHaveProperty('across');
 		expect(originCell.clueNumbers).toHaveProperty('down');
 	});
@@ -55,13 +60,14 @@ describe('createCells', () => {
 	});
 
 	it('consolidates custom classes on duplicate cells', () => {
+		/** @type {import('./types').ClueInput[]} */
 		const data = [
 			{ answer: 'AB', clue: 'test1', x: 0, y: 0, direction: 'across', custom: 'class-a' },
 			{ answer: 'AC', clue: 'test2', x: 0, y: 0, direction: 'down', custom: 'class-b' }
 		];
 		const clues = getProcessedClues(data);
 		const cells = createCells(clues);
-		const originCell = cells.find((c) => c.id === '0-0');
+		const originCell = /** @type {import('./types').Cell} */ (cells.find((c) => c.id === '0-0'));
 		expect(originCell.custom).toContain('class-a');
 		expect(originCell.custom).toContain('class-b');
 	});

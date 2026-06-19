@@ -3,7 +3,11 @@ import createCells from './createCells.js';
 import validateClues from './validateClues.js';
 import { clearCells, revealCells } from './crosswordLogic.js';
 
-/** Initialize crossword data from raw input. */
+/**
+ * Initialize crossword data from raw input.
+ * @param {import('./types').ClueInput[]} data - Raw authored clues
+ * @returns {{ validated: boolean, clues: import('./types').Clue[], cells: import('./types').Cell[] }}
+ */
 export function initializeCrosswordData(data) {
 	const originalClues = createClues(data);
 	const validated = validateClues(originalClues);
@@ -12,7 +16,22 @@ export function initializeCrosswordData(data) {
 	return { validated, clues, cells };
 }
 
-/** Process a toolbar action and apply state via callback. */
+/**
+ * @typedef {object} ToolbarContext
+ * @property {ReturnType<typeof setTimeout>} [revealTimeout]
+ * @property {import('./types').Cell[]} cells
+ * @property {boolean} [revealed]
+ * @property {() => void} endReveal
+ * @property {number} revealDuration
+ */
+
+/**
+ * Process a toolbar action and apply state via callback.
+ * @param {'clear' | 'reveal' | 'check' | string} action
+ * @param {ToolbarContext} ctx
+ * @param {(patch: Record<string, unknown>) => void} apply
+ * @returns {void}
+ */
 export function processToolbarAction(action, ctx, apply) {
 	if (ctx.revealTimeout) clearTimeout(ctx.revealTimeout);
 	if (action === 'clear') {

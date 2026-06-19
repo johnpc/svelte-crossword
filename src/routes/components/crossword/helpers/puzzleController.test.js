@@ -1,39 +1,42 @@
 import { describe, it, expect } from 'vitest';
 import { dispatch } from './puzzleController.js';
 
-const makeCells = () => [
-	{
-		x: 0,
-		y: 0,
-		index: 0,
-		value: '',
-		answer: 'A',
-		isFilled: false,
-		clueNumbers: { across: 1, down: 1 }
-	},
-	{
-		x: 1,
-		y: 0,
-		index: 1,
-		value: '',
-		answer: 'B',
-		isFilled: false,
-		clueNumbers: { across: 1 }
-	},
-	{
-		x: 0,
-		y: 1,
-		index: 2,
-		value: '',
-		answer: 'C',
-		isFilled: false,
-		clueNumbers: { down: 1 }
-	}
-];
+/** @returns {import('./types').Cell[]} */
+const makeCells = () =>
+	/** @type {any} */ ([
+		{
+			x: 0,
+			y: 0,
+			index: 0,
+			value: '',
+			answer: 'A',
+			isFilled: false,
+			clueNumbers: { across: 1, down: 1 }
+		},
+		{
+			x: 1,
+			y: 0,
+			index: 1,
+			value: '',
+			answer: 'B',
+			isFilled: false,
+			clueNumbers: { across: 1 }
+		},
+		{
+			x: 0,
+			y: 1,
+			index: 2,
+			value: '',
+			answer: 'C',
+			isFilled: false,
+			clueNumbers: { down: 1 }
+		}
+	]);
 
+/** @returns {import('./types').PuzzleState} */
 const makeState = () => {
 	const cells = makeCells();
-	return {
+	return /** @type {any} */ ({
 		cells,
 		cellsHistory: [],
 		cellsHistoryIndex: 0,
@@ -59,7 +62,7 @@ const makeState = () => {
 		],
 		isPuzzleFocused: false,
 		numberOfStatesInHistory: 10
-	};
+	});
 };
 
 describe('dispatch', () => {
@@ -72,7 +75,7 @@ describe('dispatch', () => {
 			doReplace: false
 		});
 		expect(r).toBeDefined();
-		expect(r.cells).toBeDefined();
+		expect(r?.cells).toBeDefined();
 	});
 
 	it('handles historicalChange action', () => {
@@ -88,7 +91,7 @@ describe('dispatch', () => {
 	it('handles focusCell action', () => {
 		const r = dispatch(makeState(), { type: 'focusCell', index: 1 });
 		expect(r).toBeDefined();
-		expect(r.focusedCellIndex).toBe(1);
+		expect(r?.focusedCellIndex).toBe(1);
 	});
 
 	it('handles focusClueDiff action', () => {

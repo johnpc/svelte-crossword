@@ -2,11 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { processCellUpdate, classifyKey, processKeyboardEvent } from './puzzleCellUpdate.js';
 
 describe('processCellUpdate', () => {
-	const baseCells = [
+	/** @type {import('./types').Cell[]} */
+	const baseCells = /** @type {any} */ ([
 		{ x: 0, y: 0, index: 0, value: '', clueNumbers: { across: 1, down: 1 } },
 		{ x: 1, y: 0, index: 1, value: '', clueNumbers: { across: 1, down: undefined } },
 		{ x: 2, y: 0, index: 2, value: '', clueNumbers: { across: 1, down: undefined } }
-	];
+	]);
 
 	it('updates cell value to uppercase', () => {
 		const result = processCellUpdate({

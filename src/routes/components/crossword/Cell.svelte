@@ -1,28 +1,34 @@
-<script>
+<script lang="ts">
 	import { getKeydownAction } from './helpers/cellLogic.js';
 	import CellText from './CellText.svelte';
+	import type { Direction } from './helpers/types';
 
-	export let x;
-	export let y;
-	export let value;
-	export let answer;
-	export let number;
-	export let index;
-	export let custom;
+	export let x: number;
+	export let y: number;
+	export let value: string | undefined;
+	export let answer: string;
+	export let number: number | undefined;
+	export let index: number;
+	export let custom: string | undefined;
 	export let changeDelay = 0;
 	export let isRevealing = false;
 	export let isChecking = false;
 	export let isFocused = false;
 	export let isSecondarilyFocused = false;
 	export let preventFocus = false;
-	export let onFocusCell = () => {};
-	export let onCellUpdate = () => {};
-	export let onFocusClueDiff = () => {};
-	export let onMoveFocus = () => {};
-	export let onFlipDirection = () => {};
-	export let onHistoricalChange = () => {};
+	export let onFocusCell: (index: number) => void = () => {};
+	export let onCellUpdate: (
+		index: number,
+		value: string,
+		diff?: number,
+		doReplace?: boolean
+	) => void = () => {};
+	export let onFocusClueDiff: (diff: number) => void = () => {};
+	export let onMoveFocus: (direction: Direction, diff: number) => void = () => {};
+	export let onFlipDirection: () => void = () => {};
+	export let onHistoricalChange: (diff: number) => void = () => {};
 
-	let element;
+	let element: SVGGElement | undefined;
 
 	$: (isFocused, onFocusSelf());
 	$: correct = answer === value;
@@ -33,7 +39,7 @@
 		if (isFocused && !preventFocus) element.focus();
 	}
 
-	function onKeydown(e) {
+	function onKeydown(e: KeyboardEvent) {
 		const action = getKeydownAction(e);
 		if (!action) return;
 		if (action.preventDefault) {
@@ -41,12 +47,12 @@
 			e.stopPropagation();
 		}
 
-		if (action.type === 'historicalChange') onHistoricalChange(action.diff);
-		else if (action.type === 'focusClueDiff') onFocusClueDiff(action.diff);
+		if (action.type === 'historicalChange') onHistoricalChange(action.diff!);
+		else if (action.type === 'focusClueDiff') onFocusClueDiff(action.diff!);
 		else if (action.type === 'flipDirection') onFlipDirection();
 		else if (action.type === 'delete') onCellUpdate(index, '', -1, true);
-		else if (action.type === 'letter') onCellUpdate(index, action.value);
-		else if (action.type === 'moveFocus') onMoveFocus(action.direction, action.diff);
+		else if (action.type === 'letter') onCellUpdate(index, action.value!);
+		else if (action.type === 'moveFocus') onMoveFocus(action.direction!, action.diff!);
 	}
 </script>
 

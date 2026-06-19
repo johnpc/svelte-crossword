@@ -26,9 +26,10 @@ vi.mock('@capacitor/haptics', () => ({
 }));
 
 import CrosswordPlay from './CrosswordPlay.svelte';
+import type { Cell, Clue } from './helpers/types';
 
 // 2x2-ish cell set; ids match the down/across clue ids below.
-const cells = [
+const cells: Cell[] = [
 	{
 		x: 0,
 		y: 0,
@@ -42,7 +43,7 @@ const cells = [
 	{ x: 1, y: 0, index: 1, value: '', answer: 'A', number: 0, id: '1-0', clueNumbers: { across: 1 } }
 ];
 
-const clues = [
+const clues: Clue[] = [
 	{
 		clue: 'Feline',
 		answer: 'CA',
@@ -78,12 +79,12 @@ const base = {
 	isDisableHighlight: false,
 	isLoaded: false,
 	focusedCellIndex: 0,
-	focusedDirection: 'across',
+	focusedDirection: 'across' as const,
 	isRevealing: false,
 	isChecking: false,
 	revealDuration: 0,
 	showKeyboard: false,
-	keyboardStyle: {}
+	keyboardStyle: 'outline'
 };
 
 describe('CrosswordPlay', () => {

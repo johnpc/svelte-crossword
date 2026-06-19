@@ -2,10 +2,12 @@
  * Assigns sequential clue numbers to clue entries,
  * reusing the same number when multiple clues share the same start position.
  *
- * @param {Array} clues - Array of clue objects with an `id` property
- * @returns {Array} Clue objects augmented with a `number` property
+ * @template {{ id: string }} T
+ * @param {T[]} clues - Array of clue objects with an `id` property
+ * @returns {(T & { number: number })[]} Clue objects augmented with a `number` property
  */
 export default function assignClueNumbers(clues) {
+	/** @type {Record<string, number>} */
 	const lookup = {};
 	let currentNumber = 1;
 

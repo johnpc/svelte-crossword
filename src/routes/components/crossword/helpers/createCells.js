@@ -1,9 +1,17 @@
+/**
+ * Flattens, dedupes, and indexes the cells from a set of enriched clues.
+ *
+ * @param {import('./types').Clue[]} data - Enriched clues, each with a `cells` array
+ * @returns {import('./types').Cell[]} Unique, indexed grid cells
+ */
 export default function createCells(data) {
-	const cells = [].concat(...data.map((d) => d.cells));
+	/** @type {import('./types').Cell[]} */
+	const cells = /** @type {import('./types').Cell[]} */ ([]).concat(...data.map((d) => d.cells));
+	/** @type {Record<string, import('./types').Cell>} */
 	let dict = {};
 
 	// sort so that ones with number values come first and dedupe
-	cells.sort((a, b) => a.y - b.y || a.x - b.x || b.number - a.number);
+	cells.sort((a, b) => a.y - b.y || a.x - b.x || Number(b.number) - Number(a.number));
 	cells.forEach((d) => {
 		if (!dict[d.id]) {
 			dict[d.id] = d;

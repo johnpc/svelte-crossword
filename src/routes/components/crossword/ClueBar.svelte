@@ -1,24 +1,26 @@
-<script>
+<script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { Haptics, ImpactStyle } from '@capacitor/haptics';
 	import { haptic } from '../../helpers/haptics';
-	const dispatch = createEventDispatcher();
-	const buttonHandler = (index) => {
+	import type { Clue } from './helpers/types';
+
+	const dispatch = createEventDispatcher<{ nextClue: number; clueBarClicked: Partial<Clue> }>();
+	const buttonHandler = (index: number) => {
 		haptic();
 		dispatch('nextClue', index);
 	};
 
-	const handleClueBarClicked = (currentClue) => {
+	const handleClueBarClicked = (currentClue: Partial<Clue>) => {
 		dispatch('clueBarClicked', currentClue);
 	};
 
-	export let currentClue = {};
+	export let currentClue: Partial<Clue> = {};
 	$: clue = currentClue['clue'];
 	$: custom = currentClue['custom'] || '';
 </script>
 
 <div class="bar {custom}">
-	<button on:click={() => buttonHandler(currentClue.index - 1)}>
+	<button on:click={() => buttonHandler(currentClue.index! - 1)}>
 		<svg
 			width="24"
 			height="24"
@@ -34,7 +36,7 @@
 		</svg>
 	</button>
 	<p on:click={() => handleClueBarClicked(currentClue)}>{clue}</p>
-	<button on:click={() => buttonHandler(currentClue.index + 1)}>
+	<button on:click={() => buttonHandler(currentClue.index! + 1)}>
 		<svg
 			width="24"
 			height="24"

@@ -1,9 +1,9 @@
-<script>
+<script lang="ts">
 	import { quadIn } from 'svelte/easing';
 
-	export let numberOfElements = 50;
-	export let durationInSeconds = 2;
-	export let colors = [
+	export let numberOfElements: number = 50;
+	export let durationInSeconds: number = 2;
+	export let colors: string[] = [
 		'#fff',
 		'#c7ecee',
 		'#778beb',
@@ -17,11 +17,11 @@
 		'#475c83'
 	];
 
-	const pickFrom = (arr) => arr[Math.floor(Math.random() * arr.length)];
-	const randomNumber = (min, max) => Math.random() * (max - min) + min;
-	const getManyOf = (str) => new Array(30).fill(0).map(() => str);
+	const pickFrom = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+	const randomNumber = (min: number, max: number): number => Math.random() * (max - min) + min;
+	const getManyOf = (str: string): string[] => new Array(30).fill(0).map(() => str);
 
-	const elementOptions = [
+	const elementOptions: string[] = [
 		...getManyOf(`<circle r="3" />`),
 		...getManyOf(
 			`<path d="M3.83733 4.73234C4.38961 4.73234 4.83733 4.28463 4.83733 3.73234C4.83733 3.18006 4.38961 2.73234 3.83733 2.73234C3.28505 2.73234 2.83733 3.18006 2.83733 3.73234C2.83733 4.28463 3.28505 4.73234 3.83733 4.73234ZM3.83733 6.73234C5.49418 6.73234 6.83733 5.38919 6.83733 3.73234C6.83733 2.07549 5.49418 0.732341 3.83733 0.732341C2.18048 0.732341 0.83733 2.07549 0.83733 3.73234C0.83733 5.38919 2.18048 6.73234 3.83733 6.73234Z" />`
@@ -36,9 +36,9 @@
 			.map((letter) => `<text style="font-weight: 700">${letter}</text>`)
 	];
 
-	const allElements = new Array(numberOfElements)
+	const allElements: [string, string, number][] = new Array(numberOfElements)
 		.fill(0)
-		.map((_, i) => [pickFrom(elementOptions), pickFrom(colors), Math.random()]);
+		.map(() => [pickFrom(elementOptions), pickFrom(colors), Math.random()]);
 </script>
 
 <svg class="confetti" viewBox="-10 -10 10 10">

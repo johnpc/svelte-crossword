@@ -1,5 +1,6 @@
-<script>
+<script lang="ts">
 	import { fade } from 'svelte/transition';
+	import type { FadeParams } from 'svelte/transition';
 	import Confetti from './Confetti.svelte';
 
 	export let showConfetti = true;
@@ -8,7 +9,7 @@
 </script>
 
 {#if isOpen}
-	<div class="completed" transition:fade={{ y: 20 }}>
+	<div class="completed" transition:fade={{ y: 20 } as FadeParams}>
 		<div class="content">
 			<div class="message">
 				<slot />

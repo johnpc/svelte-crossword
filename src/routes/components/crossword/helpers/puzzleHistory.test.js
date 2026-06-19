@@ -2,9 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { applyHistoricalChange } from './puzzleHistory.js';
 
 describe('applyHistoricalChange', () => {
-	const newestCells = [{ value: 'C' }];
-	const middleCells = [{ value: 'B' }];
-	const oldestCells = [{ value: 'A' }];
+	/** @type {import('./types').Cell[]} */
+	const newestCells = /** @type {any} */ ([{ value: 'C' }]);
+	/** @type {import('./types').Cell[]} */
+	const middleCells = /** @type {any} */ ([{ value: 'B' }]);
+	/** @type {import('./types').Cell[]} */
+	const oldestCells = /** @type {any} */ ([{ value: 'A' }]);
 	const cellsHistory = [newestCells, middleCells, oldestCells];
 
 	it('undoes one step (diff = -1 adds +1 to index)', () => {

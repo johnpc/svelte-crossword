@@ -1,17 +1,18 @@
-<script>
+<script lang="ts">
 	import ClueList from './ClueList.svelte';
 	import ClueBar from './ClueBar.svelte';
 	import CluesContainer from './CluesContainer.svelte';
 	import { getOppositeDirection, getNextClueIndex, getClueTarget } from './helpers/cluesLogic.js';
+	import type { Cell, Clue, Direction, CellIndexMap } from './helpers/types';
 
-	export let clues;
-	export let cellIndexMap;
-	export let focusedDirection;
-	export let focusedCellIndex;
-	export let focusedCell;
-	export let stacked;
-	export let isDisableHighlight;
-	export let isLoaded;
+	export let clues: Clue[];
+	export let cellIndexMap: CellIndexMap;
+	export let focusedDirection: Direction;
+	export let focusedCellIndex: number;
+	export let focusedCell: Cell;
+	export let stacked: boolean;
+	export let isDisableHighlight: boolean;
+	export let isLoaded: boolean;
 
 	$: focusedClueNumbers = focusedCell.clueNumbers || {};
 	$: currentClue =
@@ -19,7 +20,7 @@
 			(c) => c.direction === focusedDirection && c.number === focusedClueNumbers[focusedDirection]
 		) || {};
 
-	function onClueFocus({ direction, id }) {
+	function onClueFocus({ direction, id }: { direction: Direction; id: string }) {
 		const result = getClueTarget({
 			direction,
 			id,
@@ -32,7 +33,7 @@
 		focusedCellIndex = result.focusedCellIndex;
 	}
 
-	function onNextClue({ detail }) {
+	function onNextClue({ detail }: CustomEvent<number>) {
 		const next = getNextClueIndex(detail, clues.length);
 		const { direction, id } = clues[next];
 		onClueFocus({ direction, id });

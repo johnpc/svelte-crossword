@@ -1,14 +1,26 @@
-<script>
+<script lang="ts">
 	import PuzzleCells from './PuzzleCells.svelte';
 	import getSecondarilyFocusedCells from './helpers/getSecondarilyFocusedCells.js';
+	import type { Cell, Direction, PuzzleAction } from './helpers/types';
 
-	export let cells, w, h, focusedCellIndex, focusedCell, focusedDirection;
-	export let isRevealing, isChecking, isDisableHighlight, revealDuration;
-	export let keyboardVisible, isLoaded, stacked;
-	export let act, onNativeKeydown;
-	export let hiddenInputBinding = undefined;
+	export let cells: Cell[];
+	export let w: number;
+	export let h: number;
+	export let focusedCellIndex: number;
+	export let focusedCell: Cell;
+	export let focusedDirection: Direction;
+	export let isRevealing: boolean;
+	export let isChecking: boolean;
+	export let isDisableHighlight: boolean;
+	export let revealDuration: number;
+	export let keyboardVisible: boolean;
+	export let isLoaded: boolean;
+	export let stacked: boolean;
+	export let act: (action: PuzzleAction) => void;
+	export let onNativeKeydown: (e: KeyboardEvent) => void;
+	export let hiddenInputBinding: HTMLInputElement | undefined = undefined;
 
-	let element;
+	let element: HTMLElement | undefined;
 	export function getElement() {
 		return element;
 	}

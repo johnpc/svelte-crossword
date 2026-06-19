@@ -1,8 +1,16 @@
-<script>
-	import { popTransition as pop } from './helpers/cellLogic.js';
+<script lang="ts">
+	import { popTransition } from './helpers/cellLogic.js';
+	import type { TransitionConfig } from 'svelte/transition';
 
-	export let value;
-	export let number;
+	// The runtime helper ignores extra params; widen the param type so the
+	// directive's `y` option (consumed for legacy compatibility) type-checks.
+	const pop: (
+		node: Element | null,
+		params?: { y?: number; delay?: number; duration?: number }
+	) => TransitionConfig = popTransition;
+
+	export let value: string | undefined;
+	export let number: number | undefined;
 	export let changeDelay = 0;
 	export let isRevealing = false;
 </script>

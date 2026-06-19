@@ -8,6 +8,14 @@ import {
 	resolveFlipDirection
 } from './puzzleStateResolvers.js';
 
+/**
+ * @param {import('./types').PuzzleState} state
+ * @param {number} index
+ * @param {string} value
+ * @param {number} diff
+ * @param {boolean} doReplace
+ * @returns {import('./types').StatePatch}
+ */
 function handleCellUpdate(state, index, value, diff, doReplace) {
 	const r = processCellUpdate({
 		cells: state.cells,
@@ -34,11 +42,21 @@ function handleCellUpdate(state, index, value, diff, doReplace) {
 	return { ...patch, ...(navPatch || {}) };
 }
 
+/**
+ * @param {import('./types').PuzzleState} state
+ * @param {string} detail
+ * @returns {import('./types').StatePatch}
+ */
 function handleKeydown(state, detail) {
 	const { value, diff, doReplaceFilledCells } = processKeyboardEvent(detail);
 	return handleCellUpdate(state, state.focusedCellIndex, value, diff, doReplaceFilledCells);
 }
 
+/**
+ * @param {import('./types').PuzzleState} state
+ * @param {{ key: string, ctrlKey?: boolean, altKey?: boolean }} action
+ * @returns {import('./types').StatePatch | null}
+ */
 function handleNativeKeydown(state, action) {
 	const a = classifyKey(action.key, action.ctrlKey, action.altKey);
 	if (!a) return null;
@@ -47,6 +65,13 @@ function handleNativeKeydown(state, action) {
 	return handleCellUpdate(state, state.focusedCellIndex, value, diff, a.type === 'delete');
 }
 
+/**
+ * A dispatched action. `type` selects the handler; remaining fields are
+ * read by the individual handlers and vary by action type.
+ * @typedef {{ type: string } & Record<string, any>} PuzzleAction
+ */
+
+/** @type {Record<string, (s: import('./types').PuzzleState, a: any) => import('./types').StatePatch | null>} */
 const HANDLERS = {
 	cellUpdate: (s, a) => handleCellUpdate(s, a.index, a.value, a.diff, a.doReplace),
 	historicalChange: (s, a) => resolveHistoricalChange(s, a.diff),
@@ -58,6 +83,11 @@ const HANDLERS = {
 	nativeKeydown: (s, a) => handleNativeKeydown(s, a)
 };
 
+/**
+ * @param {import('./types').PuzzleState} state
+ * @param {PuzzleAction} action
+ * @returns {import('./types').StatePatch | null}
+ */
 export function dispatch(state, action) {
 	const handler = HANDLERS[action.type];
 	return handler ? handler(state, action) : {};
