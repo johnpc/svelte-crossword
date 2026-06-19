@@ -16,8 +16,7 @@
 	import { loadHistoryData, deleteAllUserData } from './helpers/historyPageLogic';
 	import HistoryStats from './HistoryStats.svelte';
 	import HistoryEntry from './HistoryEntry.svelte';
-	import Calendar from '@event-calendar/core';
-	import DayGrid from '@event-calendar/day-grid';
+	import { Calendar, DayGrid } from '@event-calendar/core';
 	import '@event-calendar/core/index.css';
 
 	const plugins = [DayGrid];

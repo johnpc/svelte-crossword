@@ -27,8 +27,7 @@ vi.mock('../helpers/sql/getStreakInfo', () => ({
 	getStreakInfo: (id: string) => mockGetStreakInfo(id)
 }));
 // Stub the heavy calendar component + its plugin so onMount renders cheaply.
-vi.mock('@event-calendar/core', () => ({ default: () => {} }));
-vi.mock('@event-calendar/day-grid', () => ({ default: {} }));
+vi.mock('@event-calendar/core', () => ({ Calendar: () => {}, DayGrid: {} }));
 
 import Page from './+page.svelte';
 
