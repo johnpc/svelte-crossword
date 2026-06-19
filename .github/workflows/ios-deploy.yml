@@ -22,12 +22,12 @@ jobs:
     runs-on: macos-26-xlarge
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: 'npm'
@@ -52,6 +52,79 @@ jobs:
         run: |
           mkdir -p ~/private_keys
           echo "${{ secrets.ASC_KEY_CONTENT }}" > ~/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
+
+      - name: Revoke stale API-created certificates
+        run: |
+          python3 - << 'EOF'
+          import json, time, urllib.request, ssl
+          ctx = ssl.create_default_context()
+
+          key_id = "${{ secrets.ASC_KEY_ID }}"
+          issuer_id = "${{ secrets.ASC_ISSUER_ID }}"
+          key_path = f"/Users/runner/private_keys/AuthKey_{key_id}.p8"
+
+          # Inline minimal JWT (ES256) without PyJWT
+          import hashlib, hmac, struct, subprocess, tempfile, base64
+          def b64url(data):
+              return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
+
+          header = b64url(json.dumps({"alg":"ES256","kid":key_id,"typ":"JWT"}).encode())
+          now = int(time.time())
+          payload = b64url(json.dumps({"iss":issuer_id,"iat":now,"exp":now+1200,"aud":"appstoreconnect-v1"}).encode())
+          signing_input = f"{header}.{payload}".encode()
+
+          # Sign with openssl
+          with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as tf:
+              tf.write(signing_input)
+              tf.flush()
+              result = subprocess.run(
+                  ["openssl", "dgst", "-sha256", "-sign", key_path, tf.name],
+                  capture_output=True
+              )
+          # Convert DER signature to raw r||s (64 bytes)
+          der = result.stdout
+          # Parse DER SEQUENCE { INTEGER r, INTEGER s }
+          def parse_der_int(data, offset):
+              assert data[offset] == 0x02
+              length = data[offset+1]
+              value = data[offset+2:offset+2+length]
+              # Remove leading zero padding
+              while len(value) > 32 and value[0] == 0:
+                  value = value[1:]
+              # Pad to 32 bytes
+              value = b'\x00' * (32 - len(value)) + value
+              return value, offset + 2 + length
+
+          assert der[0] == 0x30
+          seq_len = der[1]
+          r, offset = parse_der_int(der, 2)
+          s, _ = parse_der_int(der, offset)
+          raw_sig = b64url(r + s)
+
+          token = f"{header}.{payload}.{raw_sig}"
+          headers_dict = {"Authorization": f"Bearer {token}"}
+
+          # List certificates
+          req = urllib.request.Request("https://api.appstoreconnect.apple.com/v1/certificates", headers=headers_dict)
+          resp = urllib.request.urlopen(req, context=ctx)
+          certs = json.loads(resp.read()).get("data", [])
+
+          api_certs = [c for c in certs if "Created via API" in c["attributes"].get("name", "")]
+          if not api_certs:
+              print("No stale API certificates to revoke.")
+          else:
+              print(f"Found {len(api_certs)} API-created certificates, revoking...")
+              for cert in api_certs:
+                  try:
+                      dreq = urllib.request.Request(
+                          f"https://api.appstoreconnect.apple.com/v1/certificates/{cert['id']}",
+                          headers=headers_dict, method="DELETE"
+                      )
+                      urllib.request.urlopen(dreq, context=ctx)
+                      print(f"  {cert['id']}: revoked")
+                  except Exception as e:
+                      print(f"  {cert['id']}: skip ({e})")
+          EOF
 
       - name: Increment build number
         working-directory: ios/App
