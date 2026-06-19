@@ -1,6 +1,8 @@
 import { defineConfig } from '@playwright/test';
 import { defineBddConfig } from 'playwright-bdd';
 
+const hasCreds = !!(process.env.TEST_USERNAME && process.env.TEST_PASSWORD);
+
 const testDir = defineBddConfig({
 	features: 'e2e/features/**/*.feature',
 	steps: 'e2e/steps/**/*.ts'
@@ -13,6 +15,7 @@ export default defineConfig({
 	retries: process.env.CI ? 2 : 0,
 	workers: process.env.CI ? 1 : undefined,
 	reporter: 'html',
+	grepInvert: hasCreds ? undefined : /@requires-credentials/,
 	use: {
 		baseURL: 'http://localhost:4173',
 		trace: 'on-first-retry'

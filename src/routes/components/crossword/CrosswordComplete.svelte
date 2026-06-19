@@ -1,11 +1,16 @@
 <script>
 	import CompletedMessage from './CompletedMessage.svelte';
 	export let isComplete, isRevealing, showCompleteMessage, showConfetti;
+	export let hasSlot = false;
 </script>
 
 {#if isComplete && !isRevealing && showCompleteMessage}
 	<CompletedMessage {showConfetti}>
-		<slot><h3>You solved it!</h3></slot>
+		{#if hasSlot}
+			<slot />
+		{:else}
+			<h3>You solved it!</h3>
+		{/if}
 	</CompletedMessage>
 {/if}
 

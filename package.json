@@ -19,7 +19,7 @@
 		"test:watch": "vitest",
 		"test:coverage": "vitest run --coverage",
 		"test:crap": "vitest run --coverage && node scripts/crap-check.js",
-		"test:e2e": "playwright test",
+		"test:e2e": "bddgen && playwright test",
 		"prepare": "husky install"
 	},
 	"devDependencies": {

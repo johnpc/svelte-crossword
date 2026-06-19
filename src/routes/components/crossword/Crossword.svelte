@@ -94,7 +94,13 @@
 			bind:focusedDirection
 			bind:cells
 		/>
-		<CrosswordComplete {isComplete} {isRevealing} {showCompleteMessage} {showConfetti}>
+		<CrosswordComplete
+			{isComplete}
+			{isRevealing}
+			{showCompleteMessage}
+			{showConfetti}
+			hasSlot={!!$$slots.message}
+		>
 			<slot name="message" />
 		</CrosswordComplete>
 	</article>
