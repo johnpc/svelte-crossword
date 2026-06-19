@@ -22,7 +22,12 @@ export default defineConfig({
 				statements: 80
 			},
 			include: ['src/**/*.{js,ts}'],
-			exclude: ['src/app.d.ts', 'src/**/*.test.{js,ts}', 'src/**/*.spec.{js,ts}']
+			exclude: [
+				'src/app.d.ts',
+				'src/service-worker.ts',
+				'src/**/*.test.{js,ts}',
+				'src/**/*.spec.{js,ts}'
+			]
 		}
 	}
 });

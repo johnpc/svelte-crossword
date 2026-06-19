@@ -1,16 +1,17 @@
 <script lang="ts">
-	import Crossword from '../components/crossword/Crossword.svelte';
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import { goto } from '$app/navigation';
 	import { getCurrentUser } from 'aws-amplify/auth';
 	import { onMount } from 'svelte';
 	import type { Clue } from '../helpers/types/types';
-	import { getHumanReadableDuration } from '../helpers/getHumanReadableDuration';
-	import { SvelteToast, toast } from '@zerodevx/svelte-toast';
 	import { previewClues } from './previewClues';
-	import { haptic, vibrate } from '../helpers/haptics';
+	import { vibrate } from '../helpers/haptics';
 	import { puzzleStore } from '../helpers/puzzleStore';
 	import { get } from 'svelte/store';
+	import { createPuzzleTimer } from './helpers/puzzleTimer';
+	import { toggleKeyboardSetting } from './helpers/toolbarActions';
+	import { toastOptions, showPreviewToast } from './helpers/toastConfig';
+	import PreviewCrossword from './PreviewCrossword.svelte';
 
 	$: clues = [] as Clue[];
 	$: timeInSeconds = 0;
@@ -20,189 +21,75 @@
 	$: usedClear = false;
 	$: keyboardStyle = 'outline' as 'outline' | 'depth';
 	let showAppKeyboard = true;
-	let ref: any;
-	const toastOptions = {
-		theme: {
-			'--toastBackground': 'palevioletred',
-			'--toastColor': 'white',
-			'--toastBarBackground': 'mediumVioletRed'
-		}
-	};
+	let ref: unknown;
 
 	onMount(() => {
 		showAppKeyboard = localStorage.getItem('showAppKeyboard') !== 'false';
 		const store = get(puzzleStore);
-		console.log({ c: store.completedPreview });
 		isPuzzleComplete = store.completedPreview;
 		const setup = async () => {
 			try {
 				const currentUser = await getCurrentUser();
-				if (currentUser.userId) {
-					goto('/');
-				}
+				if (currentUser.userId) goto('/');
 			} catch (e) {
 				console.log('Not logged in. Rendering preview.', e);
 			}
 			clues = previewClues;
-			console.log({ onMount: true, clues });
 		};
-
 		setup();
 	});
 
-	const onPuzzleComplete = async () => {
+	const onPuzzleComplete = () => {
 		vibrate();
 		const store = get(puzzleStore);
-		console.log('settign store');
-		puzzleStore.set({
-			...store,
-			completedPreview: true
-		});
+		puzzleStore.set({ ...store, completedPreview: true });
 		isPuzzleComplete = true;
 	};
 
-	const tickTimer = () => {
-		setTimeout(() => {
-			if (ref && !isPuzzleComplete) {
-				const cells = ref?.$$?.ctx?.find(
-					(element: any) =>
-						Array.isArray(element) && element?.[0]?.answer && element?.[0]?.value !== undefined
-				);
-				if (!cells) {
-					return tickTimer();
-				}
-				isPuzzleComplete = cells.every((cell: any) => cell.answer === cell.value);
-				if (isPuzzleComplete) {
-					return onPuzzleComplete();
-				}
-			}
+	createPuzzleTimer({
+		getRef: () => ref,
+		isPuzzleComplete: () => isPuzzleComplete,
+		onComplete: () => onPuzzleComplete(),
+		onTick: () => {
 			timeInSeconds++;
-			if (!isPuzzleComplete) {
-				tickTimer();
-			}
-		}, 1000);
-	};
-	tickTimer();
+		}
+	});
 
-	const onToolbarClear = (onClear: Function) => {
-		haptic();
-		usedClear = true;
-		onClear();
-	};
-	const onToolbarReveal = (onReveal: Function) => {
-		haptic();
-		usedReveal = true;
-		onReveal();
-	};
-	const onToolbarCheck = (onCheck: Function) => {
-		haptic();
-		usedCheck = true;
-		onCheck();
-	};
 	const toggleKeyboard = () => {
-		showAppKeyboard = !showAppKeyboard;
-		localStorage.setItem('showAppKeyboard', String(showAppKeyboard));
-	};
-	const onSignIn = () => {
-		goto('/login');
-	};
-	const showToast = () => {
-		toast.push(
-			'Sign in/up to unlock unlimited crosswords! No limits, no ads, just fun puzzles to solve.'
-		);
+		showAppKeyboard = toggleKeyboardSetting(showAppKeyboard);
 	};
 </script>
 
 {#if clues.length === 0}
 	<p><SyncLoader size="60" color="palevioletred" unit="px" duration="1s" /></p>
 {:else}
-	<h3>👋 You're not signed in!</h3>
-	<button id="signInButton" class="active" on:click={() => onSignIn()}>sign in/up </button>
-	<Crossword
-		bind:this={ref}
-		data={clues}
-		breakpoint={10000}
-		theme="pink"
-		showKeyboard={showAppKeyboard}
-		revealed={isPuzzleComplete}
+	<h3>You're not signed in!</h3>
+	<button id="signInButton" class="active" on:click={() => goto('/login')}>sign in/up</button>
+	<PreviewCrossword
+		{clues}
+		bind:ref
+		bind:showAppKeyboard
+		bind:isPuzzleComplete
 		{keyboardStyle}
-	>
-		<div class="toolbar" slot="toolbar" let:onClear let:onReveal let:onCheck>
-			<p id="timer">{getHumanReadableDuration(timeInSeconds)}</p>
-			<button on:click={toggleKeyboard} title="Toggle keyboard">
-				{showAppKeyboard ? '⌨️' : '📱'}
-			</button>
-			<button class={usedClear ? 'active' : ''} on:click={() => onToolbarClear(onClear)}
-				>Clear</button
-			>
-			<button class={usedReveal ? 'active' : ''} on:click={() => onToolbarReveal(onReveal)}
-				>Reveal</button
-			>
-			<button class={usedCheck ? 'active' : ''} on:click={() => onToolbarCheck(onCheck)}
-				>Check</button
-			>
-			{#if isPuzzleComplete}
-				{onReveal() ? '' : ''}
-				<button class="next-puzzle-button" on:click={() => showToast()}>Continue</button>
-			{/if}
-		</div>
-	</Crossword>
-	<SvelteToast options={toastOptions} />
+		{timeInSeconds}
+		bind:usedClear
+		bind:usedReveal
+		bind:usedCheck
+		onToggleKeyboard={toggleKeyboard}
+		onShowToast={showPreviewToast}
+		{toastOptions}
+	/>
 {/if}
 
 <style>
-	.toolbar {
-		margin-bottom: 1em;
-		padding: 1em 0;
-		display: flex;
-		justify-content: flex-end;
-		font-family: var(--font);
-		font-size: 0.85em;
-		background-color: transparent;
+	#signInButton {
+		background-color: palevioletred;
 	}
-
-	button {
-		cursor: pointer;
-		margin-left: 1em;
-		font-size: 1em;
-		font-family: var(--font);
-		background-color: var(--accent-color);
-		border-radius: 4px;
-		color: var(--main-color);
-		padding: 0.75em;
-		border: none;
-		font-weight: 400;
-		transition: background-color 150ms;
-	}
-
-	button:hover {
-		background-color: var(--primary-highlight-color);
-	}
-
-	.next-puzzle-button {
-		background-color: var(--secondary-highlight-color);
-		color: aliceblue;
-	}
-	.history-button {
-		background-color: var(--secondary-highlight-color);
-		color: aliceblue;
-	}
-	#logoutLink {
-		font-size: small;
-	}
-	#timer {
-		display: inline;
+	#signInButton:hover {
+		background-color: mediumvioletred;
 	}
 	.active {
 		color: aliceblue;
 		background-color: var(--secondary-highlight-color);
-	}
-
-	#signInButton {
-		background-color: palevioletred;
-	}
-
-	#signInButton:hover {
-		background-color: mediumvioletred;
 	}
 </style>

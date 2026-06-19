@@ -34,7 +34,21 @@ jobs:
 
       - name: CRAP score check
         run: node scripts/crap-check.js
-        continue-on-error: true
+
+      - name: Max line length check (150 lines)
+        run: |
+          FAILED=0
+          for f in $(find src -name "*.svelte" -o -name "*.ts" -o -name "*.js" | grep -v node_modules | grep -v '.test.' | grep -v '.spec.'); do
+            LINES=$(wc -l < "$f")
+            if [ "$LINES" -gt 150 ]; then
+              echo "FAIL: $f ($LINES lines, max 150)"
+              FAILED=1
+            fi
+          done
+          if [ "$FAILED" -eq 1 ]; then
+            exit 1
+          fi
+          echo "All files within 150-line limit"
 
       - name: Build
         run: npm run build
