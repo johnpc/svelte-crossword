@@ -90,8 +90,13 @@ describe('getKeydownAction', () => {
 
 	it('returns null for unhandled keys', () => {
 		expect(getKeydownAction(makeEvent({ key: 'Enter' }))).toBeNull();
-		expect(getKeydownAction(makeEvent({ key: '1' }))).toBeNull();
 		expect(getKeydownAction(makeEvent({ key: 'F5' }))).toBeNull();
+	});
+
+	it('returns letter action for digits and symbols', () => {
+		expect(getKeydownAction(makeEvent({ key: '1' }))).toEqual({ type: 'letter', value: '1' });
+		expect(getKeydownAction(makeEvent({ key: '!' }))).toEqual({ type: 'letter', value: '!' });
+		expect(getKeydownAction(makeEvent({ key: '@' }))).toEqual({ type: 'letter', value: '@' });
 	});
 });
 

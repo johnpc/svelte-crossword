@@ -32,7 +32,7 @@ export function getKeydownAction(e) {
 	if (modAction !== undefined) return modAction;
 	const special = getSpecialKeyAction(e);
 	if (special !== undefined) return special;
-	if (/^[a-zA-Z()]$/.test(e.key)) return { type: 'letter', value: e.key.toUpperCase() };
+	if (/^[\x21-\x7e]$/.test(e.key)) return { type: 'letter', value: e.key.toUpperCase() };
 	return getArrowAction(e.key);
 }
 

@@ -16,16 +16,33 @@ describe('qwerty crossword keyboard layout', () => {
 		});
 	});
 
-	it('contains all 26 letters plus Backspace', () => {
-		const values = layout.map((k) => k.value);
+	it('page 0 contains all 26 letters plus Backspace', () => {
+		const page0 = layout.filter((k) => !k.page);
+		const values = page0.map((k) => k.value);
 		for (let i = 65; i <= 90; i++) {
 			expect(values).toContain(String.fromCharCode(i));
 		}
 		expect(values).toContain('Backspace');
 	});
 
-	it('has 3 rows (0, 1, 2)', () => {
-		const rows = new Set(layout.map((k) => k.row));
-		expect(rows).toEqual(new Set([0, 1, 2]));
+	it('page 0 includes a Page1 toggle key', () => {
+		const values = layout.filter((k) => !k.page).map((k) => k.value);
+		expect(values).toContain('Page1');
+	});
+
+	it('page 1 contains digits 0-9 and a Page0 toggle', () => {
+		const page1 = layout.filter((k) => k.page === 1);
+		const values = page1.map((k) => k.value);
+		for (const d of '0123456789') {
+			expect(values).toContain(d);
+		}
+		expect(values).toContain('Page0');
+	});
+
+	it('page 1 contains common symbols', () => {
+		const values = layout.filter((k) => k.page === 1).map((k) => k.value);
+		for (const s of ['!', '@', '#', '$', '%']) {
+			expect(values).toContain(s);
+		}
 	});
 });
