@@ -51,6 +51,23 @@ npm run dev -- --open
 
 Now you can open http://localhost:5175/ to see your app in action (including hot reloading as you update the source code).
 
+## Testing strategy
+
+Quality gates run in CI (`.github/workflows/ci.yml`) and locally via the npm scripts:
+
+- **Unit tests** (`npm run test`) — Vitest, colocated as `*.test.ts`/`*.test.js`.
+- **Coverage** (`npm run test:coverage`) — Istanbul, enforced thresholds in `vite.config.ts`.
+  `all: true` instruments every included file so an untested file cannot pass at an
+  implicit 100%.
+- **CRAP score** (`node scripts/crap-check.js`) — flags complex, poorly-covered functions.
+- **Max file length** — 150 lines per source file (enforced in CI). Keeps components small.
+- **E2E** (`npm run test:e2e`) — Playwright + Gherkin features in `e2e/`.
+
+Application logic belongs in `*.ts`/`*.js` helpers that are unit-tested directly;
+components should stay thin. `.svelte` components are being migrated into the
+coverage gate wave by wave as they gain `@testing-library/svelte` render tests
+(`vitest-setup.ts` wires up the matchers). New components should ship with a test.
+
 ## Deleting User Accounts
 
 To delete a user account (for GDPR/privacy requests):

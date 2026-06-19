@@ -9,7 +9,9 @@ const config = {
 	kit: {
 		adapter: process.env.CAPACITOR_BUILD ? staticAdapter({ strict: false }) : adapter(),
 		csrf: {
-			checkOrigin: false
+			// Capacitor native builds submit from capacitor:// / file:// origins, so all
+			// origins are trusted here. Equivalent to the deprecated `checkOrigin: false`.
+			trustedOrigins: ['*']
 		}
 	}
 };

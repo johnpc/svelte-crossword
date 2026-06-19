@@ -16,6 +16,10 @@ export default ts.config(
 				...globals.browser,
 				...globals.node
 			}
+		},
+		rules: {
+			// Allow warn/error for genuine diagnostics; flag stray debug logs.
+			'no-console': ['warn', { allow: ['warn', 'error'] }]
 		}
 	},
 	{
@@ -45,7 +49,11 @@ export default ts.config(
 	{
 		files: ['**/*.ts', '**/*.js'],
 		rules: {
-			'svelte/no-navigation-without-resolve': 'off'
+			'svelte/no-navigation-without-resolve': 'off',
+			'@typescript-eslint/no-unused-vars': [
+				'warn',
+				{ argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
+			]
 		}
 	},
 	{

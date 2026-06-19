@@ -8,7 +8,6 @@ export function handleResetPasswordNextSteps(
 	const { nextStep } = output;
 	switch (nextStep.resetPasswordStep) {
 		case 'CONFIRM_RESET_PASSWORD_WITH_CODE':
-			console.log(`Confirmation code was sent to ${nextStep.codeDeliveryDetails.deliveryMedium}`);
 			callbacks.setConfirmForgotPassword(true);
 			break;
 		case 'DONE':
