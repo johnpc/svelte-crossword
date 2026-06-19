@@ -29,11 +29,14 @@ describe('getNextClueIndex', () => {
 });
 
 describe('getClueTarget', () => {
-	const clues = [
-		{ direction: 'across', id: 'A1', number: 1 },
-		{ direction: 'down', id: 'A1', number: 1 },
-		{ direction: 'across', id: 'B2', number: 2 }
-	];
+	const clues = /** @type {import('./types').Clue[]} */ (
+		/** @type {unknown} */ ([
+			{ direction: 'across', id: 'A1', number: 1 },
+			{ direction: 'down', id: 'A1', number: 1 },
+			{ direction: 'across', id: 'B2', number: 2 }
+		])
+	);
+	/** @type {import('./types').CellIndexMap} */
 	const cellIndexMap = { A1: 0, B2: 3 };
 
 	it('sets direction and cell index when clicking a different cell', () => {

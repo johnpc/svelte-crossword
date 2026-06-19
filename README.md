@@ -51,16 +51,40 @@ npm run dev -- --open
 
 Now you can open http://localhost:5175/ to see your app in action (including hot reloading as you update the source code).
 
+## Testing strategy
+
+Quality gates run in CI (`.github/workflows/ci.yml`) and locally via the npm scripts:
+
+- **Unit & component tests** (`npm run test`) — Vitest, colocated as `*.test.ts`/`*.test.js`.
+  Components are rendered with `@testing-library/svelte` (`vitest-setup.ts` wires up the
+  jest-dom matchers and a Web Animations API stub for transitions).
+- **Coverage** (`npm run test:coverage`) — Istanbul over `src/**/*.{js,ts,svelte}` with
+  enforced thresholds in `vite.config.ts`. `all: true` instruments every included file so
+  an untested file cannot pass at an implicit 100%.
+- **CRAP score** (`node scripts/crap-check.js`) — flags complex, poorly-covered functions
+  in the `.ts`/`.js` logic layer. (`.svelte` files are excluded: Svelte compiles each
+  component into one synthetic instance function, so per-function complexity there reflects
+  compiled-template size, not authored logic. Components are gated by coverage instead.)
+- **Max file length** — 150 lines per source file (enforced in CI). Keeps components small.
+- **E2E** (`npm run test:e2e`) — Playwright + Gherkin features in `e2e/`.
+
+Application logic belongs in `*.ts`/`*.js` helpers that are unit-tested directly;
+components stay thin and are verified with render tests. New components and helpers
+should ship with a test — both the logic layer and `.svelte` components are gated by the
+coverage thresholds. Note: test files for SvelteKit route files must **not** use the
+reserved `+` prefix (name them `page.test.ts`, importing `./+page.svelte`), or the build
+will reject them as malformed routes.
+
 ## Deleting User Accounts
 
 To delete a user account (for GDPR/privacy requests):
 
 ```bash
 # Dry-run mode (shows what would be deleted, but doesn't delete):
-npx tsx delete-user-account.ts user@example.com
+npx tsx scripts/delete-user-account.ts user@example.com
 
 # Actually delete the account:
-DRY_RUN=false npx tsx delete-user-account.ts user@example.com
+DRY_RUN=false npx tsx scripts/delete-user-account.ts user@example.com
 ```
 
 This script will:

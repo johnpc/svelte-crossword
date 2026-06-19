@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 vi.mock('./haptics', () => ({
 	haptic: vi.fn().mockResolvedValue(undefined),
@@ -28,8 +28,7 @@ import {
 	navigateToHistory,
 	sleep,
 	performSignOut,
-	submitPuzzleCompletion,
-	getFunctionName
+	submitPuzzleCompletion
 } from './puzzleGameLogic';
 import { haptic, vibrate } from './haptics';
 import { goto } from '$app/navigation';
@@ -41,36 +40,39 @@ describe('puzzleGameLogic', () => {
 		vi.useFakeTimers();
 	});
 
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	describe('createTimer', () => {
 		it('calls onTick after 1 second', () => {
 			const onTick = vi.fn();
-			createTimer(onTick, () => true);
+			const cancel = createTimer(onTick, () => true);
 			vi.advanceTimersByTime(1000);
 			expect(onTick).toHaveBeenCalledOnce();
+			cancel();
 		});
 		it('stops when isComplete returns true', () => {
 			const onTick = vi.fn();
-			createTimer(onTick, () => true);
+			const cancel = createTimer(onTick, () => true);
 			vi.advanceTimersByTime(3000);
 			expect(onTick).toHaveBeenCalledOnce();
+			cancel();
 		});
 		it('continues ticking when isComplete returns false', () => {
 			const onTick = vi.fn();
-			createTimer(onTick, () => false);
+			const cancel = createTimer(onTick, () => false);
 			vi.advanceTimersByTime(3000);
 			expect(onTick).toHaveBeenCalledTimes(3);
+			cancel();
 		});
-	});
-
-	describe('getFunctionName', () => {
-		it('returns function name from config', () => {
-			expect(getFunctionName({ custom: { sqlQueriesFunctionName: 'my-fn' } })).toBe('my-fn');
-		});
-		it('throws when custom is missing', () => {
-			expect(() => getFunctionName({})).toThrow('SQL queries function name not found');
-		});
-		it('throws when sqlQueriesFunctionName is undefined', () => {
-			expect(() => getFunctionName({ custom: {} })).toThrow('SQL queries function name not found');
+		it('returned cancel function stops further ticks', () => {
+			const onTick = vi.fn();
+			const cancel = createTimer(onTick, () => false);
+			vi.advanceTimersByTime(1000);
+			cancel();
+			vi.advanceTimersByTime(5000);
+			expect(onTick).toHaveBeenCalledOnce();
 		});
 	});
 

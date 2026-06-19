@@ -7,13 +7,10 @@
 	import {
 		loginWithApple,
 		loginWithGoogle,
-		handleForgotPassword,
-		registrationHandler,
-		confirmationHandler,
-		loginHandler,
 		type AuthState,
 		type StateCallbacks
 	} from './loginLogic';
+	import { createLoginActions } from './loginPageActions';
 
 	Amplify.configure(config);
 
@@ -30,16 +27,11 @@
 		setConfirm: (v) => (confirm = v)
 	};
 
-	const onRegister = async () => {
-		await registrationHandler(username, password);
-		confirm = true;
-		alert('Please check your email and enter confirmation code.');
-	};
-	const onConfirm = () => confirmationHandler(username, confirmationCode, password, callbacks);
-	const onLogin = () => loginHandler(username, password);
-	const onSendReset = () => handleForgotPassword({ username }, callbacks);
-	const onConfirmReset = () =>
-		handleForgotPassword({ username, confirmationCode, newPassword: password }, callbacks);
+	const { onRegister, onConfirm, onLogin, onSendReset, onConfirmReset } = createLoginActions(
+		() => ({ username, password, confirmationCode }),
+		callbacks,
+		() => (confirm = true)
+	);
 </script>
 
 {#if state === 'signUp'}

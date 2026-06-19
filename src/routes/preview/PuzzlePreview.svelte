@@ -31,8 +31,8 @@
 			try {
 				const currentUser = await getCurrentUser();
 				if (currentUser.userId) goto('/');
-			} catch (e) {
-				console.log('Not logged in. Rendering preview.', e);
+			} catch {
+				// Not logged in — render the preview puzzle.
 			}
 			clues = previewClues;
 		};

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import Toolbar from './Toolbar.svelte';
 	import CrosswordPlay from './CrosswordPlay.svelte';
@@ -6,9 +6,10 @@
 	import themeStyles from './helpers/themeStyles.js';
 	import { checkClueCompletion } from './helpers/crosswordLogic.js';
 	import { initializeCrosswordData, processToolbarAction } from './helpers/crosswordActions.js';
+	import type { Cell, Clue, ClueInput, Direction } from './helpers/types';
 
-	export let data = [],
-		actions = ['clear', 'reveal', 'check'],
+	export let data: ClueInput[] = [],
+		actions: string[] = ['clear', 'reveal', 'check'],
 		theme = 'classic';
 	export let revealDuration = 1000,
 		breakpoint = 720,
@@ -16,20 +17,20 @@
 	export let disableHighlight = false,
 		showCompleteMessage = true,
 		showConfetti = true;
-	export let showKeyboard,
+	export let showKeyboard: boolean | undefined = undefined,
 		keyboardStyle = 'outline';
 	export let isComplete = false;
 
 	let width = 0,
-		focusedDirection = 'across',
+		focusedDirection: Direction = 'across',
 		focusedCellIndex = 0;
 	let isRevealing = false,
 		isLoaded = false,
 		isChecking = false,
-		revealTimeout;
-	let validated = [],
-		clues = [],
-		cells = [];
+		revealTimeout: ReturnType<typeof setTimeout> | undefined;
+	let validated = false,
+		clues: Clue[] = [],
+		cells: Cell[] = [];
 
 	function reset() {
 		isRevealing = isChecking = false;
@@ -44,7 +45,7 @@
 		reset();
 	}
 
-	function onToolbarEvent({ detail }) {
+	function onToolbarEvent({ detail }: { detail: string }) {
 		const ctx = {
 			cells,
 			revealed,
@@ -53,10 +54,10 @@
 			endReveal: () => (isRevealing = false)
 		};
 		processToolbarAction(detail, ctx, (r) => {
-			if (r.cells) cells = r.cells;
+			if (r.cells) cells = r.cells as Cell[];
 			if (r.isRevealing) isRevealing = true;
 			if (r.isChecking) isChecking = true;
-			if (r.revealTimeout) revealTimeout = r.revealTimeout;
+			if (r.revealTimeout) revealTimeout = r.revealTimeout as ReturnType<typeof setTimeout>;
 			if (r.reset) reset();
 		});
 	}

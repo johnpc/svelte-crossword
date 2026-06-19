@@ -55,7 +55,7 @@
 			}}>Check</button
 		>
 		{#if isPuzzleComplete}
-			{onReveal() ? '' : ''}
+			{void onReveal()}
 			<button class="next-puzzle-button" on:click={onShowToast}>Continue</button>
 		{/if}
 	</div>

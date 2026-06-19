@@ -14,7 +14,7 @@ describe('validateClues', () => {
 	it('returns false when a required prop has wrong type', () => {
 		vi.spyOn(console, 'error').mockImplementation(() => {});
 		const data = createClues([{ answer: 'CAT', clue: 'Feline', x: 0, y: 0, direction: 'across' }]);
-		data[0].clue = 123;
+		/** @type {any} */ (data[0]).clue = 123;
 		expect(validateClues(data)).toBe(false);
 		vi.restoreAllMocks();
 	});
@@ -22,7 +22,7 @@ describe('validateClues', () => {
 	it('returns false when x is not a number', () => {
 		vi.spyOn(console, 'error').mockImplementation(() => {});
 		const data = createClues([{ answer: 'CAT', clue: 'Feline', x: 0, y: 0, direction: 'across' }]);
-		data[0].x = 'zero';
+		/** @type {any} */ (data[0]).x = 'zero';
 		expect(validateClues(data)).toBe(false);
 		vi.restoreAllMocks();
 	});

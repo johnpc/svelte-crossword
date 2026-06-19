@@ -1,41 +1,17 @@
-import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
-import { fetchAuthSession, fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
-import { Amplify } from 'aws-amplify';
-import config from '../../../amplify_outputs.json';
+import { fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
+import type { HydratedProfile } from '../types/types';
+import { invokeSqlQuery } from './invokeSqlQuery';
 
-Amplify.configure(config);
-
-export const getOrCreateProfile = async () => {
+export const getOrCreateProfile = async (): Promise<HydratedProfile> => {
 	const currentUser = await getCurrentUser();
 	const userAttributes = await fetchUserAttributes();
-	const session = await fetchAuthSession();
 
-	const lambda = new LambdaClient({
-		region: 'us-west-2',
-		credentials: session.credentials
+	const existing = await invokeSqlQuery<HydratedProfile | null>({
+		query: 'getProfile',
+		userId: currentUser.userId
 	});
+	if (existing) return existing;
 
-	const functionName = (config.custom as { sqlQueriesFunctionName?: string })
-		?.sqlQueriesFunctionName;
-	if (!functionName) {
-		throw new Error('SQL queries function name not found in config');
-	}
-
-	// Try to get existing profile
-	const getCommand = new InvokeCommand({
-		FunctionName: functionName,
-		Payload: JSON.stringify({ query: 'getProfile', userId: currentUser.userId })
-	});
-
-	const getResponse = await lambda.send(getCommand);
-	const getPayload = JSON.parse(new TextDecoder().decode(getResponse.Payload));
-	const existing = JSON.parse(getPayload.body);
-
-	if (existing) {
-		return existing;
-	}
-
-	// Create new profile
 	const email = currentUser.signInDetails?.loginId || userAttributes.email || currentUser.username;
 	const name =
 		currentUser.signInDetails?.loginId ||
@@ -43,12 +19,10 @@ export const getOrCreateProfile = async () => {
 		userAttributes.email ||
 		currentUser.username;
 
-	const createCommand = new InvokeCommand({
-		FunctionName: functionName,
-		Payload: JSON.stringify({ query: 'createProfile', userId: currentUser.userId, email, name })
+	return invokeSqlQuery<HydratedProfile>({
+		query: 'createProfile',
+		userId: currentUser.userId,
+		email,
+		name
 	});
-
-	const createResponse = await lambda.send(createCommand);
-	const createPayload = JSON.parse(new TextDecoder().decode(createResponse.Payload));
-	return JSON.parse(createPayload.body);
 };

@@ -8,12 +8,14 @@ function createMockNode(offsetTop = 100) {
 		scrollTo: vi.fn()
 	};
 	return {
-		node: {
-			offsetTop,
-			parentElement: {
-				parentElement: list
-			}
-		},
+		node: /** @type {HTMLElement} */ (
+			/** @type {unknown} */ ({
+				offsetTop,
+				parentElement: {
+					parentElement: list
+				}
+			})
+		),
 		list
 	};
 }
@@ -60,10 +62,12 @@ describe('scrollTo', () => {
 	});
 
 	it('handles missing parent gracefully', () => {
-		const node = {
-			offsetTop: 100,
-			parentElement: { parentElement: null }
-		};
+		const node = /** @type {HTMLElement} */ (
+			/** @type {unknown} */ ({
+				offsetTop: 100,
+				parentElement: { parentElement: null }
+			})
+		);
 		const action = scrollTO(node, false);
 		expect(() => action.update(true)).not.toThrow();
 	});

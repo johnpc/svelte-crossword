@@ -1,5 +1,17 @@
+/**
+ * Finds the nth cell (by `diff`) in the focused direction relative to the focused cell.
+ *
+ * @param {object} params
+ * @param {number} params.diff - Signed offset; sign chooses direction, magnitude the distance
+ * @param {import('./types').Cell[]} params.cells - All grid cells
+ * @param {import('./types').Direction} params.direction - Focused direction
+ * @param {import('./types').Cell} params.focusedCell - Currently focused cell
+ * @returns {(import('./types').Cell & { absDiff: number }) | undefined}
+ */
 export default ({ diff, cells, direction, focusedCell }) => {
+	/** @type {'x' | 'y'} */
 	const dimension = direction == 'across' ? 'x' : 'y';
+	/** @type {'x' | 'y'} */
 	const otherDimension = direction == 'across' ? 'y' : 'x';
 	const start = focusedCell[dimension];
 	const absDiff = Math.abs(diff);

@@ -16,6 +16,10 @@ export default ts.config(
 				...globals.browser,
 				...globals.node
 			}
+		},
+		rules: {
+			// Allow warn/error for genuine diagnostics; flag stray debug logs.
+			'no-console': ['warn', { allow: ['warn', 'error'] }]
 		}
 	},
 	{
@@ -45,7 +49,11 @@ export default ts.config(
 	{
 		files: ['**/*.ts', '**/*.js'],
 		rules: {
-			'svelte/no-navigation-without-resolve': 'off'
+			'svelte/no-navigation-without-resolve': 'off',
+			'@typescript-eslint/no-unused-vars': [
+				'warn',
+				{ argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
+			]
 		}
 	},
 	{
@@ -60,18 +68,7 @@ export default ts.config(
 			'android/',
 			'coverage/',
 			'.features-gen/',
-			'check-*.ts',
-			'cleanup-*.ts',
-			'delete-*.ts',
-			'direct-*.ts',
-			'fetch-*.ts',
-			'find-*.ts',
-			'full-*.ts',
-			'migrate-*.ts',
-			'remigrate-*.ts',
-			'test-*.ts',
-			'scripts/check-dependency-versions.cjs',
-			'scripts/direct-rds-migration.ts'
+			'scripts/'
 		]
 	}
 );

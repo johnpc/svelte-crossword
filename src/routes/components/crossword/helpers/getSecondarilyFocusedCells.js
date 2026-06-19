@@ -1,5 +1,17 @@
+/**
+ * Computes the indices of cells in the same row/column as the focused cell that
+ * form an unbroken run including the focused cell.
+ *
+ * @param {object} params
+ * @param {import('./types').Cell[]} params.cells - All grid cells
+ * @param {import('./types').Direction} params.focusedDirection - Focused direction
+ * @param {import('./types').Cell} params.focusedCell - Currently focused cell
+ * @returns {number[]} Indices of the secondarily-focused cells
+ */
 export default ({ cells, focusedDirection, focusedCell }) => {
+	/** @type {'x' | 'y'} */
 	const dimension = focusedDirection == 'across' ? 'x' : 'y';
+	/** @type {'x' | 'y'} */
 	const otherDimension = focusedDirection == 'across' ? 'y' : 'x';
 	const start = focusedCell[dimension];
 
@@ -35,4 +47,9 @@ export default ({ cells, focusedDirection, focusedCell }) => {
 	return secondarilyFocusedCellIndices;
 };
 
+/**
+ * @param {number} min
+ * @param {number} max
+ * @returns {number[]}
+ */
 const range = (min, max) => Array.from({ length: max - min + 1 }, (v, k) => k + min);

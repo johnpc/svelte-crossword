@@ -1,6 +1,13 @@
 import assignClueNumbers from './assignClueNumbers.js';
 import buildCluesCells from './buildCluesCells.js';
 
+/**
+ * Builds enriched clue objects (with ids, numbers, cells, and indices) from raw
+ * authored clue input.
+ *
+ * @param {import('./types').ClueInput[]} data - Raw authored clues
+ * @returns {import('./types').Clue[]} Enriched clues
+ */
 export default function createClues(data) {
 	// determine if 0 or 1 based
 	const minX = Math.min(...data.map((d) => d.x));

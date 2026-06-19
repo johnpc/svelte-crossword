@@ -1,6 +1,15 @@
 /**
  * Compute the new state after an undo/redo operation.
  * Returns { cells, cellsHistoryIndex, focusedCellIndex, focusedCellIndexHistoryIndex }
+ * @param {{
+ *   diff: number,
+ *   cells: import('./types').Cell[],
+ *   cellsHistory: import('./types').Cell[][],
+ *   cellsHistoryIndex: number,
+ *   focusedCellIndex: number,
+ *   focusedCellIndexHistory: number[],
+ *   focusedCellIndexHistoryIndex: number
+ * }} params
  */
 export function applyHistoricalChange({
 	diff,

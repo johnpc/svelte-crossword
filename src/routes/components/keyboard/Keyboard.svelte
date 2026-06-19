@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import Key from './Key.svelte';
 	import qwertyStandard from './layouts/qwerty/standard.js';
@@ -12,24 +12,27 @@
 	import { haptic } from '../../helpers/haptics';
 	import { SWAPS, processKeyStart, transformKeyData, getRowData } from './keyboardLogic.js';
 
-	export let custom;
-	export let localizationLayout = 'qwerty';
-	export let layout = 'crossword';
-	export let noSwap = [];
-	export let keyClass = {};
+	type KeyDef = import('./keyboardLogic.js').KeyDef;
+
+	export let custom: KeyDef[] | undefined = undefined;
+	export let localizationLayout: string = 'qwerty';
+	export let layout: string = 'crossword';
+	export let noSwap: string[] = [];
+	export let keyClass: Record<string, string> = {};
+	export let style: string | undefined = undefined;
 
 	let page = 0;
 	let shifted = false;
-	let active = undefined;
+	let active: string | undefined = undefined;
 
-	const layouts = {
+	const layouts: Record<string, Record<string, KeyDef[]>> = {
 		qwerty: { standard: qwertyStandard, crossword: qwertyCrossword, wordle: qwertyWordle },
 		azerty: { standard: azertyStandard, crossword: azertyCrossword, wordle: azertyWordle }
 	};
-	const dispatch = createEventDispatcher();
-	const swaps = { ...SWAPS, Enter: enterSVG, Backspace: backspaceSVG };
+	const dispatch = createEventDispatcher<{ keydown: string }>();
+	const swaps: Record<string, string> = { ...SWAPS, Enter: enterSVG, Backspace: backspaceSVG };
 
-	const onKeyStart = (event, value) => {
+	const onKeyStart = (event: Event, value: string) => {
 		event.preventDefault();
 		haptic();
 		active = value;
@@ -41,18 +44,18 @@
 		return false;
 	};
 
-	const onKeyEnd = (value) => {
+	const onKeyEnd = (value: string) => {
 		setTimeout(() => {
 			if (value === active) active = undefined;
 		}, 50);
 	};
 
-	$: rawData = custom || layouts[localizationLayout][layout] || standard;
+	$: rawData = custom || layouts[localizationLayout][layout] || qwertyStandard;
 	$: data = transformKeyData(rawData, swaps, noSwap, shifted);
 	$: rowData = getRowData(data);
 </script>
 
-<div class="svelte-keyboard">
+<div class="svelte-keyboard" {style}>
 	{#each rowData as row, i}
 		<div class="page" class:visible={i === page}>
 			{#each row as keys}
@@ -60,7 +63,7 @@
 					{#each keys as { value, display }}
 						<Key
 							{value}
-							{display}
+							display={display ?? ''}
 							keyClass={keyClass[value] || ''}
 							active={value === active}
 							{onKeyStart}

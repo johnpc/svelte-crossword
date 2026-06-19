@@ -1,26 +1,35 @@
-<script>
+<script lang="ts">
 	import Cell from './Cell.svelte';
+	import type { Cell as CellType, Direction, PuzzleAction } from './helpers/types';
 
-	export let cells, w, h, focusedCellIndex, isDisableHighlight;
-	export let isRevealing, isChecking, revealDuration, keyboardVisible;
-	export let secondarilyFocusedCells, act;
+	export let cells: CellType[];
+	export let w: number;
+	export let h: number;
+	export let focusedCellIndex: number;
+	export let isDisableHighlight: boolean;
+	export let isRevealing: boolean;
+	export let isChecking: boolean;
+	export let revealDuration: number;
+	export let keyboardVisible: boolean;
+	export let secondarilyFocusedCells: number[];
+	export let act: (action: PuzzleAction) => void;
 
-	function onCellUpdate(i, v, d = 1, r = false) {
+	function onCellUpdate(i: number, v: string, d = 1, r = false) {
 		act({ type: 'cellUpdate', index: i, value: v, diff: d, doReplace: r });
 	}
-	function onFocusCell(index) {
+	function onFocusCell(index: number) {
 		act({ type: 'focusCell', index });
 	}
 	function onFocusClueDiff(diff = 1) {
 		act({ type: 'focusClueDiff', diff });
 	}
-	function onMoveFocus(direction, diff) {
+	function onMoveFocus(direction: Direction, diff: number) {
 		act({ type: 'moveFocus', direction, diff });
 	}
 	function onFlipDirection() {
 		act({ type: 'flipDirection' });
 	}
-	function onHistoricalChange(diff) {
+	function onHistoricalChange(diff: number) {
 		act({ type: 'historicalChange', diff });
 	}
 </script>

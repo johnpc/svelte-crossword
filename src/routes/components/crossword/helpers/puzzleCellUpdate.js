@@ -4,6 +4,17 @@ const NUMBER_OF_STATES_IN_HISTORY = 10;
  * Process a cell value update, returning new cells state and navigation intent.
  * Returns { cells, cellsHistory, cellsHistoryIndex, navigationAction }
  * where navigationAction is { type: 'clueDiff', diff } or { type: 'cellDiff', diff, doReplace }
+ * @param {{
+ *   cells: import('./types').Cell[],
+ *   cellsHistory: import('./types').Cell[][],
+ *   cellsHistoryIndex: number,
+ *   focusedDirection: import('./types').Direction,
+ *   focusedCellIndex?: number,
+ *   index: number,
+ *   newValue: string,
+ *   diff?: number,
+ *   doReplaceFilledCells?: boolean
+ * }} params
  */
 export function processCellUpdate({
 	cells,
@@ -25,7 +36,9 @@ export function processCellUpdate({
 	const cellsToCheck = allCellsInClueFilled
 		? allCellsInClue
 		: allCellsInClue.filter((cell) => !cell.value);
-	const cellsInCluePositions = cellsToCheck.map((cell) => cell[dimension]).filter(Number.isFinite);
+	const cellsInCluePositions = cellsToCheck
+		.map((cell) => cell[dimension])
+		.filter(/** @returns {n is number} */ (n) => Number.isFinite(n));
 	const isAtEndOfClue = cells[index][dimension] === Math.max(...cellsInCluePositions);
 
 	const newCells = [
@@ -54,6 +67,10 @@ export function processCellUpdate({
 /**
  * Classify a keyboard event key into an action.
  * Returns { type: 'delete' } | { type: 'letter', value } | null
+ * @param {string} key
+ * @param {boolean} [ctrlKey]
+ * @param {boolean} [altKey]
+ * @returns {{ type: 'delete' } | { type: 'letter', value: string } | null}
  */
 export function classifyKey(key, ctrlKey = false, altKey = false) {
 	if (ctrlKey || altKey) return null;
@@ -69,6 +86,8 @@ export function classifyKey(key, ctrlKey = false, altKey = false) {
 /**
  * Process a virtual keyboard event detail into update parameters.
  * Returns { value, diff, doReplaceFilledCells }
+ * @param {string} detail
+ * @returns {{ value: string, diff: number, doReplaceFilledCells: boolean }}
  */
 export function processKeyboardEvent(detail) {
 	const isBackspace = detail === 'Backspace';

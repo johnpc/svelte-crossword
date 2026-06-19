@@ -1,8 +1,8 @@
-<script>
+<script lang="ts">
 	import Keyboard from '../keyboard/Keyboard.svelte';
 
-	export let keyboardStyle;
-	export let onKeydown;
+	export let keyboardStyle: string;
+	export let onKeydown: (event: CustomEvent<string>) => void;
 </script>
 
 <div class="keyboard">

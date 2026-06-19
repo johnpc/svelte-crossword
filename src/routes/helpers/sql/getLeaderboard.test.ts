@@ -8,6 +8,10 @@ vi.mock('aws-amplify/auth', () => ({
 	})
 }));
 
+vi.mock('aws-amplify', () => ({
+	Amplify: { configure: vi.fn() }
+}));
+
 vi.mock('../../../amplify_outputs.json', () => ({
 	default: { custom: { sqlQueriesFunctionName: 'test-function' } }
 }));

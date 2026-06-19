@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { initializeCrosswordData, processToolbarAction } from './crosswordActions.js';
 
+/** @type {import('./types').ClueInput[]} */
 const sampleData = [
 	{ clue: 'Cat', answer: 'CAT', x: 1, y: 1, direction: 'across' },
 	{ clue: 'Cab', answer: 'CAB', x: 1, y: 1, direction: 'down' }
@@ -25,13 +26,16 @@ describe('initializeCrosswordData', () => {
 });
 
 describe('processToolbarAction', () => {
+	/** @type {import('./crosswordActions.js').ToolbarContext} */
 	const baseCtx = {
-		cells: [
-			{ value: 'A', answer: 'A' },
-			{ value: '', answer: 'B' }
-		],
+		cells: /** @type {import('./types').Cell[]} */ (
+			/** @type {unknown} */ ([
+				{ value: 'A', answer: 'A' },
+				{ value: '', answer: 'B' }
+			])
+		),
 		revealed: false,
-		revealTimeout: null,
+		revealTimeout: undefined,
 		revealDuration: 100,
 		endReveal: () => {}
 	};

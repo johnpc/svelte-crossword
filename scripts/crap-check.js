@@ -16,6 +16,14 @@ try {
 const failures = [];
 
 for (const [filePath, fileData] of Object.entries(coverageData)) {
+	// CRAP measures per-function cyclomatic complexity vs. coverage. Svelte
+	// compiles a component's whole script+template into one synthetic instance
+	// function, so istanbul reports compiled-template size rather than authored
+	// function complexity — a false signal for this metric. We gate .svelte on
+	// the coverage thresholds instead, and run CRAP over the .ts/.js logic layer
+	// (which is where business logic lives and per-function complexity is real).
+	if (filePath.endsWith('.svelte')) continue;
+
 	const fnMap = fileData.fnMap || {};
 	const f = fileData.f || {};
 	const branchMap = fileData.branchMap || {};

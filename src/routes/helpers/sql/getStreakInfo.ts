@@ -1,9 +1,4 @@
-import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
-import { fetchAuthSession } from 'aws-amplify/auth';
-import { Amplify } from 'aws-amplify';
-import config from '../../../amplify_outputs.json';
-
-Amplify.configure(config);
+import { invokeSqlQuery } from './invokeSqlQuery';
 
 export type StreakInfo = {
 	longestStreak: number;
@@ -17,29 +12,13 @@ const isSameDay = (a: Date, b: Date) =>
 	a.getFullYear() === b.getFullYear();
 
 export const getStreakInfo = async (profileId: string): Promise<StreakInfo> => {
-	const session = await fetchAuthSession();
-	const lambda = new LambdaClient({
-		region: 'us-west-2',
-		credentials: session.credentials
+	const rows = await invokeSqlQuery<Array<{ created_at: string }>>({
+		query: 'getStreakInfo',
+		profileId
 	});
-
-	const functionName = (config.custom as { sqlQueriesFunctionName?: string })
-		?.sqlQueriesFunctionName;
-	if (!functionName) {
-		throw new Error('SQL queries function name not found in config');
-	}
-
-	const command = new InvokeCommand({
-		FunctionName: functionName,
-		Payload: JSON.stringify({ query: 'getStreakInfo', profileId })
-	});
-
-	const response = await lambda.send(command);
-	const payload = JSON.parse(new TextDecoder().decode(response.Payload));
-	const rows = JSON.parse(payload.body);
 
 	const dateMap = new Map<string, number>();
-	rows.forEach((row: { created_at: string }) => {
+	rows.forEach((row) => {
 		const date = new Date(row.created_at).toDateString();
 		dateMap.set(date, (dateMap.get(date) || 0) + 1);
 	});

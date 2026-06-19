@@ -8,13 +8,15 @@ import {
 	resolveFlipDirection
 } from './puzzleStateResolvers.js';
 
-const baseCells = [
+/** @type {import('./types').Cell[]} */
+const baseCells = /** @type {any} */ ([
 	{ x: 0, y: 0, index: 0, value: '', isFilled: false, clueNumbers: { across: 1, down: 1 } },
 	{ x: 1, y: 0, index: 1, value: '', isFilled: false, clueNumbers: { across: 1 } },
 	{ x: 0, y: 1, index: 2, value: '', isFilled: false, clueNumbers: { down: 1 } }
-];
+]);
 
-const baseState = {
+/** @type {import('./types').PuzzleState} */
+const baseState = /** @type {any} */ ({
 	cells: baseCells,
 	cellsHistory: [],
 	cellsHistoryIndex: 0,
@@ -30,13 +32,13 @@ const baseState = {
 	],
 	isPuzzleFocused: false,
 	numberOfStatesInHistory: 10
-};
+});
 
 describe('resolveFocusCellDiff', () => {
 	it('moves focus by diff', () => {
 		const r = resolveFocusCellDiff(baseState, 1, false);
 		expect(r).toBeTruthy();
-		expect(r.focusedCellIndex).toBe(1);
+		expect(r?.focusedCellIndex).toBe(1);
 	});
 
 	it('returns null when no next cell', () => {

@@ -1,13 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import { getKeydownAction, popTransition } from './cellLogic.js';
 
-const makeEvent = (overrides = {}) => ({
-	key: '',
-	ctrlKey: false,
-	altKey: false,
-	shiftKey: false,
-	...overrides
-});
+/**
+ * @param {Partial<KeyboardEvent>} [overrides]
+ * @returns {KeyboardEvent}
+ */
+const makeEvent = (overrides = {}) =>
+	/** @type {KeyboardEvent} */ ({
+		key: '',
+		ctrlKey: false,
+		altKey: false,
+		shiftKey: false,
+		...overrides
+	});
 
 describe('getKeydownAction', () => {
 	it('returns historicalChange with diff -1 for Ctrl+Z', () => {

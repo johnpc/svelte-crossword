@@ -1,22 +1,23 @@
-<script>
+<script lang="ts">
 	import Clues from './Clues.svelte';
 	import Puzzle from './Puzzle.svelte';
+	import type { Cell, Clue, Direction, CellIndexMap } from './helpers/types';
 
-	export let clues;
-	export let stacked;
-	export let isDisableHighlight;
-	export let isLoaded;
-	export let focusedCellIndex;
-	export let focusedDirection;
-	export let isRevealing;
-	export let isChecking;
-	export let revealDuration;
-	export let showKeyboard;
-	export let keyboardStyle;
-	export let cells;
+	export let clues: Clue[];
+	export let stacked: boolean;
+	export let isDisableHighlight: boolean;
+	export let isLoaded: boolean;
+	export let focusedCellIndex: number;
+	export let focusedDirection: Direction;
+	export let isRevealing: boolean;
+	export let isChecking: boolean;
+	export let revealDuration: number;
+	export let showKeyboard: boolean | undefined;
+	export let keyboardStyle: string;
+	export let cells: Cell[];
 
-	$: focusedCell = cells[focusedCellIndex] || {};
-	$: cellIndexMap = Object.fromEntries(cells.map((cell) => [cell.id, cell.index]));
+	$: focusedCell = (cells[focusedCellIndex] || {}) as Cell;
+	$: cellIndexMap = Object.fromEntries(cells.map((cell) => [cell.id, cell.index])) as CellIndexMap;
 </script>
 
 <div class="play" class:stacked class:is-loaded={isLoaded}>

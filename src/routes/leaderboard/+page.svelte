@@ -2,6 +2,7 @@
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import { onMount } from 'svelte';
 	import { Amplify } from 'aws-amplify';
+	import { toast } from '@zerodevx/svelte-toast';
 	import config from '../../amplify_outputs.json';
 	import LeaderboardItem from './LeaderboardItem.svelte';
 	import { getLeaderboard, type LeaderboardEntry } from '../helpers/sql/getLeaderboard';
@@ -19,7 +20,11 @@
 			isLoading = false;
 		};
 
-		setup().catch((reason) => console.log({ reason }));
+		setup().catch((reason) => {
+			console.error('Failed to load leaderboard', reason);
+			isLoading = false;
+			toast.push('Could not load the leaderboard. Please try again later.');
+		});
 	});
 </script>
 

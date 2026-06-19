@@ -1,10 +1,10 @@
-<script>
-	export let value;
-	export let display;
-	export let keyClass = '';
-	export let active = false;
-	export let onKeyStart;
-	export let onKeyEnd;
+<script lang="ts">
+	export let value: string;
+	export let display: string;
+	export let keyClass: string = '';
+	export let active: boolean = false;
+	export let onKeyStart: (event: Event, value: string) => void;
+	export let onKeyEnd: (value: string) => void;
 </script>
 
 <button
