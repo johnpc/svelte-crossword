@@ -19,6 +19,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Create amplify_outputs stub for tests
+        run: echo '{"custom":{"sqlQueriesFunctionName":"stub"}}' > src/amplify_outputs.json
+
       - name: Lint
         run: npm run lint
 

@@ -16,12 +16,12 @@ export default defineConfig({
 			reporter: ['text', 'json', 'html', 'json-summary'],
 			reportsDirectory: './coverage',
 			thresholds: {
-				branches: 15,
-				functions: 15,
-				lines: 15,
-				statements: 15
+				branches: 75,
+				functions: 85,
+				lines: 80,
+				statements: 80
 			},
-			include: ['src/**/*.{js,ts,svelte}'],
+			include: ['src/**/*.{js,ts}'],
 			exclude: ['src/app.d.ts', 'src/**/*.test.{js,ts}', 'src/**/*.spec.{js,ts}']
 		}
 	}
