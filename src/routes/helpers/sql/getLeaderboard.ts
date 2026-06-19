@@ -1,6 +1,4 @@
-import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
-import { fetchAuthSession } from 'aws-amplify/auth';
-import config from '../../../amplify_outputs.json';
+import { invokeSqlQuery } from './invokeSqlQuery';
 
 export type LeaderboardEntry = {
 	id: string;
@@ -14,37 +12,5 @@ export type LeaderboardResponse = {
 	total: number;
 };
 
-export const getLeaderboard = async (): Promise<LeaderboardResponse> => {
-	const session = await fetchAuthSession();
-	const lambda = new LambdaClient({
-		region: 'us-west-2',
-		credentials: session.credentials
-	});
-
-	const functionName = (config.custom as { sqlQueriesFunctionName?: string })
-		?.sqlQueriesFunctionName;
-	if (!functionName) {
-		throw new Error('SQL queries function name not found in config');
-	}
-
-	const command = new InvokeCommand({
-		FunctionName: functionName,
-		Payload: JSON.stringify({ query: 'leaderboard' })
-	});
-
-	const response = await lambda.send(command);
-	const payloadText = new TextDecoder().decode(response.Payload);
-	console.log('Lambda response:', payloadText);
-
-	if (!payloadText || payloadText === 'undefined') {
-		throw new Error('Lambda returned empty response');
-	}
-
-	const payload = JSON.parse(payloadText);
-
-	if (payload.errorMessage) {
-		throw new Error(`Lambda error: ${payload.errorMessage}`);
-	}
-
-	return JSON.parse(payload.body);
-};
+export const getLeaderboard = (): Promise<LeaderboardResponse> =>
+	invokeSqlQuery<LeaderboardResponse>({ query: 'leaderboard' });

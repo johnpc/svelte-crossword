@@ -4,7 +4,8 @@
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import { goto } from '$app/navigation';
 	import { getCurrentUser, signOut } from 'aws-amplify/auth';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
+	import { toast } from '@zerodevx/svelte-toast';
 	import { getOrCreateProfile } from './helpers/sql/getOrCreateProfile';
 	import type { Clue, HydratedProfile } from './helpers/types/types';
 	import {
@@ -27,8 +28,13 @@
 		puzzleAuthor = '';
 	let crosswordComplete = false,
 		showAppKeyboard = true;
+	let cancelTimer: (() => void) | null = null;
 	const tick = () => void timeInSeconds++;
 	const isComplete = () => isPuzzleComplete;
+	const startTimer = () => {
+		cancelTimer?.();
+		cancelTimer = createTimer(tick, isComplete);
+	};
 
 	$: if (crosswordComplete && !isPuzzleComplete) {
 		isPuzzleComplete = true;
@@ -53,13 +59,16 @@
 				puzzleAuthor = puzzle.author || '';
 			},
 			onUnauthenticated: () => goto('/preview'),
-			onError: (e) =>
-				void (console.error('Error loading:', e),
-				alert('Error loading puzzle. Please try refreshing the page.'))
+			onError: (e) => {
+				console.error('Error loading:', e);
+				toast.push('Error loading puzzle. Please try refreshing the page.');
+			}
 		});
 	});
 
-	createTimer(tick, isComplete);
+	onDestroy(() => cancelTimer?.());
+
+	startTimer();
 
 	const toggleKeyboard = () => {
 		showAppKeyboard = !showAppKeyboard;
@@ -74,7 +83,7 @@
 		puzzleId = puzzle.id;
 		puzzleTitle = puzzle.title || '';
 		puzzleAuthor = puzzle.author || '';
-		createTimer(tick, isComplete);
+		startTimer();
 	};
 	const onSignOut = () => performSignOut(signOut, () => void (clues = []));
 </script>

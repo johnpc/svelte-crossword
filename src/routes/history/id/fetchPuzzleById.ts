@@ -1,6 +1,4 @@
-import { fetchAuthSession } from 'aws-amplify/auth';
-import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
-import config from '../../../amplify_outputs.json';
+import { invokeSqlQuery } from '../../helpers/sql/invokeSqlQuery';
 import type { Clue } from '../../helpers/types/types';
 
 export type UserPuzzleData = {
@@ -17,37 +15,13 @@ export type FetchPuzzleResult = {
 };
 
 export const fetchPuzzleById = async (userPuzzleId: string): Promise<FetchPuzzleResult> => {
-	const session = await fetchAuthSession();
-	const lambda = new LambdaClient({
-		region: 'us-west-2',
-		credentials: session.credentials
+	const userPuzzle = await invokeSqlQuery<UserPuzzleData>({ query: 'getUserPuzzle', userPuzzleId });
+	const puzzle = await invokeSqlQuery<{ puz_json: string }>({
+		query: 'getPuzzle',
+		puzzleId: userPuzzle.puzzle_id
 	});
 
-	const functionName = (config.custom as { sqlQueriesFunctionName?: string })
-		?.sqlQueriesFunctionName;
-	if (!functionName) {
-		throw new Error('SQL queries function name not found in config');
-	}
-
-	const userPuzzleCommand = new InvokeCommand({
-		FunctionName: functionName,
-		Payload: JSON.stringify({ query: 'getUserPuzzle', userPuzzleId })
-	});
-
-	const userPuzzleResponse = await lambda.send(userPuzzleCommand);
-	const userPuzzlePayload = JSON.parse(new TextDecoder().decode(userPuzzleResponse.Payload));
-	const userPuzzle: UserPuzzleData = JSON.parse(userPuzzlePayload.body);
-
-	const puzzleCommand = new InvokeCommand({
-		FunctionName: functionName,
-		Payload: JSON.stringify({ query: 'getPuzzle', puzzleId: userPuzzle.puzzle_id })
-	});
-
-	const puzzleResponse = await lambda.send(puzzleCommand);
-	const puzzlePayload = JSON.parse(new TextDecoder().decode(puzzleResponse.Payload));
-	const puzzle = JSON.parse(puzzlePayload.body);
-
-	const jsonAtIndex = JSON.parse(puzzle.puz_json as string);
+	const jsonAtIndex = JSON.parse(puzzle.puz_json);
 	const across = Object.values(jsonAtIndex.clues.across) as Clue[];
 	const down = Object.values(jsonAtIndex.clues.down) as Clue[];
 

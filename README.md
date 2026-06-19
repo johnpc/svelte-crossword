@@ -57,10 +57,10 @@ To delete a user account (for GDPR/privacy requests):
 
 ```bash
 # Dry-run mode (shows what would be deleted, but doesn't delete):
-npx tsx delete-user-account.ts user@example.com
+npx tsx scripts/delete-user-account.ts user@example.com
 
 # Actually delete the account:
-DRY_RUN=false npx tsx delete-user-account.ts user@example.com
+DRY_RUN=false npx tsx scripts/delete-user-account.ts user@example.com
 ```
 
 This script will:

@@ -60,18 +60,7 @@ export default ts.config(
 			'android/',
 			'coverage/',
 			'.features-gen/',
-			'check-*.ts',
-			'cleanup-*.ts',
-			'delete-*.ts',
-			'direct-*.ts',
-			'fetch-*.ts',
-			'find-*.ts',
-			'full-*.ts',
-			'migrate-*.ts',
-			'remigrate-*.ts',
-			'test-*.ts',
-			'scripts/check-dependency-versions.cjs',
-			'scripts/direct-rds-migration.ts'
+			'scripts/'
 		]
 	}
 );
