@@ -3,16 +3,17 @@
 	import { onMount } from 'svelte';
 	import { Amplify } from 'aws-amplify';
 	import { getCurrentUser } from 'aws-amplify/auth';
-	import type { AuthUser } from 'aws-amplify/auth';
 	import { goto } from '$app/navigation';
 	import { signOut, deleteUser } from 'aws-amplify/auth';
 	import config from '../../amplify_outputs.json';
 	import { resetPuzzleStoreDefaults } from '../helpers/puzzleStore';
-	import { getStreakInfo, type StreakInfo } from '../helpers/sql/getStreakInfo';
+	import { type StreakInfo } from '../helpers/sql/getStreakInfo';
+	import { getStreakInfo } from '../helpers/sql/getStreakInfo';
 	import { getUserHistory, type UserHistoryEntry } from '../helpers/sql/getUserHistory';
 	import { getOrCreateProfile } from '../helpers/sql/getOrCreateProfile';
 	import { getCalendarOptions } from './helpers/getCalendarOptions';
 	import { computeStats } from './helpers/computeStats';
+	import { loadHistoryData, deleteAllUserData } from './helpers/historyPageLogic';
 	import HistoryStats from './HistoryStats.svelte';
 	import HistoryEntry from './HistoryEntry.svelte';
 	import Calendar from '@event-calendar/core';
@@ -24,34 +25,32 @@
 
 	$: completedPuzzles = [] as UserHistoryEntry[];
 	$: streakInfo = {} as StreakInfo;
-	$: currentUser = {} as AuthUser;
 	$: isLoading = true;
 
 	onMount(() => {
-		const setup = async () => {
-			try {
-				currentUser = await getCurrentUser();
-			} catch (e) {
-				goto('/login');
-			}
-			const profile = await getOrCreateProfile();
-			completedPuzzles = await getUserHistory(profile.id);
-			streakInfo = await getStreakInfo(profile.id);
+		(async () => {
+			const data = await loadHistoryData({
+				getCurrentUser,
+				getOrCreateProfile,
+				getUserHistory,
+				getStreakInfo,
+				onUnauthenticated: () => goto('/login')
+			});
+			if (!data) return;
+			completedPuzzles = data.completedPuzzles;
+			streakInfo = data.streakInfo;
 			isLoading = false;
-		};
-		setup();
+		})();
 	});
 
-	const handleDeleteAllData = async () => {
-		const confirmed = confirm(
-			'Are you sure? This will destroy your account and log you out immediately. It cannot be undone.'
-		);
-		if (!confirmed) return;
-		resetPuzzleStoreDefaults();
-		await deleteUser();
-		await signOut();
-		goto('/login');
-	};
+	const handleDeleteAllData = () =>
+		deleteAllUserData({
+			confirm,
+			resetPuzzleStoreDefaults,
+			deleteUser,
+			signOut,
+			onComplete: () => goto('/login')
+		});
 </script>
 
 {#if isLoading}

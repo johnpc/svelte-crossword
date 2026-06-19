@@ -3,34 +3,32 @@
 	import { onMount } from 'svelte';
 	import { Amplify } from 'aws-amplify';
 	import { getCurrentUser } from 'aws-amplify/auth';
-	import type { AuthUser } from 'aws-amplify/auth';
 	import { goto } from '$app/navigation';
 	import config from '../../../amplify_outputs.json';
 	import { page } from '$app/stores';
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import { getHumanReadableDuration } from '../../helpers/getHumanReadableDuration';
 	import { fetchPuzzleById, type UserPuzzleData } from './fetchPuzzleById';
+	import { loadHistoryDetail } from './historyDetailLogic';
 	import type { Clue } from '../../helpers/types/types';
 
 	Amplify.configure(config);
 
 	$: userPuzzle = {} as UserPuzzleData;
-	$: currentUser = {} as AuthUser;
 	$: clues = [] as Clue[];
 
 	onMount(() => {
-		const setup = async () => {
-			try {
-				currentUser = await getCurrentUser();
-			} catch (e) {
-				goto('/login');
-			}
-			const userPuzzleId = $page.url.searchParams.get('id')!;
-			const result = await fetchPuzzleById(userPuzzleId);
-			userPuzzle = result.userPuzzle;
-			clues = result.clues;
-		};
-		setup();
+		(async () => {
+			const detail = await loadHistoryDetail({
+				getCurrentUser,
+				fetchPuzzleById,
+				getPuzzleId: () => $page.url.searchParams.get('id'),
+				onUnauthenticated: () => goto('/login')
+			});
+			if (!detail) return;
+			userPuzzle = detail.userPuzzle;
+			clues = detail.clues;
+		})();
 	});
 </script>
 
