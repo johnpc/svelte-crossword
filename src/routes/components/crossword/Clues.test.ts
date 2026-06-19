@@ -86,18 +86,18 @@ describe('Clues', () => {
 		const { container } = render(Clues, { props: base });
 		// currentClue resolves to the across clue numbered 1 ("Feline"); the
 		// clue bar <p> shows that text.
-		const bar = container.querySelector('.bar p');
+		const bar = container.querySelector('.bar .clue-text');
 		expect(bar?.textContent).toContain('Feline');
 	});
 
 	it('updates the focused direction to down when a down clue is clicked', async () => {
 		const { getByText, container } = render(Clues, { props: base });
 		// initially the across clue ("Feline") is focused in the bar
-		expect(container.querySelector('.bar p')?.textContent).toContain('Feline');
+		expect(container.querySelector('.bar .clue-text')?.textContent).toContain('Feline');
 		await fireEvent.click(getByText(/Recipe qty\./));
 		// clicking the down clue (id 0-0) switches focusedDirection to 'down';
 		// the bar now reflects the down clue numbered 1 ("Recipe qty.").
-		expect(container.querySelector('.bar p')?.textContent).toContain('Recipe qty.');
+		expect(container.querySelector('.bar .clue-text')?.textContent).toContain('Recipe qty.');
 	});
 
 	it('focuses the clicked clue button (is-direction-focused) after a click', async () => {
@@ -107,7 +107,7 @@ describe('Clues', () => {
 		expect(recipeButton).not.toHaveClass('is-direction-focused');
 		await fireEvent.click(recipeButton!);
 		// after the click the down direction (and clue) is focused
-		expect(container.querySelector('.bar p')?.textContent).toContain('Recipe qty.');
+		expect(container.querySelector('.bar .clue-text')?.textContent).toContain('Recipe qty.');
 		expect(recipeButton).toHaveClass('is-direction-focused');
 	});
 });

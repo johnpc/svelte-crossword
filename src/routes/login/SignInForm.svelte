@@ -33,7 +33,7 @@
 	<br /><br />
 	<label for="password">Password&nbsp;&nbsp;</label>
 	<input required type="password" id="password" bind:value={password} />
-	<a href="#" on:click={onShowForgotPassword}>forgot?</a>
+	<button type="button" class="link-button" on:click={onShowForgotPassword}>forgot?</button>
 	<hr />
 	<button type="submit" on:click={() => tryOrAlert(onLogin)}>Log in</button>
 </form>

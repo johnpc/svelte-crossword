@@ -7,7 +7,11 @@
 
 <h3>
 	👋 {email.split('@')[0]}
-	<span id="logoutLink">(not you? <a href="#" on:click={() => onSignOut()}>sign out</a>)</span>
+	<span id="logoutLink"
+		>(not you? <button type="button" class="link-button" on:click={() => onSignOut()}
+			>sign out</button
+		>)</span
+	>
 </h3>
 {#if puzzleTitle || puzzleAuthor}
 	<div class="puzzle-info">
@@ -35,5 +39,14 @@
 	}
 	#logoutLink {
 		font-size: small;
+	}
+	.link-button {
+		background: none;
+		border: none;
+		padding: 0;
+		font: inherit;
+		color: inherit;
+		text-decoration: underline;
+		cursor: pointer;
 	}
 </style>

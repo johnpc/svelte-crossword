@@ -63,7 +63,9 @@
 	class:is-correct={showCheck && correct}
 	class:is-incorrect={showCheck && !correct}
 	transform={`translate(${x}, ${y})`}
-	tabIndex="0"
+	role="button"
+	aria-label={`Cell ${x + 1}, ${y + 1}`}
+	tabindex="0"
 	on:click={() => onFocusCell(index)}
 	on:keydown={onKeydown}
 	bind:this={element}
