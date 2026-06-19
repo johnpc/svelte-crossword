@@ -44,15 +44,15 @@
 		reset();
 	};
 
-	$: data, onDataUpdate();
+	$: (data, onDataUpdate());
 	$: focusedCell = cells[focusedCellIndex] || {};
 	$: cellIndexMap = fromPairs(cells.map((cell) => [cell.id, cell.index]));
 	$: percentCorrect = cells.filter((d) => d.answer === d.value).length / cells.length;
 	export let isComplete = false;
 	$: isComplete = percentCorrect == 1;
 	$: isDisableHighlight = isComplete && disableHighlight;
-	$: cells, (clues = checkClues());
-	$: cells, (revealed = !clues.filter((d) => !d.isCorrect).length);
+	$: (cells, (clues = checkClues()));
+	$: (cells, (revealed = !clues.filter((d) => !d.isCorrect).length));
 	$: stacked = width < breakpoint;
 	$: inlineStyles = themeStyles[theme];
 

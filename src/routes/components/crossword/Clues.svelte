@@ -20,14 +20,22 @@
 
 	function onClueFocus({ direction, id }) {
 		const targetCellIndex = cellIndexMap[id] || 0;
-		console.log('onClueFocus', { direction, id, targetCellIndex, focusedCellIndex, focusedDirection });
+		console.log('onClueFocus', {
+			direction,
+			id,
+			targetCellIndex,
+			focusedCellIndex,
+			focusedDirection
+		});
 		if (focusedCellIndex === targetCellIndex && focusedDirection === direction) {
 			console.log('Same cell and direction - flipping');
 			const oppositeDirection = direction === 'across' ? 'down' : 'across';
 			const cell = Object.entries(cellIndexMap).find(([cellId, idx]) => idx === targetCellIndex);
 			if (cell) {
 				const [cellId] = cell;
-				const hasOppositeClue = clues.some(c => c.direction === oppositeDirection && c.id === cellId);
+				const hasOppositeClue = clues.some(
+					(c) => c.direction === oppositeDirection && c.id === cellId
+				);
 				console.log('hasOppositeClue', hasOppositeClue, oppositeDirection);
 				if (hasOppositeClue) {
 					focusedDirection = oppositeDirection;
@@ -51,7 +59,7 @@
 	function onClueBarClicked({ detail }) {
 		const oppositeDirection = focusedDirection === 'across' ? 'down' : 'across';
 		const oppositeClueNumber = focusedCell.clueNumbers?.[oppositeDirection];
-		
+
 		if (oppositeClueNumber) {
 			focusedDirection = oppositeDirection;
 		}

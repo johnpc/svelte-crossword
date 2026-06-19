@@ -24,17 +24,17 @@ const main = async () => {
 	console.log('1. Fetching one profile from DynamoDB...');
 	const response = await client.models.Profile.list({ limit: 1 });
 	const profile = response.data[0];
-	
+
 	if (!profile) {
 		console.log('No profiles found');
 		return;
 	}
-	
+
 	console.log(`   Found: ${profile.email}\n`);
 
 	console.log('2. Connecting to RDS...');
 	const conn = await getConnection();
-	
+
 	try {
 		console.log('3. Inserting into RDS...');
 		await conn.execute(

@@ -92,10 +92,10 @@
 	$: page1 = data.filter((d) => d.page);
 
 	$: rows0 = unique(page0.map((d) => d.row));
-	$: rows0, rows0.sort((a, b) => a - b);
+	$: (rows0, rows0.sort((a, b) => a - b));
 
 	$: rows1 = unique(page1.map((d) => d.row));
-	$: rows1, rows1.sort((a, b) => a - b);
+	$: (rows1, rows1.sort((a, b) => a - b));
 
 	$: rowData0 = rows0.map((r) => page0.filter((k) => k.row === r));
 	$: rowData1 = rows0.map((r) => page1.filter((k) => k.row === r));

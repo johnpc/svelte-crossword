@@ -15,6 +15,7 @@ The `.github/dependabot.yml` file groups `@event-calendar/*` packages together, 
 ## Testing
 
 To test the version check manually:
+
 ```bash
 node scripts/check-dependency-versions.cjs
 ```

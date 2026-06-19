@@ -19,7 +19,9 @@ const checkProdDb = async () => {
 	});
 
 	try {
-		const [profiles] = await conn.execute('SELECT * FROM profiles ORDER BY created_at DESC LIMIT 5');
+		const [profiles] = await conn.execute(
+			'SELECT * FROM profiles ORDER BY created_at DESC LIMIT 5'
+		);
 		return profiles;
 	} finally {
 		await conn.end();
@@ -30,12 +32,12 @@ const main = async () => {
 	console.log('1. Fetching one profile from DynamoDB...');
 	const response = await client.models.Profile.list({ limit: 1 });
 	const profile = response.data[0];
-	
+
 	if (!profile) {
 		console.log('No profiles found in DynamoDB');
 		return;
 	}
-	
+
 	console.log(`   Found: ${profile.email}\n`);
 
 	console.log('2. Creating in SQL via Amplify...');

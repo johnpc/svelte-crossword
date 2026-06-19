@@ -37,7 +37,10 @@ async function migrateProfiles(conn: any) {
 				count++;
 				if (count % 100 === 0) console.log(`  ✓ Migrated ${count} profiles...`);
 			} catch (error) {
-				console.error(`  ✗ Failed: ${profile.email}`, error instanceof Error ? error.message : String(error));
+				console.error(
+					`  ✗ Failed: ${profile.email}`,
+					error instanceof Error ? error.message : String(error)
+				);
 			}
 		}
 
@@ -50,7 +53,7 @@ async function migrateProfiles(conn: any) {
 
 const main = async () => {
 	const conn = await getConnection();
-	
+
 	try {
 		await migrateProfiles(conn);
 	} finally {

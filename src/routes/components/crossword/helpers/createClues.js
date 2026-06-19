@@ -10,7 +10,7 @@ export default function createClues(data) {
 		y: d.y - adjust
 	}));
 
-	const withId = withAdjust.map((d, i) => ({
+	const withId = withAdjust.map((d) => ({
 		...d,
 		id: `${d.x}-${d.y}`
 	}));

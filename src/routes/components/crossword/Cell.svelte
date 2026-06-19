@@ -21,7 +21,7 @@
 
 	let element;
 
-	$: isFocused, onFocusSelf();
+	$: (isFocused, onFocusSelf());
 	$: correct = answer === value;
 	$: showCheck = isChecking && value;
 

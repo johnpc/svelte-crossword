@@ -17,7 +17,7 @@ const main = async () => {
 	// Clean main branch database
 	console.log('Cleaning main branch database...');
 	const mainConn = await getConnection(process.env.SQL_CONNECTION_STRING!);
-	
+
 	try {
 		await mainConn.execute('DELETE FROM user_puzzles WHERE id IN ("up1", "up2", "up3")');
 		await mainConn.execute('DELETE FROM profiles WHERE id IN ("p1", "p2", "p3")');
@@ -43,7 +43,9 @@ const main = async () => {
 		const [userPuzzles] = await sandboxConn.execute('SELECT COUNT(*) as count FROM user_puzzles');
 		console.log('User Puzzles:', userPuzzles);
 
-		const [sampleProfiles] = await sandboxConn.execute('SELECT id, name, email FROM profiles LIMIT 5');
+		const [sampleProfiles] = await sandboxConn.execute(
+			'SELECT id, name, email FROM profiles LIMIT 5'
+		);
 		console.log('\nSample profiles:', sampleProfiles);
 	} finally {
 		await sandboxConn.end();

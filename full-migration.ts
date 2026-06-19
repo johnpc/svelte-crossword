@@ -88,7 +88,15 @@ async function migrateUserPuzzles(conn: any) {
 			try {
 				await conn.execute(
 					'INSERT INTO user_puzzles (id, profile_id, puzzle_id, used_check, used_reveal, used_clear, time_in_seconds, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW()) ON DUPLICATE KEY UPDATE id=id',
-					[up.id, up.profileCompletedPuzzlesId, up.userPuzzlePuzzleId, up.usedCheck ? 1 : 0, up.usedReveal ? 1 : 0, up.usedClear ? 1 : 0, up.timeInSeconds]
+					[
+						up.id,
+						up.profileCompletedPuzzlesId,
+						up.userPuzzlePuzzleId,
+						up.usedCheck ? 1 : 0,
+						up.usedReveal ? 1 : 0,
+						up.usedClear ? 1 : 0,
+						up.timeInSeconds
+					]
 				);
 				count++;
 				if (count % 100 === 0) console.log(`  ✓ Migrated ${count} user puzzles...`);
@@ -107,15 +115,17 @@ async function migrateUserPuzzles(conn: any) {
 const main = async () => {
 	console.log('Starting full migration...\n');
 	const conn = await getConnection();
-	
+
 	try {
 		const profileCount = await migrateProfiles(conn);
 		const puzzleCount = await migratePuzzles(conn);
 		const userPuzzleCount = await migrateUserPuzzles(conn);
-		
+
 		console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 		console.log('Migration complete!');
-		console.log(`Total: ${profileCount} profiles, ${puzzleCount} puzzles, ${userPuzzleCount} user puzzles`);
+		console.log(
+			`Total: ${profileCount} profiles, ${puzzleCount} puzzles, ${userPuzzleCount} user puzzles`
+		);
 		console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 	} finally {
 		await conn.end();

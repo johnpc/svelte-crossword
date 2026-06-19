@@ -36,7 +36,7 @@
 	$: h = Math.max(...cells.map((d) => d.y)) + 1;
 	$: keyboardVisible = typeof showKeyboard === 'boolean' ? showKeyboard : isMobile;
 
-	$: cells, focusedCellIndex, focusedDirection, updateSecondarilyFocusedCells();
+	$: (cells, focusedCellIndex, focusedDirection, updateSecondarilyFocusedCells());
 	$: sortedCellsInDirection = [...cells].sort((a, b) =>
 		focusedDirection == 'down' ? a.x - b.x || a.y - b.y : a.y - b.y || a.x - b.x
 	);
@@ -62,28 +62,30 @@
 
 		const dimension = focusedDirection == 'across' ? 'x' : 'y';
 		const clueIndex = cells[index].clueNumbers[focusedDirection];
-		const allCellsInClue = cells.filter(
-			(cell) => cell.clueNumbers[focusedDirection] == clueIndex
-		);
+		const allCellsInClue = cells.filter((cell) => cell.clueNumbers[focusedDirection] == clueIndex);
 		const allCellsInClueFilled = allCellsInClue.every((cell) => cell.value);
-		
-		console.log('onCellUpdate', { 
-			index, 
-			clueIndex, 
-			allCellsInClueFilled, 
+
+		console.log('onCellUpdate', {
+			index,
+			clueIndex,
+			allCellsInClueFilled,
 			allCellsInClue: allCellsInClue.length,
 			currentPosition: cells[index][dimension]
 		});
-		
-		const cellsToCheck = allCellsInClueFilled ? allCellsInClue : allCellsInClue.filter(cell => !cell.value);
-		const cellsInCluePositions = cellsToCheck.map((cell) => cell[dimension]).filter(Number.isFinite);
+
+		const cellsToCheck = allCellsInClueFilled
+			? allCellsInClue
+			: allCellsInClue.filter((cell) => !cell.value);
+		const cellsInCluePositions = cellsToCheck
+			.map((cell) => cell[dimension])
+			.filter(Number.isFinite);
 		const isAtEndOfClue = cells[index][dimension] == Math.max(...cellsInCluePositions);
-		
-		console.log('Navigation check', { 
+
+		console.log('Navigation check', {
 			cellsToCheck: cellsToCheck.length,
 			positions: cellsInCluePositions,
 			maxPosition: Math.max(...cellsInCluePositions),
-			isAtEndOfClue 
+			isAtEndOfClue
 		});
 
 		const newCells = [
@@ -102,7 +104,10 @@
 			console.log('At end of clue, calling onFocusClueDiff');
 			onFocusClueDiff(diff);
 		} else {
-			console.log('Not at end, calling onFocusCellDiff with doReplaceFilledCells:', allCellsInClueFilled || doReplaceFilledCells);
+			console.log(
+				'Not at end, calling onFocusCellDiff with doReplaceFilledCells:',
+				allCellsInClueFilled || doReplaceFilledCells
+			);
 			onFocusCellDiff(diff, allCellsInClueFilled || doReplaceFilledCells);
 		}
 	}
@@ -156,9 +161,9 @@
 	function onFocusClueDiff(diff = 1) {
 		const currentNumber = focusedCell.clueNumbers[focusedDirection];
 		const allCluesInDirectionFilled = clues
-			.filter(clue => clue.direction === focusedDirection)
-			.every(clue => clue.isFilled);
-		
+			.filter((clue) => clue.direction === focusedDirection)
+			.every((clue) => clue.isFilled);
+
 		let nextCluesInDirection = clues.filter(
 			(clue) =>
 				(allCluesInDirectionFilled || !clue.isFilled) &&
@@ -175,10 +180,14 @@
 		}
 		const nextFocusedCell =
 			sortedCellsInDirection.find(
-				(cell) => (allCluesInDirectionFilled || !cell.value) && cell.clueNumbers[focusedDirection] == nextClue.number
-			) || sortedCellsInDirection.find(
+				(cell) =>
+					(allCluesInDirectionFilled || !cell.value) &&
+					cell.clueNumbers[focusedDirection] == nextClue.number
+			) ||
+			sortedCellsInDirection.find(
 				(cell) => cell.clueNumbers[focusedDirection] == nextClue.number
-			) || {};
+			) ||
+			{};
 		focusedCellIndex = nextFocusedCell.index || 0;
 	}
 
@@ -214,7 +223,7 @@
 
 	function onNativeKeydown(e) {
 		if (e.ctrlKey || e.altKey) return;
-		
+
 		if (['Delete', 'Backspace'].includes(e.key)) {
 			onCellUpdate(focusedCellIndex, '', -1, true);
 			e.preventDefault();
@@ -231,7 +240,8 @@
 	}
 
 	function onClick() {
-		isPuzzleFocused = element.contains(document.activeElement) || document.activeElement === hiddenInput;
+		isPuzzleFocused =
+			element.contains(document.activeElement) || document.activeElement === hiddenInput;
 	}
 </script>
 

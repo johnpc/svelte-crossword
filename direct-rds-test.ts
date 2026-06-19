@@ -13,10 +13,12 @@ const main = async () => {
 
 	try {
 		const testId = `direct-test-${Date.now()}`;
-		await conn.execute(
-			'INSERT INTO profiles (id, user_id, name, email) VALUES (?, ?, ?, ?)',
-			[testId, 'test-user', 'Direct Test', 'direct@test.com']
-		);
+		await conn.execute('INSERT INTO profiles (id, user_id, name, email) VALUES (?, ?, ?, ?)', [
+			testId,
+			'test-user',
+			'Direct Test',
+			'direct@test.com'
+		]);
 		console.log('✓ Inserted directly into RDS');
 
 		const [rows] = await conn.execute('SELECT * FROM profiles WHERE id = ?', [testId]);
