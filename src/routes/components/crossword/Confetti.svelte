@@ -17,7 +17,7 @@
 		'#475c83'
 	];
 
-	const pickFrom = (arr) => arr[Math.round(Math.random() * arr.length)];
+	const pickFrom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 	const randomNumber = (min, max) => Math.random() * (max - min) + min;
 	const getManyOf = (str) => new Array(30).fill(0).map(() => str);
 
