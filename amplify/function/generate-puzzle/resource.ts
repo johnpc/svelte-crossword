@@ -5,6 +5,6 @@ export const generatePuzzleFunction = defineFunction({
 	entry: './handler.ts',
 	runtime: 20,
 	timeoutSeconds: 600,
-	memoryMB: 512,
+	memoryMB: 2048,
 	schedule: 'every day'
 });

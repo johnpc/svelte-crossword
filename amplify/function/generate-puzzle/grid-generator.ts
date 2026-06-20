@@ -6,6 +6,9 @@ export interface GeneratedGrid {
 	solution: string;
 }
 
+const PER_ATTEMPT_BUDGET_MS = 3000;
+const TOTAL_BUDGET_MS = 60_000;
+
 function shuffle<T>(arr: T[]): T[] {
 	const result = [...arr];
 	for (let i = result.length - 1; i > 0; i--) {
@@ -15,26 +18,42 @@ function shuffle<T>(arr: T[]): T[] {
 	return result;
 }
 
+class DeadlineError extends Error {
+	constructor() {
+		super('deadline');
+		this.name = 'DeadlineError';
+	}
+}
+
 export function generateGrid(words: string[]): GeneratedGrid | null {
 	const index = buildWordIndex(words);
 	const wordSet = new Set(words);
 	const shuffled = shuffle(words);
+	const totalDeadline = Date.now() + TOTAL_BUDGET_MS;
 
-	for (let attempt = 0; attempt < 100; attempt++) {
-		const startWord = shuffled[attempt % shuffled.length];
+	for (let attempt = 0; attempt < shuffled.length; attempt++) {
+		if (Date.now() >= totalDeadline) break;
+
+		const startWord = shuffled[attempt];
 		const grid: string[] = [startWord];
+		const attemptDeadline = Math.min(Date.now() + PER_ATTEMPT_BUDGET_MS, totalDeadline);
 
-		if (backtrack(index, wordSet, grid, 1)) {
-			const across = grid.slice();
-			const down: string[] = [];
-			for (let col = 0; col < 5; col++) {
-				let word = '';
-				for (let row = 0; row < 5; row++) {
-					word += grid[row][col];
+		try {
+			if (backtrack(index, wordSet, grid, 1, attemptDeadline)) {
+				const across = grid.slice();
+				const down: string[] = [];
+				for (let col = 0; col < 5; col++) {
+					let word = '';
+					for (let row = 0; row < 5; row++) {
+						word += grid[row][col];
+					}
+					down.push(word);
 				}
-				down.push(word);
+				return { across, down, solution: grid.join('') };
 			}
-			return { across, down, solution: grid.join('') };
+		} catch (e) {
+			if (!(e instanceof DeadlineError)) throw e;
+			// Per-attempt deadline hit — move on to the next start word.
 		}
 	}
 
@@ -45,8 +64,10 @@ function backtrack(
 	index: ReturnType<typeof buildWordIndex>,
 	wordSet: Set<string>,
 	grid: string[],
-	row: number
+	row: number,
+	deadline: number
 ): boolean {
+	if (Date.now() >= deadline) throw new DeadlineError();
 	if (row === 5) {
 		const down: string[] = [];
 		for (let col = 0; col < 5; col++) {
@@ -94,7 +115,7 @@ function backtrack(
 
 	for (let i = 0; i < maxTries; i++) {
 		grid[row] = candidates[i];
-		if (backtrack(index, wordSet, grid, row + 1)) {
+		if (backtrack(index, wordSet, grid, row + 1, deadline)) {
 			return true;
 		}
 	}
