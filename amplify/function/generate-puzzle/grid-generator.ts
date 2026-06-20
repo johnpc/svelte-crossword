@@ -1,0 +1,133 @@
+import { buildWordIndex, getCandidates } from './word-index';
+
+export interface GeneratedGrid {
+	across: string[];
+	down: string[];
+	solution: string;
+}
+
+function shuffle<T>(arr: T[]): T[] {
+	const result = [...arr];
+	for (let i = result.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[result[i], result[j]] = [result[j], result[i]];
+	}
+	return result;
+}
+
+export function generateGrid(words: string[]): GeneratedGrid | null {
+	const index = buildWordIndex(words);
+	const wordSet = new Set(words);
+	const shuffled = shuffle(words);
+
+	for (let attempt = 0; attempt < 100; attempt++) {
+		const startWord = shuffled[attempt % shuffled.length];
+		const grid: string[] = [startWord];
+
+		if (backtrack(index, wordSet, grid, 1)) {
+			const across = grid.slice();
+			const down: string[] = [];
+			for (let col = 0; col < 5; col++) {
+				let word = '';
+				for (let row = 0; row < 5; row++) {
+					word += grid[row][col];
+				}
+				down.push(word);
+			}
+			return { across, down, solution: grid.join('') };
+		}
+	}
+
+	return null;
+}
+
+function backtrack(
+	index: ReturnType<typeof buildWordIndex>,
+	wordSet: Set<string>,
+	grid: string[],
+	row: number
+): boolean {
+	if (row === 5) {
+		for (let col = 0; col < 5; col++) {
+			let word = '';
+			for (let r = 0; r < 5; r++) {
+				word += grid[r][col];
+			}
+			if (!wordSet.has(word)) return false;
+		}
+		return true;
+	}
+
+	// Build column constraints from rows placed so far
+	const colConstraints: (string | null)[][] = [];
+	for (let col = 0; col < 5; col++) {
+		const constraints: (string | null)[] = [null, null, null, null, null];
+		for (let r = 0; r < row; r++) {
+			constraints[r] = grid[r][col];
+		}
+		colConstraints.push(constraints);
+	}
+
+	// Find candidate words for this row
+	let candidates = getCandidatesForRow(index, wordSet, grid, colConstraints, row);
+	candidates = shuffle(candidates);
+
+	// Try fewer candidates at deeper rows to fail fast on bad branches
+	const maxTries = Math.min(candidates.length, row >= 3 ? 50 : 150);
+
+	for (let i = 0; i < maxTries; i++) {
+		grid[row] = candidates[i];
+		if (backtrack(index, wordSet, grid, row + 1)) {
+			return true;
+		}
+	}
+
+	grid.length = row;
+	return false;
+}
+
+function getCandidatesForRow(
+	index: ReturnType<typeof buildWordIndex>,
+	wordSet: Set<string>,
+	grid: string[],
+	colConstraints: (string | null)[][],
+	row: number
+): string[] {
+	// Start with the most constrained column to narrow candidates fast
+	let bestCol = 0;
+	let bestCount = Infinity;
+
+	for (let col = 0; col < 5; col++) {
+		const count = getCandidates(index, colConstraints[col]).length;
+		if (count < bestCount) {
+			bestCount = count;
+			bestCol = col;
+		}
+	}
+
+	// Get all possible letters at the most constrained column position
+	const colWords = getCandidates(index, colConstraints[bestCol]);
+	const possibleLetters = new Set(colWords.map((w) => w[row]));
+
+	// Get all words that have one of those letters at position bestCol
+	const initial: string[] = [];
+	for (const letter of possibleLetters) {
+		const posMap = index.get(bestCol);
+		if (!posMap) continue;
+		const words = posMap.get(letter) || [];
+		initial.push(...words);
+	}
+
+	// Filter: word not already used, and placing it keeps all columns viable
+	return initial.filter((word) => {
+		if (grid.includes(word)) return false;
+
+		for (let col = 0; col < 5; col++) {
+			const constraints: (string | null)[] = [...colConstraints[col]];
+			constraints[row] = word[col];
+			const viable = getCandidates(index, constraints);
+			if (viable.length === 0) return false;
+		}
+		return true;
+	});
+}
