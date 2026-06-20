@@ -27,21 +27,48 @@ Instructions:
 - Write one clue per word. The themed words should have clues that relate to the theme. Other clues should be standard crossword style (concise, may use wordplay)
 - Clues should be concise (under 50 characters each)
 - Do not include the answer in the clue
+- For across_clues and down_clues, the keys must be the exact uppercase words provided above`;
 
-Return ONLY valid JSON with no other text:
-{
-  "title": "...",
-  "theme": "brief theme description",
-  "clues": {
-    "across": {"${acrossWords[0]}": "clue", "${acrossWords[1]}": "clue", "${acrossWords[2]}": "clue", "${acrossWords[3]}": "clue", "${acrossWords[4]}": "clue"},
-    "down": {"${downWords[0]}": "clue", "${downWords[1]}": "clue", "${downWords[2]}": "clue", "${downWords[3]}": "clue", "${downWords[4]}": "clue"}
-  }
-}`;
+	const schema = {
+		type: 'object' as const,
+		properties: {
+			title: {
+				type: 'string' as const,
+				description: 'Short puzzle title hinting at the theme'
+			},
+			theme: {
+				type: 'string' as const,
+				description: 'Brief description of the theme'
+			},
+			across_clues: {
+				type: 'object' as const,
+				description: 'Map of each across word to its clue',
+				additionalProperties: false,
+				properties: Object.fromEntries(acrossWords.map((w) => [w, { type: 'string' as const }])),
+				required: acrossWords
+			},
+			down_clues: {
+				type: 'object' as const,
+				description: 'Map of each down word to its clue',
+				additionalProperties: false,
+				properties: Object.fromEntries(downWords.map((w) => [w, { type: 'string' as const }])),
+				required: downWords
+			}
+		},
+		required: ['title', 'theme', 'across_clues', 'down_clues'] as string[],
+		additionalProperties: false
+	};
 
 	const body = JSON.stringify({
 		anthropic_version: 'bedrock-2023-05-31',
 		max_tokens: 1024,
-		messages: [{ role: 'user', content: prompt }]
+		messages: [{ role: 'user', content: prompt }],
+		output_config: {
+			format: {
+				type: 'json_schema',
+				schema
+			}
+		}
 	});
 
 	const command = new InvokeModelCommand({
@@ -53,19 +80,12 @@ Return ONLY valid JSON with no other text:
 
 	const response = await client.send(command);
 	const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-	const text = responseBody.content[0].text;
-
-	const jsonMatch = text.match(/\{[\s\S]*\}/);
-	if (!jsonMatch) {
-		throw new Error(`Failed to parse clue response: ${text}`);
-	}
-
-	const parsed = JSON.parse(jsonMatch[0]);
+	const parsed = JSON.parse(responseBody.content[0].text);
 
 	return {
 		title: parsed.title,
 		theme: parsed.theme,
-		across: parsed.clues.across,
-		down: parsed.clues.down
+		across: parsed.across_clues,
+		down: parsed.down_clues
 	};
 }
