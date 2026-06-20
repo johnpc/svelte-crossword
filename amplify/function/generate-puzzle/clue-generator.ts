@@ -16,18 +16,32 @@ export async function generateClues(
 ): Promise<GeneratedClues> {
 	const client = new BedrockRuntimeClient({ region });
 
-	const prompt = `You are a crossword puzzle constructor. Given these words that form a 5x5 crossword grid, create themed clues.
+	const prompt = `You are a top-tier crossword constructor in the style of the NYT Mini. Given these words that form a 5x5 crossword grid, write colorful, lively clues with real personality.
 
 Across words (rows 1-5): ${acrossWords.join(', ')}
 Down words (columns 1-5): ${downWords.join(', ')}
 
-Instructions:
-- Find a theme that naturally connects 2-3 of these words
-- Create a puzzle title that hints at the theme (short, punny or clever, under 30 characters)
-- Write one clue per word. The themed words should have clues that relate to the theme. Other clues should be standard crossword style (concise, may use wordplay)
-- Clues should be concise (under 50 characters each)
-- Do not include the answer in the clue
-- For across_clues and down_clues, the keys must be the exact uppercase words provided above`;
+Theme:
+- Find a theme that naturally connects 2-3 of these words. The theme should feel like a wink, not a homework assignment.
+- Create a puzzle title that hints at the theme (under 30 chars, punny / playful / evocative — think NYT Mini titles like "Pop Quiz" or "On the Move")
+- Themed clues should reference the theme cleverly — could be wordplay, a pop-culture nod, or a clever misdirection.
+
+Style for ALL clues:
+- Be specific, vivid, and surprising. Avoid generic dictionary definitions.
+- Prefer concrete examples, pop-culture references, idioms, double-meanings, or playful misdirection over dry "type of X" phrasings.
+- Question marks (?) are encouraged for clues with wordplay or a punny angle.
+- Vary clue style: mix straight definitions, fill-in-the-blanks ("___ in the bucket"), pop-culture, and "?-style" wordplay.
+- Avoid: "Used for X", "Type of X", "Relating to X", "A kind of X". These are flat.
+- 50 characters max per clue. Tighter is better.
+- Never include the answer (or its plural/conjugation) inside the clue.
+
+Examples of the vibe:
+- APPLE → "Forbidden fruit, in Eden" (not "Common red fruit")
+- EAGER → "Champing at the bit" (not "Very enthusiastic")
+- SERIF → "Times New Roman flourish" (not "Font feature")
+- TRITE → "Like the saying 'It is what it is'" (not "Overused")
+
+For across_clues and down_clues, the keys MUST be the exact uppercase words provided above.`;
 
 	const schema = {
 		type: 'object' as const,
