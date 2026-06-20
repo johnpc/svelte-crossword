@@ -4,6 +4,7 @@ import { auth } from './auth/resource.js';
 import { data } from './data/resource.js';
 import { storage } from './storage/resource.js';
 import { seedPuzzleDbFunction } from './function/resource';
+import { generatePuzzleFunction } from './function/generate-puzzle/resource';
 import { sqlQueriesFunction } from './function/sql-queries/resource';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
@@ -17,6 +18,7 @@ const authFunction = defineFunction({
 
 const backend = defineBackend({
 	seedPuzzleDbFunction,
+	generatePuzzleFunction,
 	sqlQueriesFunction,
 	authFunction,
 	auth,
@@ -47,6 +49,29 @@ underlyingSeedLambda.addToRolePolicy(
 	new cdk.aws_iam.PolicyStatement({
 		actions: ['lambda:InvokeFunction'],
 		resources: [underlyingSqlLambda.functionArn]
+	})
+);
+
+// Set up generate puzzle lambda
+const underlyingGenerateLambda = backend.generatePuzzleFunction.resources.lambda as LambdaFunction;
+underlyingGenerateLambda.addEnvironment(
+	'SQL_QUERIES_FUNCTION_NAME',
+	underlyingSqlLambda.functionName
+);
+
+// Grant generate puzzle lambda permission to invoke SQL queries lambda
+underlyingGenerateLambda.addToRolePolicy(
+	new cdk.aws_iam.PolicyStatement({
+		actions: ['lambda:InvokeFunction'],
+		resources: [underlyingSqlLambda.functionArn]
+	})
+);
+
+// Grant generate puzzle lambda permission to invoke Bedrock
+underlyingGenerateLambda.addToRolePolicy(
+	new cdk.aws_iam.PolicyStatement({
+		actions: ['bedrock:InvokeModel'],
+		resources: ['arn:aws:bedrock:*::foundation-model/*']
 	})
 );
 
