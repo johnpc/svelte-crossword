@@ -1,4 +1,4 @@
-import { generateGrid, GeneratedGrid } from './grid-generator';
+import { generateGrid, GeneratedGrid, GenerateGridOptions } from './grid-generator';
 import { formatPuzzle } from './format-puzzle';
 import { GeneratedClues } from './clue-generator';
 import { PuzJson } from './puz-types';
@@ -19,9 +19,12 @@ export function puzzleIdFor(dateStr: string): string {
  * Try up to MAX_GRID_ATTEMPTS candidate grids and return the first valid
  * one. Returns null if every attempt fails.
  */
-export function generateUniqueGrid(words: string[]): GeneratedGrid | null {
+export function generateUniqueGrid(
+	words: string[],
+	options: GenerateGridOptions = {}
+): GeneratedGrid | null {
 	for (let attempt = 0; attempt < MAX_GRID_ATTEMPTS; attempt++) {
-		const candidate = generateGrid(words);
+		const candidate = generateGrid(words, options);
 		if (candidate) return candidate;
 	}
 	return null;

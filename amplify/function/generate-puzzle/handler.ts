@@ -12,6 +12,13 @@ import {
 export interface GeneratePuzzleEvent {
 	dryRun?: boolean;
 	date?: string;
+	/**
+	 * If true, the generator rejects all-white grids and only returns puzzles
+	 * with corner black squares (and therefore 4-letter slots). Useful for
+	 * deliberately producing a black-square puzzle to verify the front-end
+	 * handles them correctly.
+	 */
+	forceBlackSquares?: boolean;
 }
 
 export interface HandlerDeps {
@@ -40,7 +47,9 @@ export async function runHandler(event: GeneratePuzzleEvent, deps: HandlerDeps) 
 		if (JSON.parse(checkResult)) return { skipped: true, puzzleId };
 	}
 
-	const grid = generateUniqueGrid(deps.words);
+	const grid = generateUniqueGrid(deps.words, {
+		requireBlackSquares: event.forceBlackSquares === true
+	});
 	if (!grid) throw new Error('Failed to generate a valid grid after 10 attempts');
 
 	const clues = await deps.generateClues(grid.across, grid.down, deps.region);

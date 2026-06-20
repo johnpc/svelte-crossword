@@ -125,4 +125,22 @@ describe('runHandler', () => {
 		expect(result.dryRun).toBe(true);
 		consoleSpy.mockRestore();
 	});
+
+	it('passes forceBlackSquares through to generateUniqueGrid', async () => {
+		const deps = makeDeps();
+		await runHandler({ dryRun: true, forceBlackSquares: true }, deps);
+		expect(vi.mocked(generateUniqueGrid)).toHaveBeenCalledWith(
+			deps.words,
+			expect.objectContaining({ requireBlackSquares: true })
+		);
+	});
+
+	it('defaults requireBlackSquares to false when flag is omitted', async () => {
+		const deps = makeDeps();
+		await runHandler({ dryRun: true }, deps);
+		expect(vi.mocked(generateUniqueGrid)).toHaveBeenCalledWith(
+			deps.words,
+			expect.objectContaining({ requireBlackSquares: false })
+		);
+	});
 });

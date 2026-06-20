@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateGrid, rethrowIfNotDeadline } from './grid-generator';
+import { generateGrid, rethrowIfNotDeadline, biasSpaceWordsFirst } from './grid-generator';
 import { DeadlineError } from './deadline';
 
 // Hand-crafted small word list that admits at least one valid asymmetric
@@ -86,6 +86,21 @@ describe('generateGrid', () => {
 		// almost always succeed inside the 60s+ total budget. We just confirm
 		// the call returns something or null without throwing.
 		expect(() => generateGrid(SMALL_WORDS)).not.toThrow();
+	});
+
+	describe('biasSpaceWordsFirst', () => {
+		it('puts space-containing words ahead of pure-letter words', () => {
+			const result = biasSpaceWordsFirst(['ABCDE', ' WORD', 'FGHIJ', 'WORD ']);
+			// All space-containing entries come first.
+			expect(result.slice(0, 2).every((w) => w.includes(' '))).toBe(true);
+			expect(result.slice(2).every((w) => !w.includes(' '))).toBe(true);
+		});
+
+		it('preserves all entries (no losses, no duplicates)', () => {
+			const input = ['A', 'B ', ' C', 'D'];
+			const result = biasSpaceWordsFirst(input);
+			expect(result.sort()).toEqual(input.sort());
+		});
 	});
 
 	describe('rethrowIfNotDeadline', () => {

@@ -4,7 +4,8 @@ import {
 	hasValidBlackPattern,
 	isWordSquare,
 	readDownWords,
-	validateCompleteGrid
+	validateCompleteGrid,
+	hasAnyBlack
 } from './grid-rules';
 
 describe('grid-rules', () => {
@@ -100,6 +101,27 @@ describe('grid-rules', () => {
 			const asymDown = readDownWords(asym);
 			const asymSet = new Set([...asym, ...asymDown]);
 			expect(validateCompleteGrid(asym, asymSet)).toBe(false);
+		});
+
+		it('rejects all-white grids when requireBlackSquares is true', () => {
+			expect(validateCompleteGrid(grid, fullSet, { requireBlackSquares: true })).toBe(false);
+		});
+
+		it('accepts corner-black grids when requireBlackSquares is true', () => {
+			const blackGrid = [' BCDE', 'FGHIJ', 'KLMNO', 'PQRST', 'UVWX '];
+			const blackDown = readDownWords(blackGrid);
+			const blackSet = new Set([...blackGrid, ...blackDown]);
+			expect(validateCompleteGrid(blackGrid, blackSet, { requireBlackSquares: true })).toBe(true);
+		});
+	});
+
+	describe('hasAnyBlack', () => {
+		it('returns false for all-white grids', () => {
+			expect(hasAnyBlack(['ABCDE', 'FGHIJ', 'KLMNO', 'PQRST', 'UVWXY'])).toBe(false);
+		});
+
+		it('returns true when any cell contains a space', () => {
+			expect(hasAnyBlack([' BCDE', 'FGHIJ', 'KLMNO', 'PQRST', 'UVWX '])).toBe(true);
 		});
 	});
 });
