@@ -60,15 +60,16 @@
 		justify-content: space-between;
 		background-color: var(--secondary-highlight-color);
 		align-items: center;
+		min-height: 4.5em;
 	}
 
 	.clue-text {
 		flex: 1;
 		padding: 0 1em;
-		line-height: 1.325;
+		line-height: 1.5;
 		font-family: var(--font);
-		font-size: 1.2em;
-		text-align: left;
+		font-size: 1.4em;
+		text-align: center;
 		cursor: pointer;
 		border: none;
 		color: var(--main-color);
