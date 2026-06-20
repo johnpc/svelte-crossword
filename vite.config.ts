@@ -9,7 +9,10 @@ export default defineConfig({
 		allowedHosts: ['xss-dev.tuns.sh']
 	},
 	test: {
-		include: ['src/**/*.{test,spec}.{js,ts}'],
+		include: [
+			'src/**/*.{test,spec}.{js,ts}',
+			'amplify/function/generate-puzzle/**/*.{test,spec}.{js,ts}'
+		],
 		globals: true,
 		environment: 'jsdom',
 		setupFiles: ['./vitest-setup.ts'],
@@ -31,13 +34,16 @@ export default defineConfig({
 			},
 			// Both the .ts/.js logic layer and .svelte components are gated. Component
 			// logic is unit-tested via @testing-library/svelte render tests.
-			include: ['src/**/*.{js,ts,svelte}'],
+			include: ['src/**/*.{js,ts,svelte}', 'amplify/function/generate-puzzle/**/*.ts'],
 			exclude: [
 				'src/app.d.ts',
 				'src/service-worker.ts',
 				'src/**/*.test.{js,ts}',
 				'src/**/*.spec.{js,ts}',
 				'src/**/*.d.ts',
+				'amplify/function/generate-puzzle/**/*.test.{js,ts}',
+				// CDK config — pure declarative, no logic to cover.
+				'amplify/function/generate-puzzle/resource.ts',
 				// Test-only fixtures (stub components rendered by tests).
 				'src/**/__fixtures__/**',
 				// Type-only and static data modules carry no executable logic.
