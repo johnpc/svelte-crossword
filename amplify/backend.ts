@@ -67,11 +67,13 @@ underlyingGenerateLambda.addToRolePolicy(
 	})
 );
 
-// Grant generate puzzle lambda permission to invoke Bedrock
+// Grant generate puzzle lambda permission to invoke Bedrock.
+// Cross-region inference profiles require both the profile ARN and the
+// underlying foundation models across all regions the profile spans.
 underlyingGenerateLambda.addToRolePolicy(
 	new cdk.aws_iam.PolicyStatement({
 		actions: ['bedrock:InvokeModel'],
-		resources: ['arn:aws:bedrock:*::foundation-model/*']
+		resources: ['arn:aws:bedrock:*::foundation-model/*', 'arn:aws:bedrock:*:*:inference-profile/*']
 	})
 );
 
