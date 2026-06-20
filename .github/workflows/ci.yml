@@ -17,7 +17,9 @@ jobs:
           node-version: 22
           cache: 'npm'
 
-      - run: npm ci
+      # Amplify Gen2 deps drag in conflicting zod peers; legacy-peer-deps
+      # is the only way npm ci will resolve them without erroring.
+      - run: npm ci --legacy-peer-deps
 
       - name: Provide amplify_outputs.json
         env:
@@ -46,12 +48,14 @@ jobs:
       - name: Max line length check (150 lines)
         run: |
           FAILED=0
-          for f in $(find src -name "*.svelte" -o -name "*.ts" -o -name "*.js" | grep -v node_modules | grep -v '.test.' | grep -v '.spec.'); do
-            LINES=$(wc -l < "$f")
-            if [ "$LINES" -gt 150 ]; then
-              echo "FAIL: $f ($LINES lines, max 150)"
-              FAILED=1
-            fi
+          for root in src amplify/function/generate-puzzle; do
+            for f in $(find "$root" \( -name "*.svelte" -o -name "*.ts" -o -name "*.js" \) | grep -v node_modules | grep -v '.test.' | grep -v '.spec.'); do
+              LINES=$(wc -l < "$f")
+              if [ "$LINES" -gt 150 ]; then
+                echo "FAIL: $f ($LINES lines, max 150)"
+                FAILED=1
+              fi
+            done
           done
           if [ "$FAILED" -eq 1 ]; then
             exit 1
