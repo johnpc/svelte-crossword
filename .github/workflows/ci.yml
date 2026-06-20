@@ -17,7 +17,9 @@ jobs:
           node-version: 22
           cache: 'npm'
 
-      - run: npm ci
+      # Amplify Gen2 deps drag in conflicting zod peers; legacy-peer-deps
+      # is the only way npm ci will resolve them without erroring.
+      - run: npm ci --legacy-peer-deps
 
       - name: Provide amplify_outputs.json
         env:
