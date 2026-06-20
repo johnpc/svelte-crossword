@@ -48,14 +48,31 @@ function backtrack(
 	row: number
 ): boolean {
 	if (row === 5) {
+		const down: string[] = [];
 		for (let col = 0; col < 5; col++) {
 			let word = '';
 			for (let r = 0; r < 5; r++) {
 				word += grid[r][col];
 			}
 			if (!wordSet.has(word)) return false;
+			down.push(word);
+		}
+		// Reject word squares (across === down) — we want 10 distinct words
+		for (let i = 0; i < 5; i++) {
+			if (grid[i] === down[i]) return false;
 		}
 		return true;
+	}
+
+	// Early symmetry rejection: if the partial grid is forming a word square, skip
+	if (row >= 2) {
+		let symmetric = true;
+		for (let r = 0; r < row && symmetric; r++) {
+			for (let c = r + 1; c < row && symmetric; c++) {
+				if (grid[r][c] !== grid[c][r]) symmetric = false;
+			}
+		}
+		if (symmetric) return false;
 	}
 
 	// Build column constraints from rows placed so far
