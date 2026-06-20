@@ -64,17 +64,38 @@ export function readDownWords(grid: string[]): string[] {
 	return down;
 }
 
+/** Whether any cell in the grid is a black square. */
+export function hasAnyBlack(grid: string[]): boolean {
+	for (let r = 0; r < SIZE; r++) {
+		for (let c = 0; c < SIZE; c++) {
+			if (grid[r][c] === BLACK) return true;
+		}
+	}
+	return false;
+}
+
+export interface ValidateOptions {
+	requireBlackSquares?: boolean;
+}
+
 /**
  * Final-stage validation for a fully-placed grid: every down word must be in
  * the word set, the across/down placement must not form a word square, and
- * any black squares must form a legal corner pattern.
+ * any black squares must form a legal corner pattern. When
+ * options.requireBlackSquares is true, also reject all-white grids — useful
+ * for forcing a puzzle that exercises 4-letter slots.
  */
-export function validateCompleteGrid(grid: string[], wordSet: Set<string>): boolean {
+export function validateCompleteGrid(
+	grid: string[],
+	wordSet: Set<string>,
+	options: ValidateOptions = {}
+): boolean {
 	const down = readDownWords(grid);
 	for (const w of down) {
 		if (!wordSet.has(w)) return false;
 	}
 	if (isWordSquare(grid, down)) return false;
 	if (!hasValidBlackPattern(grid)) return false;
+	if (options.requireBlackSquares && !hasAnyBlack(grid)) return false;
 	return true;
 }
