@@ -2,10 +2,9 @@ import { generateGrid } from './grid-generator';
 import { generateClues } from './clue-generator';
 import { formatPuzzle } from './format-puzzle';
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
-import { env } from '$amplify/env/generatePuzzleFunction';
 import wordList from './word-list.json';
 
-const lambda = new LambdaClient({ region: env.AWS_REGION });
+const lambda = new LambdaClient({ region: process.env.AWS_REGION });
 
 interface GeneratePuzzleEvent {
 	dryRun?: boolean;
@@ -59,7 +58,7 @@ export const handler = async (event: GeneratePuzzleEvent) => {
 	});
 
 	// Generate themed clues via Bedrock
-	const clues = await generateClues(grid.across, grid.down, env.AWS_REGION);
+	const clues = await generateClues(grid.across, grid.down, process.env.AWS_REGION!);
 	console.log({ clues });
 
 	// Format into puz_json structure
@@ -90,7 +89,7 @@ export const handler = async (event: GeneratePuzzleEvent) => {
 
 async function invokeSql(payload: Record<string, unknown>): Promise<string> {
 	const command = new InvokeCommand({
-		FunctionName: env.SQL_QUERIES_FUNCTION_NAME,
+		FunctionName: process.env.SQL_QUERIES_FUNCTION_NAME,
 		Payload: JSON.stringify(payload)
 	});
 	const response = await lambda.send(command);
