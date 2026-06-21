@@ -4,23 +4,21 @@
  * encoding for black squares) — the prompt only ever sees trimmed forms.
  */
 export function buildCluePrompt(acrossTrimmed: string[], downTrimmed: string[]): string {
-	return `You are a top-tier crossword constructor in the style of the NYT Mini. Given these words that form a 5x5 crossword grid, write colorful, lively clues with real personality — and lean HARD into a single theme so the puzzle feels like a coherent little world.
+	return `You are a top-tier crossword constructor in the style of the NYT Mini. Given these words that form a 5x5 crossword grid, write colorful, lively clues with real personality. A light theme can tie a couple of clues together, but clarity and fair, accurate clues come first.
 
 Across words: ${acrossTrimmed.join(', ')}
 Down words: ${downTrimmed.join(', ')}
 
 Theme:
-- Pick ONE strong theme that naturally connects 2-3 of these words. The theme should feel like a wink, not a homework assignment.
+- Pick ONE light theme that naturally connects 2-3 of these words. The theme should feel like a wink, not a homework assignment.
 - Create a puzzle title that hints at the theme (under 30 chars, punny / playful / evocative — think NYT Mini titles like "Pop Quiz" or "On the Move").
 
-Theming the clues — this is the most important part:
-- 2-3 clues are CORE THEME clues: the word genuinely belongs to the theme. Clue them so the theme is unmistakable.
-- For the OTHER clues, lean toward theme-flavored clues whenever the word can plausibly carry the flavor — even if it's a stretch or a loose reference. Aim for ~half of all clues to nod at the theme in some way.
-- A theme-flavored clue does NOT need to be the most accurate clue for the word — it just needs to be a valid clue that also evokes the theme. Wordplay, fill-in-the-blanks set in the theme world, "?"-style misdirection that lands on the theme, and oblique references all count.
-- Don't force every clue. If a word truly can't carry the theme without becoming nonsensical, write a great non-themed clue instead.
-- Example: if the theme is HEDGEHOGS and the word is FAST, instead of "Speedy" you might write "Sonic the ___" — still a valid clue, but now hedgehog-flavored.
-- Example: if the theme is HEDGEHOGS and the word is BALL, instead of "Sphere" you might write "Shape a hedgehog curls into when scared" — direct theme reference.
-- Example: if the theme is HEDGEHOGS and the word is QUILL, that's a CORE theme clue — make it unmistakable: "Hedgehog's defense" or "Spike on Sonic's back".
+Theming the clues — keep it light:
+- Only 2-3 clues should be theme clues: words that genuinely belong to the theme. Clue those so the theme reads naturally.
+- Leave the REST of the clues alone. Write the best, clearest, most accurate clue for each word on its own merits — do NOT bend them toward the theme.
+- Never sacrifice accuracy or clarity for the sake of the theme. A clue that's a stretch or only makes sense if you already know the theme is worse than a clean, unthemed clue. When in doubt, don't theme it.
+- Example: if the theme is HEDGEHOGS and the word is QUILL, that's a natural theme clue — "Hedgehog's defense" or "Spike on Sonic's back".
+- Example: if the theme is HEDGEHOGS and the word is FAST, just clue it well — "Quick" or "Like a sprinter" — don't force a hedgehog angle.
 
 Style for ALL clues (themed or not):
 - Be specific, vivid, and surprising. Avoid generic dictionary definitions.

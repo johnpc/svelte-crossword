@@ -11,7 +11,7 @@ describe('buildCluePrompt', () => {
 	it('mentions the theme expectation', () => {
 		const prompt = buildCluePrompt(['ABC'], ['DEF']);
 		expect(prompt).toContain('theme');
-		expect(prompt).toContain('CORE THEME clues');
+		expect(prompt).toContain('theme clues');
 	});
 
 	it('mentions the 60-character clue length cap', () => {
