@@ -3,8 +3,12 @@ import { invokeSqlQuery } from './invokeSqlQuery';
 
 type RawPuzzle = { id: string; puzJson: string | object };
 
-export const getNextPuzzle = async (profileId: string): Promise<CrosswordClues> => {
-	const puzzleData = await invokeSqlQuery<RawPuzzle>({ query: 'nextPuzzle', profileId });
+export const getNextPuzzle = async (profileId: string): Promise<CrosswordClues | null> => {
+	const puzzleData = await invokeSqlQuery<RawPuzzle | null>({ query: 'nextPuzzle', profileId });
+	// Server returns null when there's no valid unplayed puzzle (catalog
+	// exhausted, or only corrupt rows remain). Surface it as "no puzzle" rather
+	// than crashing on a missing puzJson.
+	if (!puzzleData || puzzleData.puzJson == null) return null;
 	const puzData =
 		typeof puzzleData.puzJson === 'string' ? JSON.parse(puzzleData.puzJson) : puzzleData.puzJson;
 

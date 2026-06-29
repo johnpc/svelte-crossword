@@ -1,5 +1,6 @@
 import { Handler } from 'aws-lambda';
 import mysql from 'mysql2/promise';
+import { isValidPuzzle } from './puzzle-validator';
 
 const getConnection = async () => {
 	const connectionString = process.env.SQL_CONNECTION_STRING!;
@@ -40,6 +41,9 @@ export const handler: Handler = async (event) => {
 		}
 
 		if (query === 'nextPuzzle' && profileId) {
+			// Pull a small window of unplayed puzzles (newest first) and serve the
+			// first valid one, skipping any corrupt rows (e.g. all-black, clueless
+			// puzzles). Guards every client without a release.
 			const [rows] = await conn.execute(
 				`
 				SELECT p.id, p.puz_json as puzJson
@@ -47,14 +51,16 @@ export const handler: Handler = async (event) => {
 				LEFT JOIN user_puzzles up ON p.id = up.puzzle_id AND up.profile_id = ?
 				WHERE up.id IS NULL
 				ORDER BY p.created_at DESC
-				LIMIT 1
+				LIMIT 10
 			`,
 				[profileId]
 			);
-			const result = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
-			if (result && typeof result === 'object' && 'puzJson' in result) {
-				result.puzJson = JSON.parse(result.puzJson as string);
+			const candidates = Array.isArray(rows) ? (rows as { id: string; puzJson: string }[]) : [];
+			const valid = candidates.find((row) => isValidPuzzle(row.puzJson));
+			if (!valid) {
+				return { statusCode: 200, body: JSON.stringify(null) };
 			}
+			const result = { ...valid, puzJson: JSON.parse(valid.puzJson) };
 			return { statusCode: 200, body: JSON.stringify(result) };
 		}
 
