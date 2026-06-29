@@ -12,6 +12,7 @@ import createClues from '../../src/routes/components/crossword/helpers/createClu
 import { env } from '$amplify/env/seedPuzzleDbFunction';
 import { createPuzzle } from './graphql/mutations';
 import { listPuzzles } from './graphql/queries';
+import { isValidPuzzle } from './sql-queries/puzzle-validator';
 
 dotenv.config();
 const s3 = new S3Client();
@@ -103,6 +104,13 @@ const createDynamoRecord = async (buffer: Buffer, puzKey: string): Promise<boole
 	const clues = [...across, ...down];
 	const isValid = validateClues(createClues(clues));
 	if (!isValid) {
+		return false;
+	}
+	// validateClues passes vacuously for an empty clue set, so an all-black /
+	// clueless puzzle would otherwise slip through. isValidPuzzle rejects those
+	// (zero clues or an all-dot solution grid) — same guard the serving path uses.
+	if (!isValidPuzzle(json)) {
+		console.log({ msg: 'rejecting corrupt puzzle (no clues / all-black grid)', puzKey });
 		return false;
 	}
 	console.log({ isValid, puzKey });
