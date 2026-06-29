@@ -11,7 +11,8 @@ export default defineConfig({
 	test: {
 		include: [
 			'src/**/*.{test,spec}.{js,ts}',
-			'amplify/function/generate-puzzle/**/*.{test,spec}.{js,ts}'
+			'amplify/function/generate-puzzle/**/*.{test,spec}.{js,ts}',
+			'amplify/function/sql-queries/**/*.{test,spec}.{js,ts}'
 		],
 		globals: true,
 		environment: 'jsdom',
@@ -34,7 +35,11 @@ export default defineConfig({
 			},
 			// Both the .ts/.js logic layer and .svelte components are gated. Component
 			// logic is unit-tested via @testing-library/svelte render tests.
-			include: ['src/**/*.{js,ts,svelte}', 'amplify/function/generate-puzzle/**/*.ts'],
+			include: [
+				'src/**/*.{js,ts,svelte}',
+				'amplify/function/generate-puzzle/**/*.ts',
+				'amplify/function/sql-queries/puzzle-validator.ts'
+			],
 			exclude: [
 				'src/app.d.ts',
 				'src/service-worker.ts',

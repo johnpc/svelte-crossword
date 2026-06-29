@@ -2,13 +2,13 @@ import { haptic } from './haptics';
 import type { CrosswordClues } from './types/types';
 import { getNextPuzzle } from './sql/getNextPuzzle';
 
-export const loadNextPuzzle = async (profileId: string): Promise<CrosswordClues> => {
+export const loadNextPuzzle = async (profileId: string): Promise<CrosswordClues | null> => {
 	haptic();
 	return getNextPuzzle(profileId);
 };
 
 export interface InitPuzzleCallbacks {
-	onAuthenticated: (profile: { id: string; email: string }, puzzle: CrosswordClues) => void;
+	onAuthenticated: (profile: { id: string; email: string }, puzzle: CrosswordClues | null) => void;
 	onUnauthenticated: () => void;
 	onError: (e: unknown) => void;
 }

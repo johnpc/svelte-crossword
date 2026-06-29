@@ -50,10 +50,20 @@ describe('getNextPuzzle', () => {
 		});
 
 		const result = await getNextPuzzle('profile-123');
-		expect(result.id).toBe('puzzle-1');
-		expect(result.title).toBe('Daily Puzzle');
-		expect(result.author).toBe('Test Author');
-		expect(result.clues).toHaveLength(2);
+		expect(result).not.toBeNull();
+		expect(result!.id).toBe('puzzle-1');
+		expect(result!.title).toBe('Daily Puzzle');
+		expect(result!.author).toBe('Test Author');
+		expect(result!.clues).toHaveLength(2);
+	});
+
+	it('returns null when the server has no valid puzzle', async () => {
+		mockSend.mockResolvedValueOnce({
+			Payload: new TextEncoder().encode(JSON.stringify({ body: JSON.stringify(null) }))
+		});
+
+		const result = await getNextPuzzle('profile-123');
+		expect(result).toBeNull();
 	});
 
 	it('handles pre-parsed puzJson', async () => {
@@ -72,8 +82,9 @@ describe('getNextPuzzle', () => {
 		});
 
 		const result = await getNextPuzzle('profile-123');
-		expect(result.id).toBe('puzzle-2');
-		expect(result.clues).toHaveLength(1);
+		expect(result).not.toBeNull();
+		expect(result!.id).toBe('puzzle-2');
+		expect(result!.clues).toHaveLength(1);
 	});
 
 	it('throws when function name is missing', async () => {
