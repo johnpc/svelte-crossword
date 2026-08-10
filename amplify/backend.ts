@@ -110,7 +110,12 @@ const vpc = ec2.Vpc.fromVpcAttributes(sqlStack, 'DefaultVPC', {
 });
 
 const dbInstance = new rds.DatabaseInstance(sqlStack, 'CrosswordDB', {
-	engine: rds.DatabaseInstanceEngine.mysql({ version: rds.MysqlEngineVersion.VER_8_0_39 }),
+	// MySQL 8.4 is the current LTS and is in RDS standard support. Staying on 8.0
+	// (community EOL) triggers the RDS Extended Support surcharge (~$43/mo); moving
+	// to 8.4 removes that fee. A major-version bump (8.0 -> 8.4) requires
+	// allowMajorVersionUpgrade, otherwise RDS rejects the modify.
+	engine: rds.DatabaseInstanceEngine.mysql({ version: rds.MysqlEngineVersion.VER_8_4_6 }),
+	allowMajorVersionUpgrade: true,
 	instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
 	vpc,
 	vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
