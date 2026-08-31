@@ -53,7 +53,9 @@
 </script>
 
 {#if isLoading}
-	<p style="margin: auto"><SyncLoader size="60" color="palevioletred" unit="px" duration="1s" /></p>
+	<div style="margin: auto">
+		<SyncLoader size="60" color="palevioletred" unit="px" duration="1s" />
+	</div>
 {:else if completedPuzzles.length === 0}
 	<p>
 		You have not completed any puzzles.

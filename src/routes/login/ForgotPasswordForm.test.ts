@@ -50,17 +50,17 @@ describe('ForgotPasswordForm', () => {
 		expect(container.querySelector('#password')).toBeTruthy();
 	});
 
-	it('calls onSendReset (via tryOrAlert) when the Send Reset Email button is clicked', async () => {
+	it('calls onSendReset (via tryOrAlert) when the form is submitted', async () => {
 		const props = baseProps({ confirmForgotPassword: false });
-		const { getByText } = render(ForgotPasswordForm, { props });
-		await fireEvent.click(getByText('Send Reset Email'));
+		const { container } = render(ForgotPasswordForm, { props });
+		await fireEvent.submit(container.querySelector('form')!);
 		expect(props.onSendReset).toHaveBeenCalledTimes(1);
 	});
 
-	it('calls onConfirmReset (via tryOrAlert) when the Confirm Password Reset button is clicked', async () => {
+	it('calls onConfirmReset (via tryOrAlert) when submitted in confirm mode', async () => {
 		const props = baseProps({ confirmForgotPassword: true });
-		const { getByText } = render(ForgotPasswordForm, { props });
-		await fireEvent.click(getByText('Confirm Password Reset'));
+		const { container } = render(ForgotPasswordForm, { props });
+		await fireEvent.submit(container.querySelector('form')!);
 		expect(props.onConfirmReset).toHaveBeenCalledTimes(1);
 	});
 

@@ -27,15 +27,21 @@
 		<hr style="margin-inline: 0px;" />
 	</div>
 {/if}
-<form id="loginForm">
+<form id="loginForm" on:submit|preventDefault={() => tryOrAlert(onLogin)}>
 	<label for="email">Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-	<input required type="email" id="email" bind:value={username} />
+	<input required type="email" id="email" autocomplete="email" bind:value={username} />
 	<br /><br />
 	<label for="password">Password&nbsp;&nbsp;</label>
-	<input required type="password" id="password" bind:value={password} />
+	<input
+		required
+		type="password"
+		id="password"
+		autocomplete="current-password"
+		bind:value={password}
+	/>
 	<button type="button" class="link-button" on:click={onShowForgotPassword}>forgot?</button>
 	<hr />
-	<button type="submit" on:click={() => tryOrAlert(onLogin)}>Log in</button>
+	<button type="submit">Log in</button>
 </form>
 <p style="text-align: center;">
 	Not registered? <a

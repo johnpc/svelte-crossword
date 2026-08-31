@@ -27,7 +27,7 @@ describe('Keyboard', () => {
 		const { getByText } = render(Keyboard, {
 			events: { keydown: (e: CustomEvent) => spy(e.detail) }
 		});
-		await fireEvent.mouseDown(getByText('A'));
+		await fireEvent.pointerDown(getByText('A'));
 		expect(spy).toHaveBeenCalledWith('A');
 	});
 
@@ -40,7 +40,7 @@ describe('Keyboard', () => {
 		// The number key lives on the (initially hidden) second page.
 		expect(pages()[1].contains(getByText('1'))).toBe(true);
 		// The toggle key has value "Page1"; its display is swapped to "?123".
-		await fireEvent.mouseDown(getByText('?123'));
+		await fireEvent.pointerDown(getByText('?123'));
 		// After toggling, the symbols/numbers page becomes visible.
 		expect(pages()[0]).not.toHaveClass('visible');
 		expect(pages()[1]).toHaveClass('visible');
@@ -51,7 +51,7 @@ describe('Keyboard', () => {
 		const { getByText } = render(Keyboard, {
 			events: { keydown: (e: CustomEvent) => spy(e.detail) }
 		});
-		await fireEvent.mouseDown(getByText('?123'));
+		await fireEvent.pointerDown(getByText('?123'));
 		expect(spy).not.toHaveBeenCalled();
 	});
 });

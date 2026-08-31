@@ -17,7 +17,8 @@ export function resolveFocusCellDiff(state, diff, doReplace) {
 		sortedCellsInDirection: state.sortedCellsInDirection,
 		focusedCellIndex: state.focusedCellIndex,
 		diff,
-		doReplaceFilledCells: doReplace
+		doReplaceFilledCells: doReplace,
+		isChecking: state.isChecking
 	});
 	if (i != null) return resolveFocusCell(state, i, false, state.numberOfStatesInHistory);
 	return null;

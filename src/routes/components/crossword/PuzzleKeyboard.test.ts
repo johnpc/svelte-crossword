@@ -27,7 +27,7 @@ describe('PuzzleKeyboard', () => {
 		const { getByText } = render(PuzzleKeyboard, {
 			props: { onKeydown, keyboardStyle: 'outline' }
 		});
-		await fireEvent.mouseDown(getByText('A'));
+		await fireEvent.pointerDown(getByText('A'));
 		expect(onKeydown).toHaveBeenCalledOnce();
 		expect(onKeydown.mock.calls[0][0].detail).toBe('A');
 	});

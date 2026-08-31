@@ -3,7 +3,6 @@ import { invokeSqlQuery } from './invokeSqlQuery';
 export type LeaderboardEntry = {
 	id: string;
 	name: string;
-	email: string;
 	completedCount: number;
 };
 

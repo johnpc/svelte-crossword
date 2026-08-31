@@ -54,6 +54,66 @@ describe('getNextCellInDirection', () => {
 		});
 		expect(result).toBeNull();
 	});
+
+	it('returns null when the focused cell is not in the sorted list', () => {
+		const result = getNextCellInDirection({
+			sortedCellsInDirection: sorted,
+			focusedCellIndex: 99,
+			diff: 1
+		});
+		expect(result).toBeNull();
+	});
+
+	it('skips checked-correct (locked) cells when isChecking is true', () => {
+		/** @type {import('./types').Cell[]} */
+		const cells = /** @type {any} */ ([
+			{ index: 0, value: '', answer: 'A' },
+			{ index: 1, value: 'B', answer: 'B' }, // locked: correct while checking
+			{ index: 2, value: '', answer: 'C' }
+		]);
+		const result = getNextCellInDirection({
+			sortedCellsInDirection: cells,
+			focusedCellIndex: 0,
+			diff: 1,
+			doReplaceFilledCells: true,
+			isChecking: true
+		});
+		expect(result).toBe(2);
+	});
+
+	it('does not skip incorrect letters when isChecking is true', () => {
+		/** @type {import('./types').Cell[]} */
+		const cells = /** @type {any} */ ([
+			{ index: 0, value: '', answer: 'A' },
+			{ index: 1, value: 'X', answer: 'B' }, // wrong: still landable
+			{ index: 2, value: '', answer: 'C' }
+		]);
+		const result = getNextCellInDirection({
+			sortedCellsInDirection: cells,
+			focusedCellIndex: 0,
+			diff: 1,
+			doReplaceFilledCells: true,
+			isChecking: true
+		});
+		expect(result).toBe(1);
+	});
+
+	it('moves backward past locked cells', () => {
+		/** @type {import('./types').Cell[]} */
+		const cells = /** @type {any} */ ([
+			{ index: 0, value: '', answer: 'A' },
+			{ index: 1, value: 'B', answer: 'B' },
+			{ index: 2, value: '', answer: 'C' }
+		]);
+		const result = getNextCellInDirection({
+			sortedCellsInDirection: cells,
+			focusedCellIndex: 2,
+			diff: -1,
+			doReplaceFilledCells: true,
+			isChecking: true
+		});
+		expect(result).toBe(0);
+	});
 });
 
 describe('getFlippedDirection', () => {

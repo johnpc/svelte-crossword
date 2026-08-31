@@ -19,7 +19,11 @@
 			<a href="/leaderboard">Leaderboard</a>
 		</li>
 		<li>
-			<button on:click={onToggleTheme} title="Toggle theme">
+			<button
+				on:click={onToggleTheme}
+				title="Toggle theme"
+				aria-label="Toggle theme (current: {theme})"
+			>
 				{getThemeIcon(theme)}
 			</button>
 		</li>
@@ -33,7 +37,7 @@
 	nav {
 		display: flex;
 		justify-content: center;
-		--background: rgba(255, 255, 255, 0.7);
+		--background: var(--color-bg-nav, rgba(255, 255, 255, 0.7));
 	}
 	svg {
 		width: 2em;

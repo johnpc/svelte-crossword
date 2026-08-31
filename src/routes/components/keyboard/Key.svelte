@@ -12,10 +12,9 @@
 	class="key key--{value} {keyClass}"
 	class:single={value.length === 1}
 	class:active
-	on:touchstart={(e) => onKeyStart(e, value)}
-	on:mousedown={(e) => onKeyStart(e, value)}
-	on:touchend={() => onKeyEnd(value)}
-	on:mouseup={() => onKeyEnd(value)}
+	on:pointerdown={(e) => onKeyStart(e, value)}
+	on:pointerup={() => onKeyEnd(value)}
+	on:pointercancel={() => onKeyEnd(value)}
 >
 	{#if display.includes('<svg')}{@html display}{:else}{display}{/if}
 </button>

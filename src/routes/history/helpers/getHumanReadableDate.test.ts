@@ -29,6 +29,6 @@ describe('getHumanReadableDate', () => {
 	it('formats midnight correctly', () => {
 		const date = new Date('2024-03-15T00:00:00');
 		const result = getHumanReadableDate(date);
-		expect(result).toBe('Fri Mar 15 2024 at 0:00am');
+		expect(result).toBe('Fri Mar 15 2024 at 12:00am');
 	});
 });

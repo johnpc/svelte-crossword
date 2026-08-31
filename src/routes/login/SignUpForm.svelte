@@ -29,22 +29,25 @@
 		<hr style="margin-inline: 0px;" />
 	</div>
 {/if}
-<form id="registrationForm">
+<form
+	id="registrationForm"
+	on:submit|preventDefault={() => tryOrAlert(confirm ? onConfirm : onRegister)}
+>
 	<label for="email">Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-	<input required type="email" id="email" bind:value={username} />
+	<input required type="email" id="email" autocomplete="email" bind:value={username} />
 	<br /><br />
 	<label for="password">Password&nbsp;&nbsp;</label>
-	<input required type="password" id="password" bind:value={password} />
+	<input required type="password" id="password" autocomplete="new-password" bind:value={password} />
 	{#if !confirm}
 		<hr />
-		<button type="submit" on:click={() => tryOrAlert(onRegister)}>Create account</button>
+		<button type="submit">Create account</button>
 	{/if}
 	{#if confirm}
 		<hr />
 		<label for="confirmation">Confirmation Code</label>
-		<input required type="confirmation" id="confirmation" bind:value={confirmationCode} />
+		<input required type="text" id="confirmation" bind:value={confirmationCode} />
 		<hr />
-		<button type="submit" on:click={() => tryOrAlert(onConfirm)}>Confirm Email</button>
+		<button type="submit">Confirm Email</button>
 	{/if}
 </form>
 <p style="text-align: center;">

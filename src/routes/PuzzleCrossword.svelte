@@ -28,9 +28,9 @@
 		<PuzzleToolbar
 			{timeInSeconds}
 			{isPuzzleComplete}
-			{usedClear}
-			{usedReveal}
-			{usedCheck}
+			bind:usedClear
+			bind:usedReveal
+			bind:usedCheck
 			{showAppKeyboard}
 			{onClear}
 			{onReveal}

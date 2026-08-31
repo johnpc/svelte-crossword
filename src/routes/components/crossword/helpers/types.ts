@@ -70,6 +70,8 @@ export interface PuzzleState {
 	clues: Clue[];
 	isPuzzleFocused: boolean;
 	numberOfStatesInHistory: number;
+	/** True while check mode is on; checked-correct cells are then locked. */
+	isChecking?: boolean;
 }
 
 /** A partial state patch returned by an action resolver. */

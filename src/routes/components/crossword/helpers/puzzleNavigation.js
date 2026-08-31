@@ -1,25 +1,8 @@
 import getCellAfterDiff from './getCellAfterDiff.js';
 
-/**
- * @param {{
- *   sortedCellsInDirection: import('./types').Cell[],
- *   focusedCellIndex: number,
- *   diff: number,
- *   doReplaceFilledCells?: boolean
- * }} params
- * @returns {number | null}
- */
-export function getNextCellInDirection({
-	sortedCellsInDirection,
-	focusedCellIndex,
-	diff,
-	doReplaceFilledCells = true
-}) {
-	const filtered = sortedCellsInDirection.filter((d) => (doReplaceFilledCells ? true : !d.value));
-	const currentIdx = filtered.findIndex((d) => d.index === focusedCellIndex);
-	const nextCell = filtered[currentIdx + diff];
-	return nextCell ? nextCell.index : null;
-}
+// Cell-level stepping lives in cellNavigation.js; re-exported here so
+// existing imports keep working.
+export { isLockedCell, getNextCellInDirection } from './cellNavigation.js';
 
 /**
  * @param {import('./types').Clue[]} clues
@@ -53,8 +36,10 @@ function findCandidateClues(clues, focusedDirection, currentNumber, allFilled, d
 function resolveNextClue(candidates, diff, clues, focusedDirection) {
 	const nextClue = candidates[Math.abs(diff) - 1];
 	if (nextClue) return { clue: nextClue, direction: focusedDirection };
+	// Wrap into the other direction, preferring its first incomplete clue.
 	const newDirection = focusedDirection === 'across' ? 'down' : 'across';
-	return { clue: clues.filter((c) => c.direction === newDirection)[0], direction: newDirection };
+	const wrapped = clues.filter((c) => c.direction === newDirection);
+	return { clue: wrapped.find((c) => !c.isFilled) || wrapped[0], direction: newDirection };
 }
 
 /**
@@ -101,13 +86,16 @@ export function getNextClueCell({
 		clues,
 		focusedDirection
 	);
+	// Resolve the landing cell against the direction the clue belongs to (it
+	// may differ from focusedDirection after wrapping across<->down). After a
+	// wrap, allFilled described the old direction, so prefer empty cells.
 	const nextCell = findCellForClue(
 		sortedCellsInDirection,
 		nextClue?.number,
-		focusedDirection,
-		allFilled
+		newDirection,
+		allFilled && newDirection === focusedDirection
 	);
-	return { focusedCellIndex: nextCell.index || 0, focusedDirection: newDirection };
+	return { focusedCellIndex: nextCell.index ?? 0, focusedDirection: newDirection };
 }
 
 /**
