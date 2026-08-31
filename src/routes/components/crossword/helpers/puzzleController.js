@@ -1,4 +1,5 @@
-import { processCellUpdate, classifyKey, processKeyboardEvent } from './puzzleCellUpdate.js';
+import { processCellUpdate, classifyKey } from './puzzleCellUpdate.js';
+import { getNextCellInDirection, isLockedCell } from './puzzleNavigation.js';
 import {
 	resolveFocusCellDiff,
 	resolveFocusClueDiff,
@@ -26,7 +27,8 @@ function handleCellUpdate(state, index, value, diff, doReplace) {
 		index,
 		newValue: value,
 		diff,
-		doReplaceFilledCells: doReplace
+		doReplaceFilledCells: doReplace,
+		isChecking: state.isChecking
 	});
 	const patch = {
 		cells: r.cells,
@@ -43,13 +45,36 @@ function handleCellUpdate(state, index, value, diff, doReplace) {
 }
 
 /**
+ * NYT backspace semantics: clear the focused square in place if it holds an
+ * (unlocked) letter; otherwise step back one square and clear that one.
+ * @param {import('./types').PuzzleState} state
+ * @returns {import('./types').StatePatch}
+ */
+function handleDelete(state) {
+	const current = state.cells[state.focusedCellIndex];
+	if (current.value && !isLockedCell(current, state.isChecking)) {
+		return handleCellUpdate(state, state.focusedCellIndex, '', 0, true);
+	}
+	const prev = getNextCellInDirection({
+		sortedCellsInDirection: state.sortedCellsInDirection,
+		focusedCellIndex: state.focusedCellIndex,
+		diff: -1,
+		doReplaceFilledCells: true,
+		isChecking: state.isChecking
+	});
+	if (prev == null) return {};
+	const moved = { ...state, focusedCellIndex: prev, focusedCell: state.cells[prev] };
+	return handleCellUpdate(moved, prev, '', 0, true);
+}
+
+/**
  * @param {import('./types').PuzzleState} state
  * @param {string} detail
  * @returns {import('./types').StatePatch}
  */
 function handleKeydown(state, detail) {
-	const { value, diff, doReplaceFilledCells } = processKeyboardEvent(detail);
-	return handleCellUpdate(state, state.focusedCellIndex, value, diff, doReplaceFilledCells);
+	if (detail === 'Backspace') return handleDelete(state);
+	return handleCellUpdate(state, state.focusedCellIndex, detail, 1, false);
 }
 
 /**
@@ -60,9 +85,8 @@ function handleKeydown(state, detail) {
 function handleNativeKeydown(state, action) {
 	const a = classifyKey(action.key, action.ctrlKey, action.altKey);
 	if (!a) return null;
-	const value = a.type === 'delete' ? '' : a.value;
-	const diff = a.type === 'delete' ? -1 : 1;
-	return handleCellUpdate(state, state.focusedCellIndex, value, diff, a.type === 'delete');
+	if (a.type === 'delete') return handleDelete(state);
+	return handleCellUpdate(state, state.focusedCellIndex, a.value, 1, false);
 }
 
 /**

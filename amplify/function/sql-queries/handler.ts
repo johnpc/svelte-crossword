@@ -20,15 +20,16 @@ export const handler: Handler = async (event) => {
 
 	try {
 		if (query === 'leaderboard') {
+			// Only expose display names publicly — emails are PII and must not
+			// ship in the leaderboard payload.
 			const [rows] = await conn.execute(`
 				SELECT
 					p.id,
 					p.name,
-					p.email,
 					COUNT(up.id) as completedCount
 				FROM profiles p
 				LEFT JOIN user_puzzles up ON p.id = up.profile_id
-				GROUP BY p.id, p.name, p.email
+				GROUP BY p.id, p.name
 				ORDER BY completedCount DESC
 				LIMIT 100
 			`);

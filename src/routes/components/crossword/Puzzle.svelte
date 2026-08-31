@@ -62,7 +62,8 @@
 			sortedCellsInDirection,
 			clues,
 			isPuzzleFocused,
-			numberOfStatesInHistory
+			numberOfStatesInHistory,
+			isChecking
 		};
 	}
 	function fh() {

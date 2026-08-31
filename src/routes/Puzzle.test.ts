@@ -84,7 +84,7 @@ describe('routes/Puzzle', () => {
 		const { container } = render(Puzzle);
 		// SyncLoader renders a wrapping element; the grid article must NOT be present yet.
 		expect(container.querySelector('article.svelte-crossword')).toBeNull();
-		expect(container.querySelector('p')).not.toBeNull();
+		expect(container.querySelector('div[style*="margin"]')).not.toBeNull();
 	});
 
 	it('calls initializePuzzle on mount', () => {

@@ -30,14 +30,25 @@ describe('Key', () => {
 		expect(getByRole('button')).toHaveClass('active');
 	});
 
-	it('calls onKeyStart on mousedown and onKeyEnd on mouseup', async () => {
+	it('calls onKeyStart on pointerdown and onKeyEnd on pointerup', async () => {
 		const onKeyStart = vi.fn();
 		const onKeyEnd = vi.fn();
 		const { getByRole } = render(Key, { props: { ...base, onKeyStart, onKeyEnd } });
 		const button = getByRole('button');
-		await fireEvent.mouseDown(button);
-		await fireEvent.mouseUp(button);
+		await fireEvent.pointerDown(button);
+		await fireEvent.pointerUp(button);
 		expect(onKeyStart).toHaveBeenCalledWith(expect.anything(), 'A');
 		expect(onKeyEnd).toHaveBeenCalledWith('A');
+	});
+
+	it('fires onKeyStart exactly once per pointer tap (no touch/mouse double-fire)', async () => {
+		const onKeyStart = vi.fn();
+		const { getByRole } = render(Key, { props: { ...base, onKeyStart } });
+		const button = getByRole('button');
+		// A touch tap dispatches pointerdown; compat mousedown must be ignored.
+		await fireEvent.pointerDown(button);
+		await fireEvent.mouseDown(button);
+		await fireEvent.touchStart(button);
+		expect(onKeyStart).toHaveBeenCalledTimes(1);
 	});
 });

@@ -68,10 +68,10 @@ describe('SignInForm', () => {
 		expect(props.onLoginWithGoogle).toHaveBeenCalledTimes(1);
 	});
 
-	it('calls onLogin (via tryOrAlert) when the Log in button is clicked', async () => {
+	it('calls onLogin (via tryOrAlert) when the form is submitted', async () => {
 		const props = baseProps();
-		const { getByText } = render(SignInForm, { props });
-		await fireEvent.click(getByText('Log in'));
+		const { container } = render(SignInForm, { props });
+		await fireEvent.submit(container.querySelector('form')!);
 		expect(props.onLogin).toHaveBeenCalledTimes(1);
 	});
 

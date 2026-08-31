@@ -88,17 +88,17 @@ describe('SignUpForm', () => {
 		expect(props.onLoginWithGoogle).toHaveBeenCalledTimes(1);
 	});
 
-	it('calls onRegister (via tryOrAlert) when the Create account button is clicked', async () => {
+	it('calls onRegister (via tryOrAlert) when the form is submitted', async () => {
 		const props = baseProps({ confirm: false });
-		const { getByText } = render(SignUpForm, { props });
-		await fireEvent.click(getByText('Create account'));
+		const { container } = render(SignUpForm, { props });
+		await fireEvent.submit(container.querySelector('form')!);
 		expect(props.onRegister).toHaveBeenCalledTimes(1);
 	});
 
-	it('calls onConfirm (via tryOrAlert) when the Confirm Email button is clicked', async () => {
+	it('calls onConfirm (via tryOrAlert) when submitted in confirm mode', async () => {
 		const props = baseProps({ confirm: true });
-		const { getByText } = render(SignUpForm, { props });
-		await fireEvent.click(getByText('Confirm Email'));
+		const { container } = render(SignUpForm, { props });
+		await fireEvent.submit(container.querySelector('form')!);
 		expect(props.onConfirm).toHaveBeenCalledTimes(1);
 	});
 

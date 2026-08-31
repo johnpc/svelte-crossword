@@ -313,7 +313,7 @@ export const handler = async (event: BuildPuzzleCollectionEvent) => {
 		const seedDates = dateRange(event.startDate, event.endDate, 30);
 		for (const seedDate of seedDates) {
 			const res = await handlerHelper(seedDate);
-			results.concat(res);
+			results.push(...res);
 		}
 	} else {
 		results = await handlerHelper(today);

@@ -44,8 +44,10 @@ describe('preview/PuzzlePreview', () => {
 
 	it('shows the SyncLoader spinner before clues load', () => {
 		const { container } = render(PuzzlePreview);
-		// no clues yet -> the loading paragraph, no "not signed in" heading.
-		expect(container.querySelector('p')).not.toBeNull();
+		// no clues yet -> the loading spinner, no "not signed in" heading.
+		expect(
+			container.querySelector('.sync-loader, [class*="loader"], div[style*="margin"]')
+		).not.toBeNull();
 		expect(container.querySelector('article.svelte-crossword')).toBeNull();
 	});
 

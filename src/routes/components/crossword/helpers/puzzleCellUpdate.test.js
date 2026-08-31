@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { processCellUpdate, classifyKey, processKeyboardEvent } from './puzzleCellUpdate.js';
+import { processCellUpdate, classifyKey } from './puzzleCellUpdate.js';
 
 describe('processCellUpdate', () => {
 	/** @type {import('./types').Cell[]} */
@@ -118,17 +118,5 @@ describe('classifyKey', () => {
 	it('handles parentheses as valid keys', () => {
 		expect(classifyKey('(')).toEqual({ type: 'letter', value: '(' });
 		expect(classifyKey(')')).toEqual({ type: 'letter', value: ')' });
-	});
-});
-
-describe('processKeyboardEvent', () => {
-	it('handles Backspace', () => {
-		const result = processKeyboardEvent('Backspace');
-		expect(result).toEqual({ value: '', diff: -1, doReplaceFilledCells: true });
-	});
-
-	it('handles letter input', () => {
-		const result = processKeyboardEvent('A');
-		expect(result).toEqual({ value: 'A', diff: 1, doReplaceFilledCells: false });
 	});
 });

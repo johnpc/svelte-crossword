@@ -37,7 +37,11 @@
 		cancelTimer = createTimer(tick, isComplete);
 	};
 
-	$: if (crosswordComplete && !isPuzzleComplete) {
+	// crosswordComplete is a child binding that stays true for one reactive
+	// flush after a new puzzle loads, so isPuzzleComplete must only reset once
+	// the child has actually re-evaluated (see onNextPuzzle) — otherwise this
+	// block records a bogus 0-second completion for the next puzzle.
+	$: if (crosswordComplete && !isPuzzleComplete && puzzleId) {
 		isPuzzleComplete = true;
 		submitPuzzleCompletion({
 			profileId: profile.id,
@@ -47,6 +51,9 @@
 			usedReveal,
 			timeInSeconds
 		});
+	}
+	$: if (!crosswordComplete && isPuzzleComplete) {
+		isPuzzleComplete = false;
 	}
 
 	onMount(() => {
@@ -88,7 +95,9 @@
 			}
 			timeInSeconds = 0;
 			usedCheck = usedReveal = usedClear = false;
-			isPuzzleComplete = false;
+			// isPuzzleComplete intentionally NOT reset here — it clears
+			// reactively once the child recomputes crosswordComplete=false
+			// for the new clues, preventing a duplicate submission.
 			clues = puzzle.clues;
 			puzzleId = puzzle.id;
 			puzzleTitle = puzzle.title || '';
@@ -109,7 +118,9 @@
 		Check back soon for more.
 	</p>
 {:else if clues.length === 0}
-	<p><SyncLoader size="60" color="palevioletred" unit="px" duration="1s" /></p>
+	<div style="margin: auto">
+		<SyncLoader size="60" color="palevioletred" unit="px" duration="1s" />
+	</div>
 {:else}
 	<PuzzleHeader email={profile.email} {puzzleTitle} {puzzleAuthor} {onSignOut} />
 	<PuzzleCrossword
@@ -118,9 +129,9 @@
 		keyboardStyle="outline"
 		{timeInSeconds}
 		{isPuzzleComplete}
-		{usedClear}
-		{usedReveal}
-		{usedCheck}
+		bind:usedClear
+		bind:usedReveal
+		bind:usedCheck
 		onToggleKeyboard={toggleKeyboard}
 		{onNextPuzzle}
 		bind:isComplete={crosswordComplete}

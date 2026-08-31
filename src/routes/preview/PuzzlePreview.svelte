@@ -2,7 +2,7 @@
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import { goto } from '$app/navigation';
 	import { getCurrentUser } from 'aws-amplify/auth';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import type { Clue } from '../helpers/types/types';
 	import { previewClues } from './previewClues';
 	import { vibrate } from '../helpers/haptics';
@@ -46,7 +46,7 @@
 		isPuzzleComplete = true;
 	};
 
-	createPuzzleTimer({
+	const cancelTimer = createPuzzleTimer({
 		getRef: () => ref,
 		isPuzzleComplete: () => isPuzzleComplete,
 		onComplete: () => onPuzzleComplete(),
@@ -54,6 +54,7 @@
 			timeInSeconds++;
 		}
 	});
+	onDestroy(cancelTimer);
 
 	const toggleKeyboard = () => {
 		showAppKeyboard = toggleKeyboardSetting(showAppKeyboard);
@@ -61,7 +62,9 @@
 </script>
 
 {#if clues.length === 0}
-	<p><SyncLoader size="60" color="palevioletred" unit="px" duration="1s" /></p>
+	<div style="margin: auto">
+		<SyncLoader size="60" color="palevioletred" unit="px" duration="1s" />
+	</div>
 {:else}
 	<h3>You're not signed in!</h3>
 	<button id="signInButton" class="active" on:click={() => goto('/login')}>sign in/up</button>
