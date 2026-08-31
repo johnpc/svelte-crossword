@@ -36,7 +36,8 @@ export function resolveFocusClueDiff(state, diff) {
 		focusedCell: state.focusedCell,
 		focusedDirection: state.focusedDirection,
 		sortedCellsInDirection: state.sortedCellsInDirection,
-		diff
+		diff,
+		isChecking: state.isChecking
 	});
 	/** @type {import('./types').StatePatch} */
 	const patch = { focusedCellIndex: r.focusedCellIndex };

@@ -258,3 +258,49 @@ describe('cursor: check mode locks verified-correct letters', () => {
 		expect(h.valueAt(1)).toBe('A');
 	});
 });
+
+describe('cursor: check mode treats checked-WRONG letters as needing entry', () => {
+	// Field report (SHANK bug): with check on, advancing within a word skipped
+	// a square that held an incorrect letter. A checked-wrong square must be a
+	// landing target — only checked-correct squares are skipped.
+	it('advancing lands on a checked-wrong letter instead of skipping it', () => {
+		const h = createHarness({ isChecking: true });
+		h.fill({ 1: 'X' }); // middle of 1A CAT holds a wrong letter
+		h.focus(0, 'across');
+		h.type('C');
+		expect(h.cursor).toBe(1); // must land on the wrong X, not skip to 2
+	});
+
+	it('typing over the wrong letter replaces it and advances', () => {
+		const h = createHarness({ isChecking: true });
+		h.fill({ 0: 'C', 1: 'X' });
+		h.focus(1, 'across');
+		h.type('A');
+		expect(h.valueAt(1)).toBe('A');
+		expect(h.cursor).toBe(2);
+	});
+
+	// Field report (ODES bug): with check on and every square filled, finishing
+	// the last across word jumped to 1-Down's first letter — which was already
+	// checked-correct (locked). It must jump to the first INCORRECT word and
+	// land on its wrong square.
+	it('finishing the last across word jumps to the first incorrect word, not a locked cell', () => {
+		const h = createHarness({ isChecking: true });
+		// Everything filled and correct except index 4 (middle of 4A/2D) is
+		// wrong and index 8 (end of 5A/3D) is empty.
+		h.fill({ 0: 'C', 1: 'A', 2: 'T', 3: 'O', 4: 'X', 5: 'E', 6: 'P', 7: 'E' });
+		h.focus(8, 'across');
+		h.type('N'); // completes 5A, the last across word
+		// The only remaining error is the X at index 4 (in 4A and 2D).
+		expect(h.cursor).toBe(4);
+	});
+
+	it('next-clue in check mode skips fully-correct words even when all are filled', () => {
+		const h = createHarness({ isChecking: true });
+		// All squares filled; only index 4 is wrong. 1A is fully correct.
+		h.fill({ 0: 'C', 1: 'A', 2: 'T', 3: 'O', 4: 'X', 5: 'E', 6: 'P', 7: 'E', 8: 'N' });
+		h.focus(0, 'across');
+		h.act({ type: 'focusClueDiff', diff: 1 }); // "next clue" from 1A
+		expect(h.cursor).toBe(4); // 4A is the first incorrect word; land on its X
+	});
+});
