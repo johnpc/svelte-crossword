@@ -1,4 +1,4 @@
-import { isLockedCell } from './puzzleNavigation.js';
+import { isLockedCell, needsEntry } from './cellNavigation.js';
 
 const NUMBER_OF_STATES_IN_HISTORY = 10;
 
@@ -33,11 +33,13 @@ export function processCellUpdate({
 	const dimension = focusedDirection === 'across' ? 'x' : 'y';
 	const clueIndex = cells[index].clueNumbers[focusedDirection];
 	const allCellsInClue = cells.filter((cell) => cell.clueNumbers[focusedDirection] === clueIndex);
-	const allCellsInClueFilled = allCellsInClue.every((cell) => cell.value);
+	// "Pending" = still needs a letter (empty, or checked-wrong in check mode);
+	// the end of the clue is the last pending square, so a wrong letter later
+	// in the word keeps the cursor inside it instead of jumping to the next clue.
+	const pendingCells = allCellsInClue.filter((cell) => needsEntry(cell, isChecking));
+	const allCellsInClueDone = pendingCells.length === 0;
 
-	const cellsToCheck = allCellsInClueFilled
-		? allCellsInClue
-		: allCellsInClue.filter((cell) => !cell.value);
+	const cellsToCheck = allCellsInClueDone ? allCellsInClue : pendingCells;
 	const cellsInCluePositions = cellsToCheck
 		.map((cell) => cell[dimension])
 		.filter(/** @returns {n is number} */ (n) => Number.isFinite(n));
@@ -60,7 +62,7 @@ export function processCellUpdate({
 	const navigationAction =
 		isAtEndOfClue && diff > 0
 			? { type: 'clueDiff', diff }
-			: { type: 'cellDiff', diff, doReplace: allCellsInClueFilled || doReplaceFilledCells };
+			: { type: 'cellDiff', diff, doReplace: allCellsInClueDone || doReplaceFilledCells };
 
 	return {
 		cells: newCells,

@@ -15,6 +15,17 @@ export function isLockedCell(cell, isChecking) {
 }
 
 /**
+ * A cell still needs a (new) letter: it is empty, or check mode has shown
+ * its current letter to be wrong.
+ * @param {import('./types').Cell} cell
+ * @param {boolean} [isChecking]
+ * @returns {boolean}
+ */
+export function needsEntry(cell, isChecking) {
+	return !cell.value || (!!isChecking && cell.value !== cell.answer);
+}
+
+/**
  * Walks the grid from the focused cell, skipping filled cells when not
  * replacing and always skipping checked-correct (locked) cells.
  * @param {{
@@ -34,7 +45,7 @@ export function getNextCellInDirection({
 	isChecking = false
 }) {
 	const isLandable = (/** @type {import('./types').Cell} */ cell) =>
-		!isLockedCell(cell, isChecking) && (doReplaceFilledCells || !cell.value);
+		!isLockedCell(cell, isChecking) && (doReplaceFilledCells || needsEntry(cell, isChecking));
 	const pos = sortedCellsInDirection.findIndex((d) => d.index === focusedCellIndex);
 	if (pos === -1) return null;
 	const step = diff > 0 ? 1 : -1;
@@ -46,4 +57,16 @@ export function getNextCellInDirection({
 		if (isLandable(sortedCellsInDirection[i])) remaining--;
 	}
 	return sortedCellsInDirection[i].index;
+}
+
+/**
+ * @param {{
+ *   focusedDirection: import('./types').Direction,
+ *   focusedCell: import('./types').Cell
+ * }} params
+ * @returns {import('./types').Direction | null}
+ */
+export function getFlippedDirection({ focusedDirection, focusedCell }) {
+	const newDirection = focusedDirection === 'across' ? 'down' : 'across';
+	return focusedCell.clueNumbers[newDirection] ? newDirection : null;
 }
