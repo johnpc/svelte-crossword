@@ -137,7 +137,7 @@ const dbInstance = new rds.DatabaseInstance(sqlStack, 'CrosswordDB', {
 // handler only speaks MySQL, and the connection string arrives via env var.
 const sqlLambdaSecurityGroup = new ec2.SecurityGroup(sqlStack, 'SqlQueriesLambdaSG', {
 	vpc,
-	description: 'SQL queries Lambda -> RDS access',
+	description: 'SQL queries Lambda to RDS access',
 	allowAllOutbound: true
 });
 
