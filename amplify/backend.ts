@@ -1,4 +1,4 @@
-import { Function as LambdaFunction } from 'aws-cdk-lib/aws-lambda';
+import { CfnFunction, Function as LambdaFunction } from 'aws-cdk-lib/aws-lambda';
 import { defineBackend, defineFunction } from '@aws-amplify/backend';
 import { auth } from './auth/resource.js';
 import { data } from './data/resource.js';
@@ -132,4 +132,29 @@ const dbInstance = new rds.DatabaseInstance(sqlStack, 'CrosswordDB', {
 	backupRetention: cdk.Duration.days(7)
 });
 
+// Run the SQL queries Lambda inside the VPC so DB ingress can be scoped to its
+// security group instead of 0.0.0.0/0. No NAT or VPC endpoints are needed: the
+// handler only speaks MySQL, and the connection string arrives via env var.
+const sqlLambdaSecurityGroup = new ec2.SecurityGroup(sqlStack, 'SqlQueriesLambdaSG', {
+	vpc,
+	description: 'SQL queries Lambda -> RDS access',
+	allowAllOutbound: true
+});
+
+const cfnSqlFunction = underlyingSqlLambda.node.defaultChild as CfnFunction;
+cfnSqlFunction.vpcConfig = {
+	securityGroupIds: [sqlLambdaSecurityGroup.securityGroupId],
+	subnetIds: ['subnet-de670bb6', 'subnet-df670bb7']
+};
+underlyingSqlLambda.role?.addManagedPolicy(
+	cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaVPCAccessExecutionRole')
+);
+
+dbInstance.connections.allowFrom(sqlLambdaSecurityGroup, ec2.Port.tcp(3306), 'SQL queries Lambda');
+
+// TODO(phase 2): remove this open rule once the Lambda is confirmed running
+// in-VPC. Kept for now so SQL queries keep working during the deploy window
+// where the DB stack updates before the function stack VPC-attaches the Lambda.
+// Laptop admin scripts (scripts/direct-rds-migration.ts etc.) will then need a
+// temporary my-IP ingress rule when used.
 dbInstance.connections.allowFromAnyIpv4(ec2.Port.tcp(3306), 'Allow MySQL access');
