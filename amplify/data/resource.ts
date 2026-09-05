@@ -5,7 +5,6 @@ import type {
 	ResourceProvider
 } from '@aws-amplify/plugin-types';
 import { seedPuzzleDbFunction } from '../function/resource';
-import { schema as generatedSqlSchema } from './schema.sql';
 
 // DynamoDB schema (existing)
 const ddbSchema = a
@@ -58,23 +57,11 @@ const ddbSchema = a
 	})
 	.authorization((allow) => allow.resource(seedPuzzleDbFunction).to(['query', 'mutate', 'listen']));
 
-// SQL schema with authorization and renamed models
-const sqlSchema = generatedSqlSchema
-	.authorization((allow) => [allow.authenticated().to(['read']), allow.guest().to(['read'])])
-	.renameModels(() => [
-		['profiles', 'SqlProfile'],
-		['puzzles', 'SqlPuzzle'],
-		['user_puzzles', 'SqlUserPuzzle']
-	]);
-
-// Combine both schemas
-const combinedSchema = a.combine([ddbSchema, sqlSchema]);
-
-export type Schema = ClientSchema<typeof combinedSchema>;
+export type Schema = ClientSchema<typeof ddbSchema>;
 
 export const data = (authFunction: ConstructFactory<ResourceProvider<FunctionResources>>) =>
 	defineData({
-		schema: combinedSchema,
+		schema: ddbSchema,
 		authorizationModes: {
 			defaultAuthorizationMode: 'iam',
 			lambdaAuthorizationMode: {
