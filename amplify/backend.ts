@@ -126,7 +126,11 @@ const dbInstance = new rds.DatabaseInstance(sqlStack, 'CrosswordDB', {
 		'admin',
 		cdk.SecretValue.unsafePlainText(process.env.DB_PASSWORD!)
 	),
-	publiclyAccessible: true,
+	// Private-only: the sole prod client is the in-VPC SQL queries Lambda, and
+	// dropping the public IP saves the IPv4 charge. For laptop admin scripts
+	// (scripts/direct-rds-migration.ts etc.), use a CloudShell VPC environment
+	// or temporarily flip this back on for a maintenance session.
+	publiclyAccessible: false,
 	removalPolicy: cdk.RemovalPolicy.DESTROY,
 	deletionProtection: false,
 	backupRetention: cdk.Duration.days(7)
@@ -151,10 +155,3 @@ underlyingSqlLambda.role?.addManagedPolicy(
 );
 
 dbInstance.connections.allowFrom(sqlLambdaSecurityGroup, ec2.Port.tcp(3306), 'SQL queries Lambda');
-
-// TODO(phase 2): remove this open rule once the Lambda is confirmed running
-// in-VPC. Kept for now so SQL queries keep working during the deploy window
-// where the DB stack updates before the function stack VPC-attaches the Lambda.
-// Laptop admin scripts (scripts/direct-rds-migration.ts etc.) will then need a
-// temporary my-IP ingress rule when used.
-dbInstance.connections.allowFromAnyIpv4(ec2.Port.tcp(3306), 'Allow MySQL access');
