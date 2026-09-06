@@ -1,3 +1,8 @@
+// The RDS instance is private (no public IP, security group admits only the
+// sql-queries Lambda and the admin tunnel endpoint), so this script cannot
+// connect to the DB hostname directly. Run ./scripts/db-tunnel.sh in another
+// terminal first, then invoke this with SQL_CONNECTION_STRING's host swapped
+// to 127.0.0.1:3306.
 import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource';

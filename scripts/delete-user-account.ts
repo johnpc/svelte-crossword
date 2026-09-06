@@ -1,3 +1,8 @@
+// The RDS instance is private (no public IP, security group admits only the
+// sql-queries Lambda and the admin tunnel endpoint), so this script cannot
+// connect to the DB hostname directly. Run ./scripts/db-tunnel.sh in another
+// terminal first, then invoke this with the connection-string host swapped to
+// 127.0.0.1:3306.
 import { execSync } from 'child_process';
 import mysql from 'mysql2/promise';
 

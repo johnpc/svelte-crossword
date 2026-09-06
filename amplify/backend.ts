@@ -155,3 +155,23 @@ underlyingSqlLambda.role?.addManagedPolicy(
 );
 
 dbInstance.connections.allowFrom(sqlLambdaSecurityGroup, ec2.Port.tcp(3306), 'SQL queries Lambda');
+
+// Free admin access path to the private DB for laptop scripts: an EC2 Instance
+// Connect Endpoint tunnels TCP to private IPs ($0, unlike a bastion or NAT).
+// Usage: ./scripts/db-tunnel.sh, then connect to 127.0.0.1:3306.
+const adminTunnelSecurityGroup = new ec2.SecurityGroup(sqlStack, 'DbAdminTunnelSG', {
+	vpc,
+	description: 'EC2 Instance Connect Endpoint for admin DB tunnels',
+	allowAllOutbound: true
+});
+
+new ec2.CfnInstanceConnectEndpoint(sqlStack, 'DbAdminTunnelEndpoint', {
+	subnetId: 'subnet-de670bb6',
+	securityGroupIds: [adminTunnelSecurityGroup.securityGroupId]
+});
+
+dbInstance.connections.allowFrom(
+	adminTunnelSecurityGroup,
+	ec2.Port.tcp(3306),
+	'Admin tunnel via EC2 Instance Connect Endpoint'
+);
