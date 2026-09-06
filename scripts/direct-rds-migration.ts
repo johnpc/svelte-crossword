@@ -1,31 +1,19 @@
-// The RDS instance is private (no public IP, security group admits only the
-// sql-queries Lambda and the admin tunnel endpoint), so this script cannot
-// connect to the DB hostname directly. Run ./scripts/db-tunnel.sh in another
-// terminal first, then invoke this with SQL_CONNECTION_STRING's host swapped
-// to 127.0.0.1:3306.
+// Historical one-off (DynamoDB -> SQL profile migration, already executed).
+// The RDS instance is now private (no public IP), so SQL goes through the
+// IAM-gated admin-sql Lambda instead of a direct connection. Needs admin AWS
+// credentials (AWS_PROFILE=personal) — no SQL_CONNECTION_STRING required.
 import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource';
 import config from '../src/amplify_outputs.json';
-import mysql from 'mysql2/promise';
+import { execute } from './admin-sql-client';
 import dotenv from 'dotenv';
 dotenv.config();
 
 Amplify.configure(config);
 const client = generateClient<Schema>({ authMode: 'iam' });
 
-const getConnection = async () => {
-	const url = new URL(process.env.SQL_CONNECTION_STRING!);
-	return mysql.createConnection({
-		host: url.hostname,
-		port: parseInt(url.port || '3306'),
-		user: url.username,
-		password: url.password,
-		database: url.pathname.slice(1)
-	});
-};
-
-async function migrateProfiles(conn: any) {
+async function migrateProfiles() {
 	console.log('Migrating profiles...');
 	let nextToken: string | null | undefined;
 	let count = 0;
@@ -35,7 +23,7 @@ async function migrateProfiles(conn: any) {
 
 		for (const profile of response.data) {
 			try {
-				await conn.execute(
+				await execute(
 					'INSERT INTO profiles (id, user_id, name, email, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW()) ON DUPLICATE KEY UPDATE id=id',
 					[profile.id, profile.userId, profile.name, profile.email]
 				);
@@ -57,13 +45,7 @@ async function migrateProfiles(conn: any) {
 }
 
 const main = async () => {
-	const conn = await getConnection();
-
-	try {
-		await migrateProfiles(conn);
-	} finally {
-		await conn.end();
-	}
+	await migrateProfiles();
 };
 
 main();

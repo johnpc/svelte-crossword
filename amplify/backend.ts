@@ -6,6 +6,7 @@ import { storage } from './storage/resource.js';
 import { seedPuzzleDbFunction } from './function/resource';
 import { generatePuzzleFunction } from './function/generate-puzzle/resource';
 import { sqlQueriesFunction } from './function/sql-queries/resource';
+import { adminSqlFunction } from './function/admin-sql/resource';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as cdk from 'aws-cdk-lib';
@@ -20,6 +21,7 @@ const backend = defineBackend({
 	seedPuzzleDbFunction,
 	generatePuzzleFunction,
 	sqlQueriesFunction,
+	adminSqlFunction,
 	authFunction,
 	auth,
 	storage,
@@ -93,10 +95,20 @@ backend.auth.resources.unauthenticatedUserIamRole.addToPrincipalPolicy(
 	})
 );
 
+// Set up admin SQL lambda. NOTE: intentionally NOT granted to the app's
+// authenticated/guest user roles — it executes arbitrary SQL and is for
+// laptop admin scripts using admin IAM credentials only.
+const underlyingAdminSqlLambda = backend.adminSqlFunction.resources.lambda as LambdaFunction;
+underlyingAdminSqlLambda.addEnvironment(
+	'SQL_CONNECTION_STRING',
+	process.env.SQL_CONNECTION_STRING!
+);
+
 // Add REST API for SQL queries
 backend.addOutput({
 	custom: {
-		sqlQueriesFunctionName: underlyingSqlLambda.functionName
+		sqlQueriesFunctionName: underlyingSqlLambda.functionName,
+		adminSqlFunctionName: underlyingAdminSqlLambda.functionName
 	}
 });
 
@@ -156,22 +168,13 @@ underlyingSqlLambda.role?.addManagedPolicy(
 
 dbInstance.connections.allowFrom(sqlLambdaSecurityGroup, ec2.Port.tcp(3306), 'SQL queries Lambda');
 
-// Free admin access path to the private DB for laptop scripts: an EC2 Instance
-// Connect Endpoint tunnels TCP to private IPs ($0, unlike a bastion or NAT).
-// Usage: ./scripts/db-tunnel.sh, then connect to 127.0.0.1:3306.
-const adminTunnelSecurityGroup = new ec2.SecurityGroup(sqlStack, 'DbAdminTunnelSG', {
-	vpc,
-	description: 'EC2 Instance Connect Endpoint for admin DB tunnels',
-	allowAllOutbound: true
-});
-
-new ec2.CfnInstanceConnectEndpoint(sqlStack, 'DbAdminTunnelEndpoint', {
-	subnetId: 'subnet-de670bb6',
-	securityGroupIds: [adminTunnelSecurityGroup.securityGroupId]
-});
-
-dbInstance.connections.allowFrom(
-	adminTunnelSecurityGroup,
-	ec2.Port.tcp(3306),
-	'Admin tunnel via EC2 Instance Connect Endpoint'
+// The admin SQL lambda shares the SQL queries lambda's security group so the
+// single DB ingress rule covers both in-VPC functions.
+const cfnAdminSqlFunction = underlyingAdminSqlLambda.node.defaultChild as CfnFunction;
+cfnAdminSqlFunction.vpcConfig = {
+	securityGroupIds: [sqlLambdaSecurityGroup.securityGroupId],
+	subnetIds: ['subnet-de670bb6', 'subnet-df670bb7']
+};
+underlyingAdminSqlLambda.role?.addManagedPolicy(
+	cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaVPCAccessExecutionRole')
 );

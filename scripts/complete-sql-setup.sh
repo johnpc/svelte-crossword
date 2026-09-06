@@ -2,7 +2,8 @@
 
 # OBSOLETE: this targets a "crossword-db" instance in us-east-1 that no longer
 # exists. The current DB is CDK-managed in us-west-2 (amplify/backend.ts) and
-# is private — for admin access use ./scripts/db-tunnel.sh.
+# is private — for admin access use the admin-sql Lambda via
+# scripts/admin-sql-client.ts (see delete-user-account.ts for an example).
 
 # Wait for RDS to be available and complete setup
 
