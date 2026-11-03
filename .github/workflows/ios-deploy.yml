@@ -19,7 +19,7 @@ env:
 jobs:
   deploy:
     name: Deploy to App Store Connect
-    runs-on: macos-26-xlarge
+    runs-on: [self-hosted, mac-mini]
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v7
