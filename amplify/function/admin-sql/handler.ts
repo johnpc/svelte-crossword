@@ -1,4 +1,4 @@
-import { Handler } from 'aws-lambda';
+import type { Handler } from 'aws-lambda';
 import mysql from 'mysql2/promise';
 
 // Executes arbitrary parameterized SQL for laptop admin scripts

@@ -7,6 +7,9 @@ import { seedPuzzleDbFunction } from './function/resource';
 import { generatePuzzleFunction } from './function/generate-puzzle/resource';
 import { sqlQueriesFunction } from './function/sql-queries/resource';
 import { adminSqlFunction } from './function/admin-sql/resource';
+import { adminSqliteFunction } from './function/admin-sqlite/resource';
+import { backupSqliteFunction } from './function/backup-sqlite/resource';
+import { SqliteStorage } from './sqlite-storage';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as cdk from 'aws-cdk-lib';
@@ -22,6 +25,8 @@ const backend = defineBackend({
 	generatePuzzleFunction,
 	sqlQueriesFunction,
 	adminSqlFunction,
+	adminSqliteFunction,
+	backupSqliteFunction,
 	authFunction,
 	auth,
 	storage,
@@ -104,21 +109,29 @@ underlyingAdminSqlLambda.addEnvironment(
 	process.env.SQL_CONNECTION_STRING!
 );
 
-// Add REST API for SQL queries
+// SQLite twin of admin-sql (same { sql, params } contract, admin IAM only).
+// scripts/migrate-mysql-to-sqlite.ts reads from admin-sql and writes here.
+const underlyingAdminSqliteLambda = backend.adminSqliteFunction.resources.lambda as LambdaFunction;
+const underlyingBackupSqliteLambda = backend.backupSqliteFunction.resources
+	.lambda as LambdaFunction;
+
+// Function names the client and admin scripts resolve from amplify_outputs.json
 backend.addOutput({
 	custom: {
 		sqlQueriesFunctionName: underlyingSqlLambda.functionName,
-		adminSqlFunctionName: underlyingAdminSqlLambda.functionName
+		adminSqlFunctionName: underlyingAdminSqlLambda.functionName,
+		adminSqliteFunctionName: underlyingAdminSqliteLambda.functionName
 	}
 });
 
 // Set up RDS MySQL database
 const sqlStack = backend.createStack('crossword-sql-stack');
 
+const SUBNET_IDS = ['subnet-de670bb6', 'subnet-df670bb7'];
 const vpc = ec2.Vpc.fromVpcAttributes(sqlStack, 'DefaultVPC', {
 	vpcId: 'vpc-dd670bb5',
 	availabilityZones: ['us-west-2a', 'us-west-2b'],
-	publicSubnetIds: ['subnet-de670bb6', 'subnet-df670bb7']
+	publicSubnetIds: SUBNET_IDS
 });
 
 const dbInstance = new rds.DatabaseInstance(sqlStack, 'CrosswordDB', {
@@ -160,7 +173,7 @@ const sqlLambdaSecurityGroup = new ec2.SecurityGroup(sqlStack, 'SqlQueriesLambda
 const cfnSqlFunction = underlyingSqlLambda.node.defaultChild as CfnFunction;
 cfnSqlFunction.vpcConfig = {
 	securityGroupIds: [sqlLambdaSecurityGroup.securityGroupId],
-	subnetIds: ['subnet-de670bb6', 'subnet-df670bb7']
+	subnetIds: SUBNET_IDS
 };
 underlyingSqlLambda.role?.addManagedPolicy(
 	cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaVPCAccessExecutionRole')
@@ -173,8 +186,20 @@ dbInstance.connections.allowFrom(sqlLambdaSecurityGroup, ec2.Port.tcp(3306), 'SQ
 const cfnAdminSqlFunction = underlyingAdminSqlLambda.node.defaultChild as CfnFunction;
 cfnAdminSqlFunction.vpcConfig = {
 	securityGroupIds: [sqlLambdaSecurityGroup.securityGroupId],
-	subnetIds: ['subnet-de670bb6', 'subnet-df670bb7']
+	subnetIds: SUBNET_IDS
 };
 underlyingAdminSqlLambda.role?.addManagedPolicy(
 	cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaVPCAccessExecutionRole')
 );
+
+// SQLite on EFS — the RDS replacement. Deploy A (this change) stands the file
+// system up next to RDS and mounts it on admin-sqlite (for the data migration)
+// and backup-sqlite (nightly VACUUM INTO -> S3). sql-queries flips to it in
+// Deploy B; RDS is removed in Deploy C.
+const sqliteStorage = new SqliteStorage(sqlStack, {
+	vpc,
+	subnetIds: SUBNET_IDS,
+	lambdaSecurityGroup: sqlLambdaSecurityGroup
+});
+sqliteStorage.attach(underlyingAdminSqliteLambda);
+sqliteStorage.attach(underlyingBackupSqliteLambda);
