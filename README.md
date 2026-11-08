@@ -94,7 +94,8 @@ This script will:
 3. Show what will be deleted (dry-run mode by default)
 4. Delete all user data when `DRY_RUN=false` (puzzles first, then profile, then Cognito account)
 
-Make sure your `.env` file has `SQL_CONNECTION_STRING` and `COGNITO_USER_POOL_ID` configured.
+Make sure your `.env` file has `COGNITO_USER_POOL_ID` configured and `AWS_PROFILE=personal` is set;
+SQL runs through the IAM-gated `admin-sql` Lambda against the SQLite database on EFS.
 
 ## Deploying
 

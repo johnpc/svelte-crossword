@@ -9,7 +9,10 @@ one wired into automation is `crap-check.js`.
   step. See `npm run test:crap`.
 - **delete-user-account.ts** — GDPR/privacy account deletion. See the
   "Deleting User Accounts" section of the top-level README.
+- **admin-sql-client.ts** — runs parameterized SQL through the IAM-gated
+  `admin-sql` Lambda against the SQLite database on EFS (`/mnt/db/crossword.sqlite`).
+  Nightly snapshots land in the storage bucket under `internal/backups/<date>.sqlite`.
 - **lookup-stats.ts** — ad-hoc stats lookup against the SQL database.
 - **migrate-ddb-to-sql.ts / direct-rds-migration.ts / test-migration.ts /
-  setup-sql-database.sql / complete-sql-setup.sh** — one-off DynamoDB→RDS/SQL
-  migration tooling, kept for reference.
+  complete-sql-setup.sh** — one-off DynamoDB→RDS-era migration tooling, kept
+  for reference (RDS itself was replaced by SQLite on EFS).

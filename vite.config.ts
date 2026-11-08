@@ -13,8 +13,7 @@ export default defineConfig({
 			'src/**/*.{test,spec}.{js,ts}',
 			'amplify/function/generate-puzzle/**/*.{test,spec}.{js,ts}',
 			'amplify/function/sql-queries/**/*.{test,spec}.{js,ts}',
-			'amplify/function/{db,admin-sqlite,backup-sqlite}/**/*.{test,spec}.{js,ts}',
-			'scripts/lib/**/*.{test,spec}.{js,ts}'
+			'amplify/function/{db,admin-sqlite,backup-sqlite}/**/*.{test,spec}.{js,ts}'
 		],
 		globals: true,
 		environment: 'jsdom',
@@ -41,8 +40,7 @@ export default defineConfig({
 				'src/**/*.{js,ts,svelte}',
 				'amplify/function/generate-puzzle/**/*.ts',
 				'amplify/function/sql-queries/**/*.ts',
-				'amplify/function/{db,admin-sqlite,backup-sqlite}/**/*.ts',
-				'scripts/lib/**/*.ts'
+				'amplify/function/{db,admin-sqlite,backup-sqlite}/**/*.ts'
 			],
 			exclude: [
 				'src/app.d.ts',
@@ -52,7 +50,6 @@ export default defineConfig({
 				'src/**/*.d.ts',
 				'amplify/function/generate-puzzle/**/*.test.{js,ts}',
 				'amplify/function/**/*.test.{js,ts}',
-				'scripts/lib/**/*.test.{js,ts}',
 				// CDK config — pure declarative, no logic to cover.
 				'amplify/function/**/resource.ts',
 				// Type-only module.

@@ -1,6 +1,6 @@
 /**
- * SQLite schema for the crossword database. Mirrors scripts/setup-sql-database.sql
- * (the retired MySQL schema) with these translations:
+ * SQLite schema for the crossword database. Mirrors the retired MySQL schema
+ * (scripts/setup-sql-database.sql in git history) with these translations:
  *   - VARCHAR/TEXT -> TEXT, BOOLEAN/INT -> INTEGER (mysql2 already returned
  *     BOOLEAN columns as 0/1, so the wire shape is unchanged).
  *   - TIMESTAMP DEFAULT CURRENT_TIMESTAMP -> an ISO-8601 UTC string default, so
