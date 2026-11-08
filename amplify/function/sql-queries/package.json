@@ -1,8 +1,0 @@
-{
-	"name": "sql-queries",
-	"version": "1.0.0",
-	"type": "module",
-	"dependencies": {
-		"mysql2": "^3.11.5"
-	}
-}
