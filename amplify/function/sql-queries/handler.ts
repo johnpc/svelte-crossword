@@ -1,4 +1,4 @@
-import { Handler } from 'aws-lambda';
+import type { Handler } from 'aws-lambda';
 import mysql from 'mysql2/promise';
 import { isValidPuzzle } from './puzzle-validator';
 

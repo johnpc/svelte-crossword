@@ -12,7 +12,9 @@ export default defineConfig({
 		include: [
 			'src/**/*.{test,spec}.{js,ts}',
 			'amplify/function/generate-puzzle/**/*.{test,spec}.{js,ts}',
-			'amplify/function/sql-queries/**/*.{test,spec}.{js,ts}'
+			'amplify/function/sql-queries/**/*.{test,spec}.{js,ts}',
+			'amplify/function/{db,admin-sqlite,backup-sqlite}/**/*.{test,spec}.{js,ts}',
+			'scripts/lib/**/*.{test,spec}.{js,ts}'
 		],
 		globals: true,
 		environment: 'jsdom',
@@ -38,7 +40,9 @@ export default defineConfig({
 			include: [
 				'src/**/*.{js,ts,svelte}',
 				'amplify/function/generate-puzzle/**/*.ts',
-				'amplify/function/sql-queries/puzzle-validator.ts'
+				'amplify/function/sql-queries/**/*.ts',
+				'amplify/function/{db,admin-sqlite,backup-sqlite}/**/*.ts',
+				'scripts/lib/**/*.ts'
 			],
 			exclude: [
 				'src/app.d.ts',
@@ -47,8 +51,14 @@ export default defineConfig({
 				'src/**/*.spec.{js,ts}',
 				'src/**/*.d.ts',
 				'amplify/function/generate-puzzle/**/*.test.{js,ts}',
+				'amplify/function/**/*.test.{js,ts}',
+				'scripts/lib/**/*.test.{js,ts}',
 				// CDK config — pure declarative, no logic to cover.
-				'amplify/function/generate-puzzle/resource.ts',
+				'amplify/function/**/resource.ts',
+				// Type-only module.
+				'amplify/function/sql-queries/types.ts',
+				// MySQL entry point; retired in Deploy B when sql-queries flips to SQLite.
+				'amplify/function/sql-queries/handler.ts',
 				// Test-only fixtures (stub components rendered by tests).
 				'src/**/__fixtures__/**',
 				// Type-only and static data modules carry no executable logic.
