@@ -23,13 +23,13 @@ afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
 describe('backup-sqlite handler', () => {
 	it('fails fast without a bucket name', async () => {
-		delete process.env.SMALL_CROSSWORDS_PUZ_FILE_STORAGE_BUCKET_NAME;
+		delete process.env.BACKUP_BUCKET;
 		const { handler } = await import('./handler');
-		await expect(handler()).rejects.toThrow(/BUCKET_NAME is not set/);
+		await expect(handler()).rejects.toThrow(/BACKUP_BUCKET is not set/);
 	});
 
 	it('snapshots the EFS database into the storage bucket', async () => {
-		process.env.SMALL_CROSSWORDS_PUZ_FILE_STORAGE_BUCKET_NAME = 'puz-bucket';
+		process.env.BACKUP_BUCKET = 'puz-bucket';
 		vi.spyOn(console, 'log').mockImplementation(() => {});
 		const { handler } = await import('./handler');
 		const result = await handler();

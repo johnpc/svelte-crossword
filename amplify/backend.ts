@@ -114,6 +114,15 @@ const underlyingAdminSqliteLambda = backend.adminSqliteFunction.resources.lambda
 const underlyingBackupSqliteLambda = backend.backupSqliteFunction.resources
 	.lambda as LambdaFunction;
 
+// backup-sqlite runs in the VPC (to mount EFS) with no NAT. Amplify's
+// allow.resource() grant would hand it the bucket name via an SSM lookup at
+// cold start, and SSM is unreachable from there — so pass the name as a plain
+// CloudFormation ref and grant S3 directly. S3 itself is reached through the
+// VPC's S3 gateway endpoint.
+const puzBucket = backend.storage.resources.bucket;
+backend.backupSqliteFunction.addEnvironment('BACKUP_BUCKET', puzBucket.bucketName);
+puzBucket.grantPut(underlyingBackupSqliteLambda, 'internal/backups/*');
+
 // Function names the client and admin scripts resolve from amplify_outputs.json
 backend.addOutput({
 	custom: {
