@@ -42,9 +42,8 @@ cfnUserPoolClient.tokenValidityUnits = { refreshToken: 'days' };
 const underlyingAuthLambda = backend.authFunction.resources.lambda as LambdaFunction;
 underlyingAuthLambda.addEnvironment('ADMIN_API_KEY', process.env.ADMIN_API_KEY!);
 
-// Set up SQL queries lambda
+// SQL queries lambda (SQLite on EFS; mounted further down once the file system exists)
 const underlyingSqlLambda = backend.sqlQueriesFunction.resources.lambda as LambdaFunction;
-underlyingSqlLambda.addEnvironment('SQL_CONNECTION_STRING', process.env.SQL_CONNECTION_STRING!);
 
 // Set up seed db lambda
 const underlyingSeedLambda = backend.seedPuzzleDbFunction.resources.lambda as LambdaFunction;
@@ -161,23 +160,13 @@ const dbInstance = new rds.DatabaseInstance(sqlStack, 'CrosswordDB', {
 	backupRetention: cdk.Duration.days(7)
 });
 
-// Run the SQL queries Lambda inside the VPC so DB ingress can be scoped to its
-// security group instead of 0.0.0.0/0. No NAT or VPC endpoints are needed: the
-// handler only speaks MySQL, and the connection string arrives via env var.
+// Security group shared by every in-VPC Lambda (SQLite/EFS and, until Deploy C,
+// the MySQL admin Lambda). No NAT or VPC endpoints are needed for NFS or MySQL.
 const sqlLambdaSecurityGroup = new ec2.SecurityGroup(sqlStack, 'SqlQueriesLambdaSG', {
 	vpc,
 	description: 'SQL queries Lambda to RDS access',
 	allowAllOutbound: true
 });
-
-const cfnSqlFunction = underlyingSqlLambda.node.defaultChild as CfnFunction;
-cfnSqlFunction.vpcConfig = {
-	securityGroupIds: [sqlLambdaSecurityGroup.securityGroupId],
-	subnetIds: SUBNET_IDS
-};
-underlyingSqlLambda.role?.addManagedPolicy(
-	cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaVPCAccessExecutionRole')
-);
 
 dbInstance.connections.allowFrom(sqlLambdaSecurityGroup, ec2.Port.tcp(3306), 'SQL queries Lambda');
 
@@ -192,10 +181,10 @@ underlyingAdminSqlLambda.role?.addManagedPolicy(
 	cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaVPCAccessExecutionRole')
 );
 
-// SQLite on EFS — the RDS replacement. Deploy A (this change) stands the file
-// system up next to RDS and mounts it on admin-sqlite (for the data migration)
-// and backup-sqlite (nightly VACUUM INTO -> S3). sql-queries flips to it in
-// Deploy B; RDS is removed in Deploy C.
+// SQLite on EFS — the RDS replacement. Deploy A stood the file system up next
+// to RDS and mounted it on admin-sqlite (data migration) and backup-sqlite
+// (nightly VACUUM INTO -> S3). Deploy B (this change) serves the app from it.
+// RDS is removed in Deploy C.
 const sqliteStorage = new SqliteStorage(sqlStack, {
 	vpc,
 	subnetIds: SUBNET_IDS,
@@ -203,3 +192,10 @@ const sqliteStorage = new SqliteStorage(sqlStack, {
 });
 sqliteStorage.attach(underlyingAdminSqliteLambda);
 sqliteStorage.attach(underlyingBackupSqliteLambda);
+sqliteStorage.attach(underlyingSqlLambda);
+
+// Single writer: SQLite over NFS must not see concurrent writers from several
+// containers. Traffic is ~1.3 invocations/min, and the client's Lambda SDK
+// retries the rare throttle, so one concurrent execution is plenty.
+const cfnSqlFunction = underlyingSqlLambda.node.defaultChild as CfnFunction;
+cfnSqlFunction.reservedConcurrentExecutions = 1;

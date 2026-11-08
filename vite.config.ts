@@ -57,8 +57,6 @@ export default defineConfig({
 				'amplify/function/**/resource.ts',
 				// Type-only module.
 				'amplify/function/sql-queries/types.ts',
-				// MySQL entry point; retired in Deploy B when sql-queries flips to SQLite.
-				'amplify/function/sql-queries/handler.ts',
 				// Test-only fixtures (stub components rendered by tests).
 				'src/**/__fixtures__/**',
 				// Type-only and static data modules carry no executable logic.
