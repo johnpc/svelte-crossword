@@ -6,11 +6,9 @@ import { storage } from './storage/resource.js';
 import { seedPuzzleDbFunction } from './function/resource';
 import { generatePuzzleFunction } from './function/generate-puzzle/resource';
 import { sqlQueriesFunction } from './function/sql-queries/resource';
-import { adminSqlFunction } from './function/admin-sql/resource';
 import { adminSqliteFunction } from './function/admin-sqlite/resource';
 import { backupSqliteFunction } from './function/backup-sqlite/resource';
 import { SqliteStorage } from './sqlite-storage';
-import * as rds from 'aws-cdk-lib/aws-rds';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as cdk from 'aws-cdk-lib';
 import dotenv from 'dotenv';
@@ -24,7 +22,6 @@ const backend = defineBackend({
 	seedPuzzleDbFunction,
 	generatePuzzleFunction,
 	sqlQueriesFunction,
-	adminSqlFunction,
 	adminSqliteFunction,
 	backupSqliteFunction,
 	authFunction,
@@ -99,17 +96,9 @@ backend.auth.resources.unauthenticatedUserIamRole.addToPrincipalPolicy(
 	})
 );
 
-// Set up admin SQL lambda. NOTE: intentionally NOT granted to the app's
-// authenticated/guest user roles — it executes arbitrary SQL and is for
-// laptop admin scripts using admin IAM credentials only.
-const underlyingAdminSqlLambda = backend.adminSqlFunction.resources.lambda as LambdaFunction;
-underlyingAdminSqlLambda.addEnvironment(
-	'SQL_CONNECTION_STRING',
-	process.env.SQL_CONNECTION_STRING!
-);
-
-// SQLite twin of admin-sql (same { sql, params } contract, admin IAM only).
-// scripts/migrate-mysql-to-sqlite.ts reads from admin-sql and writes here.
+// Admin SQL lambda ({ sql, params } passthrough for laptop scripts). NOTE:
+// intentionally NOT granted to the app's authenticated/guest user roles — it
+// executes arbitrary SQL and is for admin IAM credentials only.
 const underlyingAdminSqliteLambda = backend.adminSqliteFunction.resources.lambda as LambdaFunction;
 const underlyingBackupSqliteLambda = backend.backupSqliteFunction.resources
 	.lambda as LambdaFunction;
@@ -127,12 +116,12 @@ puzBucket.grantPut(underlyingBackupSqliteLambda, 'internal/backups/*');
 backend.addOutput({
 	custom: {
 		sqlQueriesFunctionName: underlyingSqlLambda.functionName,
-		adminSqlFunctionName: underlyingAdminSqlLambda.functionName,
-		adminSqliteFunctionName: underlyingAdminSqliteLambda.functionName
+		// Kept under its historical key so scripts/admin-sql-client.ts keeps working.
+		adminSqlFunctionName: underlyingAdminSqliteLambda.functionName
 	}
 });
 
-// Set up RDS MySQL database
+// Networking + SQLite storage stack (historical id kept so CloudFormation updates in place)
 const sqlStack = backend.createStack('crossword-sql-stack');
 
 const SUBNET_IDS = ['subnet-de670bb6', 'subnet-df670bb7'];
@@ -142,58 +131,16 @@ const vpc = ec2.Vpc.fromVpcAttributes(sqlStack, 'DefaultVPC', {
 	publicSubnetIds: SUBNET_IDS
 });
 
-const dbInstance = new rds.DatabaseInstance(sqlStack, 'CrosswordDB', {
-	// MySQL 8.4 is the current LTS and is in RDS standard support. Staying on 8.0
-	// (community EOL) triggers the RDS Extended Support surcharge (~$43/mo); moving
-	// to 8.4 removes that fee. A major-version bump (8.0 -> 8.4) requires
-	// allowMajorVersionUpgrade, otherwise RDS rejects the modify.
-	engine: rds.DatabaseInstanceEngine.mysql({ version: rds.MysqlEngineVersion.VER_8_4_6 }),
-	allowMajorVersionUpgrade: true,
-	instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
-	vpc,
-	vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
-	allocatedStorage: 20,
-	maxAllocatedStorage: 100,
-	databaseName: 'crossword',
-	credentials: rds.Credentials.fromPassword(
-		'admin',
-		cdk.SecretValue.unsafePlainText(process.env.DB_PASSWORD!)
-	),
-	// Private-only: the sole prod client is the in-VPC SQL queries Lambda, and
-	// dropping the public IP saves the IPv4 charge. For laptop admin scripts
-	// (scripts/direct-rds-migration.ts etc.), use a CloudShell VPC environment
-	// or temporarily flip this back on for a maintenance session.
-	publiclyAccessible: false,
-	removalPolicy: cdk.RemovalPolicy.DESTROY,
-	deletionProtection: false,
-	backupRetention: cdk.Duration.days(7)
-});
-
-// Security group shared by every in-VPC Lambda (SQLite/EFS and, until Deploy C,
-// the MySQL admin Lambda). No NAT or VPC endpoints are needed for NFS or MySQL.
+// Security group shared by every Lambda that mounts the SQLite file system.
+// Its logical id/description predate the EFS move; renaming would replace it.
 const sqlLambdaSecurityGroup = new ec2.SecurityGroup(sqlStack, 'SqlQueriesLambdaSG', {
 	vpc,
 	description: 'SQL queries Lambda to RDS access',
 	allowAllOutbound: true
 });
 
-dbInstance.connections.allowFrom(sqlLambdaSecurityGroup, ec2.Port.tcp(3306), 'SQL queries Lambda');
-
-// The admin SQL lambda shares the SQL queries lambda's security group so the
-// single DB ingress rule covers both in-VPC functions.
-const cfnAdminSqlFunction = underlyingAdminSqlLambda.node.defaultChild as CfnFunction;
-cfnAdminSqlFunction.vpcConfig = {
-	securityGroupIds: [sqlLambdaSecurityGroup.securityGroupId],
-	subnetIds: SUBNET_IDS
-};
-underlyingAdminSqlLambda.role?.addManagedPolicy(
-	cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaVPCAccessExecutionRole')
-);
-
-// SQLite on EFS — the RDS replacement. Deploy A stood the file system up next
-// to RDS and mounted it on admin-sqlite (data migration) and backup-sqlite
-// (nightly VACUUM INTO -> S3). Deploy B (this change) serves the app from it.
-// RDS is removed in Deploy C.
+// SQLite on EFS: the only database. NFS (2049) is admitted solely from the
+// security group above; the Lambdas need no NAT or VPC endpoints for it.
 const sqliteStorage = new SqliteStorage(sqlStack, {
 	vpc,
 	subnetIds: SUBNET_IDS,
