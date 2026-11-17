@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { checkClueCompletion, clearCells, revealCells, getInitialState } from './crosswordLogic.js';
+import { checkClueCompletion, clearCells, revealCells } from './crosswordLogic.js';
 
 describe('checkClueCompletion', () => {
 	const cells = /** @type {import('./types').Cell[]} */ (
@@ -111,15 +111,5 @@ describe('revealCells', () => {
 		const result = revealCells(cells);
 		expect(result).not.toBe(cells);
 		expect(result[0]).not.toBe(cells[0]);
-	});
-});
-
-describe('getInitialState', () => {
-	it('returns the default reset state', () => {
-		const state = getInitialState();
-		expect(state.isRevealing).toBe(false);
-		expect(state.isChecking).toBe(false);
-		expect(state.focusedCellIndex).toBe(0);
-		expect(state.focusedDirection).toBe('across');
 	});
 });

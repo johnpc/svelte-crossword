@@ -51,16 +51,3 @@ export function revealCells(cells) {
 		value: cell.answer
 	}));
 }
-
-/**
- * Get the default reset state for the crossword.
- * @returns {{ isRevealing: boolean, isChecking: boolean, focusedCellIndex: number, focusedDirection: import('./types').Direction }}
- */
-export function getInitialState() {
-	return {
-		isRevealing: false,
-		isChecking: false,
-		focusedCellIndex: 0,
-		focusedDirection: /** @type {import('./types').Direction} */ ('across')
-	};
-}

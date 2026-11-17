@@ -42,4 +42,14 @@ describe('fetchPuzzleById', () => {
 		expect(result.clues[0].answer).toBe('CAT');
 		expect(result.clues[1].answer).toBe('COP');
 	});
+
+	it('accepts an already-decoded puz_json object (the non-legacy Lambda shape)', async () => {
+		mockInvoke
+			.mockResolvedValueOnce({ puzzle_id: 'puz-2', time_in_seconds: 1 })
+			.mockResolvedValueOnce({
+				puz_json: { clues: { across: { 1: { answer: 'CAT' } }, down: { 2: { answer: 'COP' } } } }
+			});
+		const result = await fetchPuzzleById('up-2');
+		expect(result.clues.map((c) => c.answer)).toEqual(['CAT', 'COP']);
+	});
 });

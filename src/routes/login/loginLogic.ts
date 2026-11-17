@@ -1,8 +1,8 @@
 import { goto } from '$app/navigation';
 import { signUp, signIn, confirmSignUp } from 'aws-amplify/auth';
-import type { StateCallbacks } from './types';
+import type { AuthFlowDispatch } from './authFlow';
 
-export type { AuthState, StateCallbacks } from './types';
+export type { AuthFlow, AuthFlowDispatch, AuthFlowEvent } from './authFlow';
 export { loginWithApple, loginWithGoogle } from './socialLogin';
 export { handleForgotPassword, handleResetPasswordNextSteps } from './passwordReset';
 
@@ -14,10 +14,10 @@ export async function confirmationHandler(
 	username: string,
 	confirmationCode: string,
 	password: string,
-	callbacks: StateCallbacks
+	dispatch: AuthFlowDispatch
 ): Promise<void> {
 	await confirmSignUp({ username, confirmationCode });
-	callbacks.setState('signIn');
+	dispatch('completed');
 	if (password) {
 		await loginHandler(username, password);
 		return;

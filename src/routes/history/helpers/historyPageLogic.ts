@@ -33,7 +33,7 @@ export const loadHistoryData = async (deps: HistoryDataDeps): Promise<HistoryDat
 
 export interface DeleteAccountDeps {
 	confirm: (message: string) => boolean;
-	resetPuzzleStoreDefaults: () => void;
+	resetLocalState: () => void;
 	deleteUser: () => Promise<unknown>;
 	signOut: () => Promise<unknown>;
 	onComplete: () => void;
@@ -48,7 +48,7 @@ export const deleteAllUserData = async (deps: DeleteAccountDeps): Promise<boolea
 		'Are you sure? This will destroy your account and log you out immediately. It cannot be undone.'
 	);
 	if (!confirmed) return false;
-	deps.resetPuzzleStoreDefaults();
+	deps.resetLocalState();
 	await deps.deleteUser();
 	await deps.signOut();
 	deps.onComplete();

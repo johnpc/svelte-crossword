@@ -42,17 +42,24 @@
 	function onKeydown(e: KeyboardEvent) {
 		const action = getKeydownAction(e);
 		if (!action) return;
-		if (action.preventDefault) {
+		if ('preventDefault' in action) {
 			e.preventDefault();
 			e.stopPropagation();
 		}
-
-		if (action.type === 'historicalChange') onHistoricalChange(action.diff!);
-		else if (action.type === 'focusClueDiff') onFocusClueDiff(action.diff!);
-		else if (action.type === 'flipDirection') onFlipDirection();
-		else if (action.type === 'delete') onCellUpdate(index, '', -1, true);
-		else if (action.type === 'letter') onCellUpdate(index, action.value!);
-		else if (action.type === 'moveFocus') onMoveFocus(action.direction!, action.diff!);
+		switch (action.type) {
+			case 'historicalChange':
+				return onHistoricalChange(action.diff);
+			case 'focusClueDiff':
+				return onFocusClueDiff(action.diff);
+			case 'flipDirection':
+				return onFlipDirection();
+			case 'delete':
+				return onCellUpdate(index, '', -1, true);
+			case 'letter':
+				return onCellUpdate(index, action.value);
+			case 'moveFocus':
+				return onMoveFocus(action.direction, action.diff);
+		}
 	}
 </script>
 

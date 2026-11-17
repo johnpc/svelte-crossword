@@ -1,46 +1,29 @@
 import { haptic, vibrate } from './haptics';
 import { goto } from '$app/navigation';
 import { invokeSqlQuery } from './sql/invokeSqlQuery';
+import type { SolvedSession } from './session/puzzleSessionStore';
 
 export { loadNextPuzzle, initializePuzzle } from './puzzleInit';
 export type { InitPuzzleCallbacks } from './puzzleInit';
 
-export interface PuzzleCompletionParams {
-	profileId: string;
-	puzzleId: string;
-	usedCheck: boolean;
-	usedClear: boolean;
-	usedReveal: boolean;
-	timeInSeconds: number;
-}
-
-export const submitPuzzleCompletion = async (params: PuzzleCompletionParams): Promise<void> => {
+/** Records a solved sitting for the profile. Called once per playing -> solved transition. */
+export const submitPuzzleCompletion = async (
+	profileId: string,
+	solved: SolvedSession
+): Promise<void> => {
 	vibrate();
 	await invokeSqlQuery({
 		query: 'createUserPuzzle',
 		userPuzzle: {
 			id: crypto.randomUUID(),
-			profile_id: params.profileId,
-			puzzle_id: params.puzzleId,
-			used_check: params.usedCheck ? 1 : 0,
-			used_clear: params.usedClear ? 1 : 0,
-			used_reveal: params.usedReveal ? 1 : 0,
-			time_in_seconds: params.timeInSeconds
+			profile_id: profileId,
+			puzzle_id: solved.puzzle.id,
+			used_check: solved.assists.usedCheck ? 1 : 0,
+			used_clear: solved.assists.usedClear ? 1 : 0,
+			used_reveal: solved.assists.usedReveal ? 1 : 0,
+			time_in_seconds: solved.elapsedSeconds
 		}
 	});
-};
-
-export const createTimer = (onTick: () => void, isComplete: () => boolean): (() => void) => {
-	let cancelled = false;
-	const id = setInterval(() => {
-		if (cancelled) return;
-		onTick();
-		if (isComplete()) clearInterval(id);
-	}, 1000);
-	return () => {
-		cancelled = true;
-		clearInterval(id);
-	};
 };
 
 export const handleToolbarAction = (action: () => void): void => {

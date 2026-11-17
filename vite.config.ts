@@ -11,6 +11,7 @@ export default defineConfig({
 	test: {
 		include: [
 			'src/**/*.{test,spec}.{js,ts}',
+			'e2e/fake-backend/**/*.{test,spec}.ts',
 			'amplify/function/generate-puzzle/**/*.{test,spec}.{js,ts}',
 			'amplify/function/sql-queries/**/*.{test,spec}.{js,ts}',
 			'amplify/function/{db,admin-sqlite,backup-sqlite}/**/*.{test,spec}.{js,ts}'
@@ -38,6 +39,9 @@ export default defineConfig({
 			// logic is unit-tested via @testing-library/svelte render tests.
 			include: [
 				'src/**/*.{js,ts,svelte}',
+				// The fake backend is test infrastructure, but it stands in for a
+				// production contract — keep it as honestly covered as the app.
+				'e2e/fake-backend/*.ts',
 				'amplify/function/generate-puzzle/**/*.ts',
 				'amplify/function/sql-queries/**/*.ts',
 				'amplify/function/{db,admin-sqlite,backup-sqlite}/**/*.ts'
@@ -50,6 +54,9 @@ export default defineConfig({
 				'src/**/*.d.ts',
 				'amplify/function/generate-puzzle/**/*.test.{js,ts}',
 				'amplify/function/**/*.test.{js,ts}',
+				'e2e/fake-backend/**/*.test.ts',
+				// Playwright-only glue (route handlers need a real BrowserContext).
+				'e2e/fake-backend/install.ts',
 				// CDK config — pure declarative, no logic to cover.
 				'amplify/function/**/resource.ts',
 				// Type-only module.

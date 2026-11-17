@@ -3,85 +3,52 @@
 	import { goto } from '$app/navigation';
 	import { getCurrentUser } from 'aws-amplify/auth';
 	import { onDestroy, onMount } from 'svelte';
-	import type { Clue } from '../helpers/types/types';
-	import { previewClues } from './previewClues';
-	import { vibrate } from '../helpers/haptics';
-	import { puzzleStore } from '../helpers/puzzleStore';
-	import { get } from 'svelte/store';
-	import { createPuzzleTimer } from './helpers/puzzleTimer';
-	import { toggleKeyboardSetting } from './helpers/toolbarActions';
-	import { toastOptions, showPreviewToast } from './helpers/toastConfig';
+	import { readKeyboardSetting, toggleKeyboardSetting } from '../helpers/keyboardSetting';
+	import { PREVIEW_PUZZLE, previewSession } from './previewSession';
+	import { showPreviewToast } from './helpers/toastConfig';
 	import PreviewCrossword from './PreviewCrossword.svelte';
 
-	$: clues = [] as Clue[];
-	$: timeInSeconds = 0;
-	$: isPuzzleComplete = false;
-	$: usedCheck = false;
-	$: usedReveal = false;
-	$: usedClear = false;
-	$: keyboardStyle = 'outline' as 'outline' | 'depth';
 	let showAppKeyboard = true;
-	let ref: unknown;
+	let gridSolved = false;
+
+	const ticker = setInterval(() => previewSession.send({ type: 'tick' }), 1000);
+	onDestroy(() => clearInterval(ticker));
+	$: if (gridSolved) previewSession.send({ type: 'gridSolved' });
 
 	onMount(() => {
-		showAppKeyboard = localStorage.getItem('showAppKeyboard') !== 'false';
-		const store = get(puzzleStore);
-		isPuzzleComplete = store.completedPreview;
-		const setup = async () => {
+		showAppKeyboard = readKeyboardSetting();
+		// A solved preview stays solved across visits; anything else starts over.
+		if (previewSession.current().phase !== 'solved') previewSession.send({ type: 'reset' });
+		(async () => {
 			try {
 				const currentUser = await getCurrentUser();
-				if (currentUser.userId) goto('/');
+				if (currentUser.userId) return void goto('/');
 			} catch {
 				// Not logged in — render the preview puzzle.
 			}
-			clues = previewClues;
-		};
-		setup();
+			previewSession.send({ type: 'puzzleLoaded', puzzle: PREVIEW_PUZZLE });
+		})();
 	});
 
-	const onPuzzleComplete = () => {
-		vibrate();
-		const store = get(puzzleStore);
-		puzzleStore.set({ ...store, completedPreview: true });
-		isPuzzleComplete = true;
-	};
-
-	const cancelTimer = createPuzzleTimer({
-		getRef: () => ref,
-		isPuzzleComplete: () => isPuzzleComplete,
-		onComplete: () => onPuzzleComplete(),
-		onTick: () => {
-			timeInSeconds++;
-		}
-	});
-	onDestroy(cancelTimer);
-
-	const toggleKeyboard = () => {
-		showAppKeyboard = toggleKeyboardSetting(showAppKeyboard);
-	};
+	const toggleKeyboard = () => (showAppKeyboard = toggleKeyboardSetting(showAppKeyboard));
 </script>
 
-{#if clues.length === 0}
-	<div style="margin: auto">
-		<SyncLoader size="60" color="palevioletred" unit="px" duration="1s" />
-	</div>
-{:else}
+{#if $previewSession.phase === 'playing' || $previewSession.phase === 'solved'}
 	<h3>You're not signed in!</h3>
 	<button id="signInButton" class="active" on:click={() => goto('/login')}>sign in/up</button>
 	<PreviewCrossword
-		{clues}
-		bind:ref
-		bind:showAppKeyboard
-		bind:isPuzzleComplete
-		{keyboardStyle}
-		{timeInSeconds}
-		bind:usedClear
-		bind:usedReveal
-		bind:usedCheck
+		session={$previewSession}
+		{showAppKeyboard}
+		keyboardStyle="outline"
+		onAssist={(assist) => previewSession.send({ type: 'assistUsed', assist })}
 		onToggleKeyboard={toggleKeyboard}
-		onShowToast={showPreviewToast}
-		{toastOptions}
+		onContinue={showPreviewToast}
+		bind:isComplete={gridSolved}
 	/>
+{:else}
+	<div style="margin: auto">
+		<SyncLoader size="60" color="palevioletred" unit="px" duration="1s" />
+	</div>
 {/if}
 
 <style>

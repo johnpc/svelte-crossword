@@ -51,15 +51,15 @@ describe('leaderboard/+page.svelte', () => {
 		expect(container.querySelectorAll('ol > li')).toHaveLength(2);
 	});
 
-	it('stops the spinner and pushes a toast when getLeaderboard rejects', async () => {
+	it('shows the failure message and pushes a toast when getLeaderboard rejects', async () => {
+		vi.spyOn(console, 'error').mockImplementation(() => {});
 		mockGetLeaderboard.mockRejectedValue(new Error('boom'));
-		const { getByText, container } = render(Page);
+		const { getByRole, queryByText } = render(Page);
 		await waitFor(() => expect(mockToastPush).toHaveBeenCalledTimes(1));
 		expect(mockToastPush).toHaveBeenCalledWith(
 			expect.stringContaining('Could not load the leaderboard')
 		);
-		// Spinner is gone (isLoading flipped to false) and the list rendered empty.
-		expect(getByText('Total users: 0')).toBeInTheDocument();
-		expect(container.querySelectorAll('ol > li')).toHaveLength(0);
+		expect(getByRole('alert')).toHaveTextContent('Could not load the leaderboard');
+		expect(queryByText(/Total users/)).toBeNull();
 	});
 });

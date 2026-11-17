@@ -37,7 +37,7 @@ describe('loadHistoryData', () => {
 describe('deleteAllUserData', () => {
 	const baseDeps = () => ({
 		confirm: vi.fn().mockReturnValue(true),
-		resetPuzzleStoreDefaults: vi.fn(),
+		resetLocalState: vi.fn(),
 		deleteUser: vi.fn().mockResolvedValue(undefined),
 		signOut: vi.fn().mockResolvedValue(undefined),
 		onComplete: vi.fn()
@@ -47,7 +47,7 @@ describe('deleteAllUserData', () => {
 		const deps = baseDeps();
 		const ran = await deleteAllUserData(deps);
 		expect(ran).toBe(true);
-		expect(deps.resetPuzzleStoreDefaults).toHaveBeenCalledOnce();
+		expect(deps.resetLocalState).toHaveBeenCalledOnce();
 		expect(deps.deleteUser).toHaveBeenCalledOnce();
 		expect(deps.signOut).toHaveBeenCalledOnce();
 		expect(deps.onComplete).toHaveBeenCalledOnce();

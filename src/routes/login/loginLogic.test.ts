@@ -34,23 +34,19 @@ import {
 	confirmationHandler,
 	loginHandler,
 	tryOrAlert,
-	type StateCallbacks
+	type AuthFlowDispatch
 } from './loginLogic';
 
 describe('loginLogic', () => {
-	let callbacks: StateCallbacks;
+	let callbacks: ReturnType<typeof vi.fn<AuthFlowDispatch>>;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		callbacks = {
-			setConfirmForgotPassword: vi.fn(),
-			setState: vi.fn(),
-			setConfirm: vi.fn()
-		};
+		callbacks = vi.fn();
 	});
 
 	describe('handleResetPasswordNextSteps', () => {
-		it('sets confirmForgotPassword true on CONFIRM_RESET_PASSWORD_WITH_CODE', () => {
+		it('dispatches codeSent on CONFIRM_RESET_PASSWORD_WITH_CODE', () => {
 			const output = {
 				nextStep: {
 					resetPasswordStep: 'CONFIRM_RESET_PASSWORD_WITH_CODE' as const,
@@ -58,14 +54,13 @@ describe('loginLogic', () => {
 				}
 			};
 			handleResetPasswordNextSteps(output as never, callbacks);
-			expect(callbacks.setConfirmForgotPassword).toHaveBeenCalledWith(true);
+			expect(callbacks).toHaveBeenCalledWith('codeSent');
 		});
 
-		it('sets state to signIn on DONE', () => {
+		it('dispatches completed on DONE', () => {
 			const output = { nextStep: { resetPasswordStep: 'DONE' as const } };
 			handleResetPasswordNextSteps(output as never, callbacks);
-			expect(callbacks.setConfirmForgotPassword).toHaveBeenCalledWith(false);
-			expect(callbacks.setState).toHaveBeenCalledWith('signIn');
+			expect(callbacks).toHaveBeenCalledWith('completed');
 		});
 	});
 
@@ -110,8 +105,7 @@ describe('loginLogic', () => {
 				confirmationCode: '123',
 				newPassword: 'newpass'
 			});
-			expect(callbacks.setConfirmForgotPassword).toHaveBeenCalledWith(false);
-			expect(callbacks.setState).toHaveBeenCalledWith('signIn');
+			expect(callbacks).toHaveBeenCalledWith('completed');
 		});
 	});
 
@@ -132,7 +126,7 @@ describe('loginLogic', () => {
 				username: 'user@test.com',
 				confirmationCode: '123456'
 			});
-			expect(callbacks.setState).toHaveBeenCalledWith('signIn');
+			expect(callbacks).toHaveBeenCalledWith('completed');
 			expect(mocks.signIn).toHaveBeenCalledWith({
 				username: 'user@test.com',
 				password: 'pass'

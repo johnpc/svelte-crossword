@@ -8,35 +8,40 @@
 	import { page } from '$app/stores';
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import { getHumanReadableDuration } from '../../helpers/getHumanReadableDuration';
-	import { fetchPuzzleById, type UserPuzzleData } from './fetchPuzzleById';
-	import { loadHistoryDetail } from './historyDetailLogic';
-	import type { Clue } from '../../helpers/types/types';
+	import { fetchPuzzleById } from './fetchPuzzleById';
+	import { loadHistoryDetail, type HistoryDetail } from './historyDetailLogic';
+	import { loading, settle, type RemoteData } from '../../helpers/remoteData';
 
 	Amplify.configure(config);
 
-	$: userPuzzle = {} as UserPuzzleData;
-	$: clues = [] as Clue[];
+	// @state-machine history-detail-load — loading | ready(data) | failed(message)
+	let detail: RemoteData<HistoryDetail> = loading();
 
 	onMount(() => {
 		(async () => {
-			const detail = await loadHistoryDetail({
-				getCurrentUser,
-				fetchPuzzleById,
-				getPuzzleId: () => $page.url.searchParams.get('id'),
-				onUnauthenticated: () => goto('/login')
-			});
-			if (!detail) return;
-			userPuzzle = detail.userPuzzle;
-			clues = detail.clues;
+			const settled = await settle(
+				() =>
+					loadHistoryDetail({
+						getCurrentUser,
+						fetchPuzzleById,
+						getPuzzleId: () => $page.url.searchParams.get('id'),
+						onUnauthenticated: () => goto('/login')
+					}),
+				'Could not load this puzzle. Please try again later.'
+			);
+			if (settled) detail = settled;
 		})();
 	});
 </script>
 
-{#if clues.length === 0}
+{#if detail.status === 'loading'}
 	<p style="margin: auto"><SyncLoader size="60" color="palevioletred" unit="px" duration="1s" /></p>
+{:else if detail.status === 'failed'}
+	<p role="alert">{detail.message}</p>
 {:else}
+	{@const userPuzzle = detail.data.userPuzzle}
 	<Crossword
-		data={clues}
+		data={detail.data.clues}
 		breakpoint={10000}
 		theme="pink"
 		revealed={true}
@@ -44,11 +49,10 @@
 		showCompleteMessage={false}
 		showKeyboard={false}
 	>
-		<div id="toolbar" class="toolbar" slot="toolbar" let:onReveal>
+		<div id="toolbar" class="toolbar" slot="toolbar">
 			<p style="display: inline;">
 				Solved in {getHumanReadableDuration(userPuzzle.time_in_seconds)} seconds.
 			</p>
-			{void onReveal()}
 			{#if userPuzzle.used_clear}
 				<span>Used Clear 🧹</span>
 			{/if}

@@ -1,7 +1,5 @@
 import { expect } from '@playwright/test';
-import { createBdd } from 'playwright-bdd';
-
-const { When, Then } = createBdd();
+import { Then, When } from '../fixtures';
 
 When('the user toggles the on-screen keyboard to symbols mode', async ({ page }) => {
 	await page.locator('.svelte-keyboard .key--Page1').first().click();

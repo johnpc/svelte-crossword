@@ -145,9 +145,4 @@ describe('dispatch', () => {
 		});
 		expect(r).toBeDefined();
 	});
-
-	it('returns empty object for unknown action type', () => {
-		const r = dispatch(makeState(), { type: 'unknownActionType' });
-		expect(r).toEqual({});
-	});
 });

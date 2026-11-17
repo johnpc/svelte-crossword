@@ -1,11 +1,4 @@
-/**
- * @typedef {object} KeydownAction
- * @property {string} type
- * @property {number} [diff]
- * @property {string} [value]
- * @property {import('./types').Direction} [direction]
- * @property {boolean} [preventDefault]
- */
+/** @typedef {import('./types').KeydownAction} KeydownAction */
 
 /** @type {Record<string, [import('./types').Direction, number]>} */
 const ARROW_MAP = {

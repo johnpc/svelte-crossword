@@ -23,3 +23,4 @@ output.zip
 /test-results
 /playwright-report
 /.features-gen
+/artifacts

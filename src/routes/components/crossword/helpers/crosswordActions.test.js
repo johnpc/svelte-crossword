@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { initializeCrosswordData, processToolbarAction } from './crosswordActions.js';
 
 /** @type {import('./types').ClueInput[]} */
@@ -10,11 +10,9 @@ const sampleData = [
 describe('initializeCrosswordData', () => {
 	it('returns validated, clues, and cells', () => {
 		const r = initializeCrosswordData(sampleData);
-		expect(r).toHaveProperty('validated');
-		expect(r).toHaveProperty('clues');
-		expect(r).toHaveProperty('cells');
+		expect(r.validated).toBe(true);
 		expect(Array.isArray(r.clues)).toBe(true);
-		expect(Array.isArray(r.cells)).toBe(true);
+		expect(r.cells.every((c) => c.value === '')).toBe(true);
 	});
 
 	it('returns clues that are independent copies', () => {
@@ -22,6 +20,11 @@ describe('initializeCrosswordData', () => {
 		r.clues[0].mutated = true;
 		const r2 = initializeCrosswordData(sampleData);
 		expect(r2.clues[0].mutated).toBeUndefined();
+	});
+
+	it('starts every square filled in when startRevealed is set', () => {
+		const r = initializeCrosswordData(sampleData, true);
+		expect(r.cells.every((c) => c.value === c.answer)).toBe(true);
 	});
 });
 
@@ -34,55 +37,40 @@ describe('processToolbarAction', () => {
 				{ value: '', answer: 'B' }
 			])
 		),
+		mode: 'idle',
 		revealed: false,
-		revealTimeout: undefined,
-		revealDuration: 100,
-		endReveal: () => {}
+		revealDuration: 100
 	};
 
-	it('clears cells on "clear" action', () => {
-		const apply = vi.fn();
-		processToolbarAction('clear', baseCtx, apply);
-		expect(apply).toHaveBeenCalledTimes(1);
-		const arg = apply.mock.calls[0][0];
-		expect(arg.cells).toBeDefined();
-		expect(arg.reset).toBe(true);
+	it('"clear" empties the cells, returns to idle and re-homes focus', () => {
+		const effect = processToolbarAction('clear', baseCtx);
+		expect(effect?.mode).toBe('idle');
+		expect(effect?.resetFocus).toBe(true);
+		expect(effect?.cells?.every((c) => c.value === '')).toBe(true);
+		expect(effect?.endRevealAfterMs).toBeUndefined();
 	});
 
-	it('reveals cells on "reveal" action', () => {
-		const apply = vi.fn();
-		processToolbarAction('reveal', baseCtx, apply);
-		expect(apply).toHaveBeenCalled();
-		const arg = apply.mock.calls[0][0];
-		expect(arg.cells).toBeDefined();
-		expect(arg.isRevealing).toBe(true);
-		expect(arg.revealTimeout).toBeDefined();
-		expect(arg.reset).toBe(true);
+	it('"reveal" fills the cells, enters revealing and schedules its end', () => {
+		const effect = processToolbarAction('reveal', baseCtx);
+		expect(effect?.mode).toBe('revealing');
+		expect(effect?.resetFocus).toBe(true);
+		expect(effect?.cells?.every((c) => c.value === c.answer)).toBe(true);
+		expect(effect?.endRevealAfterMs).toBe(350);
 	});
 
-	it('does not reveal when already revealed', () => {
-		const apply = vi.fn();
-		processToolbarAction('reveal', { ...baseCtx, revealed: true }, apply);
-		expect(apply).not.toHaveBeenCalled();
+	it('"reveal" is a no-op when every clue is already correct', () => {
+		expect(processToolbarAction('reveal', { ...baseCtx, revealed: true })).toBeNull();
 	});
 
-	it('checks cells on "check" action', () => {
-		const apply = vi.fn();
-		processToolbarAction('check', baseCtx, apply);
-		expect(apply).toHaveBeenCalledWith({ isChecking: true });
+	it('"check" enters checking without touching cells or focus', () => {
+		expect(processToolbarAction('check', baseCtx)).toEqual({ mode: 'checking', resetFocus: false });
 	});
 
-	it('does nothing on unknown action', () => {
-		const apply = vi.fn();
-		processToolbarAction('unknown', baseCtx, apply);
-		expect(apply).not.toHaveBeenCalled();
+	it('"check" during a reveal moves straight to checking (the timer is then ignored)', () => {
+		expect(processToolbarAction('check', { ...baseCtx, mode: 'revealing' })?.mode).toBe('checking');
 	});
 
-	it('clears existing revealTimeout', () => {
-		const oldTimeout = setTimeout(() => {}, 1000);
-		const apply = vi.fn();
-		processToolbarAction('clear', { ...baseCtx, revealTimeout: oldTimeout }, apply);
-		expect(apply).toHaveBeenCalled();
-		clearTimeout(oldTimeout);
+	it('does nothing on an unknown action', () => {
+		expect(processToolbarAction('unknown', baseCtx)).toBeNull();
 	});
 });

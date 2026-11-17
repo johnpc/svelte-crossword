@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import Toolbar from './Toolbar.svelte';
 	import CrosswordPlay from './CrosswordPlay.svelte';
 	import CrosswordComplete from './CrosswordComplete.svelte';
 	import themeStyles from './helpers/themeStyles.js';
 	import { checkClueCompletion } from './helpers/crosswordLogic.js';
 	import { initializeCrosswordData, processToolbarAction } from './helpers/crosswordActions.js';
-	import type { Cell, Clue, ClueInput, Direction } from './helpers/types';
+	import type { Cell, Clue, ClueInput, Direction, ToolMode } from './helpers/types';
 
 	export let data: ClueInput[] = [],
 		actions: string[] = ['clear', 'reveal', 'check'],
@@ -24,51 +24,62 @@
 	let width = 0,
 		focusedDirection: Direction = 'across',
 		focusedCellIndex = 0;
-	let isRevealing = false,
+	// @state-machine crossword-tool-mode — the ONE writer of `mode`; readers
+	// derive isRevealing / isChecking below.
+	let mode: ToolMode = 'idle',
 		isLoaded = false,
-		isChecking = false,
 		revealTimeout: ReturnType<typeof setTimeout> | undefined;
 	let validated = false,
 		clues: Clue[] = [],
 		cells: Cell[] = [];
+	// The clue set the grid was built from. Svelte invalidates object props on
+	// every parent update (a timer tick is enough), so re-init only when the
+	// parent hands over a DIFFERENT clue set — never for the same reference.
+	let builtFrom: ClueInput[] | undefined;
 
-	function reset() {
-		isRevealing = isChecking = false;
+	function resetFocus() {
 		focusedCellIndex = 0;
 		focusedDirection = 'across';
 	}
 	function initData() {
-		const r = initializeCrosswordData(data);
+		if (data === builtFrom) return;
+		builtFrom = data;
+		// `revealed` is read here on purpose: a grid that opens already solved
+		// (history detail, a finished preview) starts filled in. Only `data`
+		// re-runs this block, so later `revealed` changes never re-init.
+		const r = initializeCrosswordData(data, revealed);
 		validated = r.validated;
 		clues = r.clues;
 		cells = r.cells;
-		reset();
+		mode = 'idle';
+		resetFocus();
 	}
 
 	function onToolbarEvent({ detail }: { detail: string }) {
-		const ctx = {
-			cells,
-			revealed,
-			revealTimeout,
-			revealDuration,
-			endReveal: () => (isRevealing = false)
-		};
-		processToolbarAction(detail, ctx, (r) => {
-			if (r.cells) cells = r.cells as Cell[];
-			if (r.isRevealing) isRevealing = true;
-			if (r.isChecking) isChecking = true;
-			if (r.revealTimeout) revealTimeout = r.revealTimeout as ReturnType<typeof setTimeout>;
-			if (r.reset) reset();
-		});
+		const effect = processToolbarAction(detail, { cells, mode, revealed, revealDuration });
+		if (!effect) return;
+		clearTimeout(revealTimeout);
+		if (effect.cells) cells = effect.cells;
+		mode = effect.mode;
+		if (effect.resetFocus) resetFocus();
+		if (effect.endRevealAfterMs !== undefined) {
+			revealTimeout = setTimeout(() => {
+				// Guarded: a Clear/Check that landed meanwhile already moved on.
+				if (mode === 'revealing') mode = 'idle';
+			}, effect.endRevealAfterMs);
+		}
 	}
 
 	$: (data, initData());
+	$: isRevealing = mode === 'revealing';
+	$: isChecking = mode === 'checking';
 	$: isComplete = cells.filter((d) => d.answer === d.value).length === cells.length;
 	$: isDisableHighlight = isComplete && disableHighlight;
 	$: (cells, (clues = checkClueCompletion(clues, cells)));
 	$: (cells, (revealed = !clues.filter((d) => !d.isCorrect).length));
 	$: stacked = width < breakpoint;
 	onMount(() => (isLoaded = true));
+	onDestroy(() => clearTimeout(revealTimeout));
 </script>
 
 {#if validated}

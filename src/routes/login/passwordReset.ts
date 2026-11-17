@@ -1,18 +1,17 @@
 import { resetPassword, confirmResetPassword, type ResetPasswordOutput } from 'aws-amplify/auth';
-import type { StateCallbacks } from './types';
+import type { AuthFlowDispatch } from './authFlow';
 
 export function handleResetPasswordNextSteps(
 	output: ResetPasswordOutput,
-	callbacks: StateCallbacks
+	dispatch: AuthFlowDispatch
 ): void {
 	const { nextStep } = output;
 	switch (nextStep.resetPasswordStep) {
 		case 'CONFIRM_RESET_PASSWORD_WITH_CODE':
-			callbacks.setConfirmForgotPassword(true);
+			dispatch('codeSent');
 			break;
 		case 'DONE':
-			callbacks.setConfirmForgotPassword(false);
-			callbacks.setState('signIn');
+			dispatch('completed');
 			break;
 	}
 }
@@ -23,19 +22,18 @@ export async function handleForgotPassword(
 		confirmationCode?: string;
 		newPassword?: string;
 	},
-	callbacks: StateCallbacks
+	dispatch: AuthFlowDispatch
 ): Promise<void> {
 	if (!forgotPasswordArgs.username) {
 		throw new Error('No email specified');
 	}
-	if (forgotPasswordArgs.confirmationCode! && forgotPasswordArgs.newPassword!) {
+	if (forgotPasswordArgs.confirmationCode && forgotPasswordArgs.newPassword) {
 		await confirmResetPassword(
 			forgotPasswordArgs as { username: string; confirmationCode: string; newPassword: string }
 		);
-		callbacks.setConfirmForgotPassword(false);
-		callbacks.setState('signIn');
+		dispatch('completed');
 	} else {
 		const output = await resetPassword(forgotPasswordArgs);
-		handleResetPasswordNextSteps(output, callbacks);
+		handleResetPasswordNextSteps(output, dispatch);
 	}
 }
