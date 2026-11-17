@@ -21,6 +21,8 @@
 	export let keyClass: Record<string, string> = {};
 	export let style: string | undefined = undefined;
 
+	// @state-machine keyboard-page — page (letters/symbols), shift and the
+	// pressed key are written only in onKeyStart/onKeyEnd via processKeyStart.
 	let page = 0;
 	let shifted = false;
 	let active: string | undefined = undefined;

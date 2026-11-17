@@ -89,13 +89,16 @@ function handleNativeKeydown(state, action) {
 	return handleCellUpdate(state, state.focusedCellIndex, a.value, 1, false);
 }
 
-/**
- * A dispatched action. `type` selects the handler; remaining fields are
- * read by the individual handlers and vary by action type.
- * @typedef {{ type: string } & Record<string, any>} PuzzleAction
- */
+/** @typedef {import('./types').PuzzleAction} PuzzleAction */
 
-/** @type {Record<string, (s: import('./types').PuzzleState, a: any) => import('./types').StatePatch | null>} */
+// @state-machine puzzle-cursor — focused cell + direction + cell history are
+// only ever changed through dispatch(); Puzzle.svelte applies the patch.
+
+/**
+ * One handler per action type — the table is total over PuzzleAction['type'],
+ * so adding an action without a handler fails type-checking.
+ * @type {{ [K in PuzzleAction['type']]: (s: import('./types').PuzzleState, a: Extract<PuzzleAction, { type: K }>) => import('./types').StatePatch | null }}
+ */
 const HANDLERS = {
 	cellUpdate: (s, a) => handleCellUpdate(s, a.index, a.value, a.diff, a.doReplace),
 	historicalChange: (s, a) => resolveHistoricalChange(s, a.diff),
@@ -113,6 +116,9 @@ const HANDLERS = {
  * @returns {import('./types').StatePatch | null}
  */
 export function dispatch(state, action) {
-	const handler = HANDLERS[action.type];
-	return handler ? handler(state, action) : {};
+	const handler =
+		/** @type {(s: import('./types').PuzzleState, a: PuzzleAction) => import('./types').StatePatch | null} */ (
+			HANDLERS[action.type]
+		);
+	return handler(state, action);
 }

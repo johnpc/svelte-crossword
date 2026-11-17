@@ -4,71 +4,55 @@
 	import SignUpForm from './SignUpForm.svelte';
 	import SignInForm from './SignInForm.svelte';
 	import ForgotPasswordForm from './ForgotPasswordForm.svelte';
-	import {
-		loginWithApple,
-		loginWithGoogle,
-		type AuthState,
-		type StateCallbacks
-	} from './loginLogic';
+	import { loginWithApple, loginWithGoogle } from './loginLogic';
 	import { createLoginActions } from './loginPageActions';
+	import { createAuthFlow } from './authFlow';
 
 	Amplify.configure(config);
 
-	$: state = 'signIn' as AuthState;
-	$: confirmForgotPassword = false;
-	$: confirm = false;
-	$: username = '';
-	$: password = '';
-	$: confirmationCode = '';
-
-	const callbacks: StateCallbacks = {
-		setConfirmForgotPassword: (v) => (confirmForgotPassword = v),
-		setState: (v) => (state = v),
-		setConfirm: (v) => (confirm = v)
-	};
+	// One owner for screen + step; the forms derive their booleans from it.
+	const flow = createAuthFlow();
+	let username = '';
+	let password = '';
+	let confirmationCode = '';
 
 	const { onRegister, onConfirm, onLogin, onSendReset, onConfirmReset } = createLoginActions(
 		() => ({ username, password, confirmationCode }),
-		callbacks,
-		() => (confirm = true)
+		flow.send
 	);
 </script>
 
-{#if state === 'signUp'}
+{#if $flow.screen === 'signUp'}
 	<SignUpForm
 		bind:username
 		bind:password
 		bind:confirmationCode
-		{confirm}
+		confirm={$flow.step === 'confirmCode'}
 		onLoginWithApple={loginWithApple}
 		onLoginWithGoogle={loginWithGoogle}
 		{onRegister}
 		{onConfirm}
-		onShowLogin={() => (state = 'signIn')}
+		onShowLogin={() => flow.send('showSignIn')}
 	/>
-{/if}
-
-{#if state === 'signIn'}
+{:else if $flow.screen === 'forgotPassword'}
+	<ForgotPasswordForm
+		bind:username
+		bind:password
+		bind:confirmationCode
+		confirmForgotPassword={$flow.step === 'confirmCode'}
+		{onSendReset}
+		{onConfirmReset}
+		onShowRegistration={() => flow.send('showSignUp')}
+	/>
+{:else}
 	<SignInForm
 		bind:username
 		bind:password
 		onLoginWithApple={loginWithApple}
 		onLoginWithGoogle={loginWithGoogle}
 		{onLogin}
-		onShowForgotPassword={() => (state = 'forgotPassword')}
-		onShowRegistration={() => (state = 'signUp')}
-	/>
-{/if}
-
-{#if state === 'forgotPassword'}
-	<ForgotPasswordForm
-		bind:username
-		bind:password
-		bind:confirmationCode
-		{confirmForgotPassword}
-		{onSendReset}
-		{onConfirmReset}
-		onShowRegistration={() => (state = 'signUp')}
+		onShowForgotPassword={() => flow.send('showForgotPassword')}
+		onShowRegistration={() => flow.send('showSignUp')}
 	/>
 {/if}
 

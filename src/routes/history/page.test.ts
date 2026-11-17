@@ -101,6 +101,15 @@ describe('history/+page.svelte', () => {
 		expect(mockGoto).toHaveBeenCalledWith('/login');
 	});
 
+	it('shows a failure message when the history request throws', async () => {
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+		mockGetUserHistory.mockRejectedValue(new Error('boom'));
+		const { getByRole } = render(Page);
+		await waitFor(() =>
+			expect(getByRole('alert')).toHaveTextContent('Could not load your history')
+		);
+	});
+
 	it('redirects to /login when the user is not authenticated', async () => {
 		mockGetCurrentUser.mockRejectedValue(new Error('no session'));
 		render(Page);

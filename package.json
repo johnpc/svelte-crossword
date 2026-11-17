@@ -20,6 +20,8 @@
 		"test:coverage": "vitest run --coverage",
 		"test:crap": "vitest run --coverage && node scripts/crap-check.js",
 		"test:e2e": "bddgen && playwright test",
+		"test:walkthrough": "playwright test --config playwright.walkthrough.config.ts",
+		"quality": "./scripts/quality.sh",
 		"prepare": "husky"
 	},
 	"devDependencies": {

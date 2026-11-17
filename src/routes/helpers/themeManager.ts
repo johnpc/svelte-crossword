@@ -1,3 +1,4 @@
+// @state-machine theme — light -> dark -> system -> light, persisted in localStorage.
 export type Theme = 'light' | 'dark' | 'system';
 
 export const getStoredTheme = (): Theme => {

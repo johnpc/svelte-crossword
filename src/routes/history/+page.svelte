@@ -6,14 +6,14 @@
 	import { goto } from '$app/navigation';
 	import { signOut, deleteUser } from 'aws-amplify/auth';
 	import config from '../../amplify_outputs.json';
-	import { resetPuzzleStoreDefaults } from '../helpers/puzzleStore';
-	import { type StreakInfo } from '../helpers/sql/getStreakInfo';
+	import { resetPreviewSession } from '../preview/previewSession';
 	import { getStreakInfo } from '../helpers/sql/getStreakInfo';
-	import { getUserHistory, type UserHistoryEntry } from '../helpers/sql/getUserHistory';
+	import { getUserHistory } from '../helpers/sql/getUserHistory';
 	import { getOrCreateProfile } from '../helpers/sql/getOrCreateProfile';
 	import { getCalendarOptions } from './helpers/getCalendarOptions';
 	import { computeStats } from './helpers/computeStats';
-	import { loadHistoryData, deleteAllUserData } from './helpers/historyPageLogic';
+	import { loadHistoryData, deleteAllUserData, type HistoryData } from './helpers/historyPageLogic';
+	import { loading, settle, type RemoteData } from '../helpers/remoteData';
 	import HistoryStats from './HistoryStats.svelte';
 	import HistoryEntry from './HistoryEntry.svelte';
 	import { Calendar, DayGrid } from '@event-calendar/core';
@@ -22,54 +22,56 @@
 	const plugins = [DayGrid];
 	Amplify.configure(config);
 
-	$: completedPuzzles = [] as UserHistoryEntry[];
-	$: streakInfo = {} as StreakInfo;
-	$: isLoading = true;
+	// @state-machine history-load — loading | ready(data) | failed(message)
+	let history: RemoteData<HistoryData> = loading();
 
 	onMount(() => {
 		(async () => {
-			const data = await loadHistoryData({
-				getCurrentUser,
-				getOrCreateProfile,
-				getUserHistory,
-				getStreakInfo,
-				onUnauthenticated: () => goto('/login')
-			});
-			if (!data) return;
-			completedPuzzles = data.completedPuzzles;
-			streakInfo = data.streakInfo;
-			isLoading = false;
+			const settled = await settle(
+				() =>
+					loadHistoryData({
+						getCurrentUser,
+						getOrCreateProfile,
+						getUserHistory,
+						getStreakInfo,
+						onUnauthenticated: () => goto('/login')
+					}),
+				'Could not load your history. Please try again later.'
+			);
+			if (settled) history = settled;
 		})();
 	});
 
 	const handleDeleteAllData = () =>
 		deleteAllUserData({
 			confirm,
-			resetPuzzleStoreDefaults,
+			resetLocalState: resetPreviewSession,
 			deleteUser,
 			signOut,
 			onComplete: () => goto('/login')
 		});
 </script>
 
-{#if isLoading}
+{#if history.status === 'loading'}
 	<div style="margin: auto">
 		<SyncLoader size="60" color="palevioletred" unit="px" duration="1s" />
 	</div>
-{:else if completedPuzzles.length === 0}
+{:else if history.status === 'failed'}
+	<p role="alert">{history.message}</p>
+{:else if history.data.completedPuzzles.length === 0}
 	<p>
 		You have not completed any puzzles.
 		<button type="button" class="link-button" on:click={() => goto('/')}>Go Back</button>
 	</p>
 {:else}
-	<Calendar {plugins} options={getCalendarOptions(streakInfo)} />
+	<Calendar {plugins} options={getCalendarOptions(history.data.streakInfo)} />
 	<HistoryStats
-		stats={computeStats(completedPuzzles)}
-		{streakInfo}
-		puzzleCount={completedPuzzles.length}
+		stats={computeStats(history.data.completedPuzzles)}
+		streakInfo={history.data.streakInfo}
+		puzzleCount={history.data.completedPuzzles.length}
 	/>
 	<hr />
-	{#each completedPuzzles as puzzle}
+	{#each history.data.completedPuzzles as puzzle}
 		<HistoryEntry {...puzzle} />
 	{/each}
 {/if}

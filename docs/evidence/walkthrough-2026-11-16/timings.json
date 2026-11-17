@@ -1,0 +1,10 @@
+{
+	"preview: goto -> grid visible": 261,
+	"preview: type a wrong letter -> rendered": 24,
+	"preview: type full solution -> completion message": 47,
+	"login: submit -> puzzle grid on home": 285,
+	"home: solve puzzle 1 -> completion message": 68,
+	"home: Continue -> next puzzle grid": 52,
+	"history: goto -> stats visible": 178,
+	"leaderboard: goto -> list visible": 83
+}

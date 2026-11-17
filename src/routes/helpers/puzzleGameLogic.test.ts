@@ -23,7 +23,6 @@ vi.mock('../../amplify_outputs.json', () => ({
 vi.mock('aws-amplify', () => ({ Amplify: { configure: vi.fn() } }));
 
 import {
-	createTimer,
 	handleToolbarAction,
 	navigateToHistory,
 	sleep,
@@ -44,55 +43,33 @@ describe('puzzleGameLogic', () => {
 		vi.useRealTimers();
 	});
 
-	describe('createTimer', () => {
-		it('calls onTick after 1 second', () => {
-			const onTick = vi.fn();
-			const cancel = createTimer(onTick, () => true);
-			vi.advanceTimersByTime(1000);
-			expect(onTick).toHaveBeenCalledOnce();
-			cancel();
-		});
-		it('stops when isComplete returns true', () => {
-			const onTick = vi.fn();
-			const cancel = createTimer(onTick, () => true);
-			vi.advanceTimersByTime(3000);
-			expect(onTick).toHaveBeenCalledOnce();
-			cancel();
-		});
-		it('continues ticking when isComplete returns false', () => {
-			const onTick = vi.fn();
-			const cancel = createTimer(onTick, () => false);
-			vi.advanceTimersByTime(3000);
-			expect(onTick).toHaveBeenCalledTimes(3);
-			cancel();
-		});
-		it('returned cancel function stops further ticks', () => {
-			const onTick = vi.fn();
-			const cancel = createTimer(onTick, () => false);
-			vi.advanceTimersByTime(1000);
-			cancel();
-			vi.advanceTimersByTime(5000);
-			expect(onTick).toHaveBeenCalledOnce();
-		});
-	});
-
 	describe('submitPuzzleCompletion', () => {
 		it('calls vibrate and invokes lambda with correct params', async () => {
 			vi.useRealTimers();
-			await submitPuzzleCompletion({
-				profileId: 'prof-1',
-				puzzleId: 'puz-1',
-				usedCheck: true,
-				usedClear: false,
-				usedReveal: true,
-				timeInSeconds: 42
+			await submitPuzzleCompletion('prof-1', {
+				phase: 'solved',
+				puzzle: { id: 'puz-1', clues: [] },
+				elapsedSeconds: 42,
+				assists: { usedCheck: true, usedClear: false, usedReveal: true }
 			});
 			expect(vibrate).toHaveBeenCalled();
 			expect(InvokeCommand).toHaveBeenCalledWith(
-				expect.objectContaining({
-					FunctionName: 'test-function'
-				})
+				expect.objectContaining({ FunctionName: 'test-function' })
 			);
+			const payload = JSON.parse(
+				(InvokeCommand as unknown as ReturnType<typeof vi.fn>).mock.calls[0][0].Payload
+			);
+			expect(payload).toMatchObject({
+				query: 'createUserPuzzle',
+				userPuzzle: {
+					profile_id: 'prof-1',
+					puzzle_id: 'puz-1',
+					used_check: 1,
+					used_clear: 0,
+					used_reveal: 1,
+					time_in_seconds: 42
+				}
+			});
 		});
 	});
 

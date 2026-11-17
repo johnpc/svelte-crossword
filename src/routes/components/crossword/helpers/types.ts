@@ -77,5 +77,46 @@ export interface PuzzleState {
 /** A partial state patch returned by an action resolver. */
 export type StatePatch = Partial<PuzzleState> & { _focusHidden?: boolean };
 
-/** An action object dispatched into the puzzle reducer. */
-export type PuzzleAction = { type: string } & Record<string, unknown>;
+/**
+ * An action dispatched into the puzzle reducer. The union is total: every
+ * `type` has exactly one handler in puzzleController.js, so an unknown action
+ * is a type error rather than a silent no-op.
+ */
+export type PuzzleAction =
+	| { type: 'cellUpdate'; index: number; value: string; diff: number; doReplace: boolean }
+	| { type: 'historicalChange'; diff: number }
+	| { type: 'focusCell'; index: number }
+	| { type: 'focusClueDiff'; diff: number }
+	| { type: 'moveFocus'; direction: Direction; diff: number }
+	| { type: 'flipDirection' }
+	| { type: 'keydown'; detail: string }
+	| { type: 'nativeKeydown'; key: string; ctrlKey?: boolean; altKey?: boolean };
+
+/**
+ * What a physical key press on a focused cell means. Resolved by
+ * cellLogic.getKeydownAction; Cell.svelte only maps it onto callbacks.
+ */
+export type KeydownAction =
+	| { type: 'historicalChange'; diff: number }
+	| { type: 'focusClueDiff'; diff: number; preventDefault: true }
+	| { type: 'flipDirection'; preventDefault: true }
+	| { type: 'delete' }
+	| { type: 'letter'; value: string }
+	| { type: 'moveFocus'; direction: Direction; diff: number; preventDefault: true };
+
+/**
+ * The engine's toolbar mode. One value, one owner (Crossword.svelte):
+ * `revealing` while the reveal animation plays, `checking` while check mode
+ * marks right/wrong letters, `idle` otherwise. Readers derive booleans.
+ */
+export type ToolMode = 'idle' | 'revealing' | 'checking';
+
+/** What the toolbar reducer asks the component to do. */
+export interface ToolbarEffect {
+	cells?: Cell[];
+	mode: ToolMode;
+	/** Re-home the cursor to the first cell, across. */
+	resetFocus: boolean;
+	/** Schedule the end of the reveal animation after this many ms. */
+	endRevealAfterMs?: number;
+}

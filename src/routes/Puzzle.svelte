@@ -7,133 +7,112 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { toast } from '@zerodevx/svelte-toast';
 	import { getOrCreateProfile } from './helpers/sql/getOrCreateProfile';
-	import type { Clue, HydratedProfile } from './helpers/types/types';
+	import { readKeyboardSetting, toggleKeyboardSetting } from './helpers/keyboardSetting';
+	import { createPuzzleSession } from './helpers/session/puzzleSessionStore';
+	import type { HydratedProfile } from './helpers/types/types';
 	import {
-		createTimer,
 		performSignOut,
 		loadNextPuzzle,
 		initializePuzzle,
 		submitPuzzleCompletion
 	} from './helpers/puzzleGameLogic';
 
-	$: clues = [] as Clue[];
-	$: puzzleId = '';
-	$: profile = {} as HydratedProfile;
-	$: timeInSeconds = 0;
-	$: isPuzzleComplete = false;
-	$: usedCheck = false;
-	$: usedReveal = false;
-	$: usedClear = false;
-	let puzzleTitle = '',
-		puzzleAuthor = '';
-	let crosswordComplete = false,
-		showAppKeyboard = true;
-	let outOfPuzzles = false;
-	let cancelTimer: (() => void) | null = null;
-	const tick = () => void timeInSeconds++;
-	const isComplete = () => isPuzzleComplete;
-	const startTimer = () => {
-		cancelTimer?.();
-		cancelTimer = createTimer(tick, isComplete);
+	let profile: HydratedProfile = { id: '', email: '' };
+	let showAppKeyboard = true;
+	let gridSolved = false;
+
+	// @state-machine puzzle-session — the store is the one writer; this
+	// component only sends events and renders `$session`.
+	const session = createPuzzleSession((solved) => submitPuzzleCompletion(profile.id, solved));
+	const ticker = setInterval(() => session.send({ type: 'tick' }), 1000);
+	onDestroy(() => clearInterval(ticker));
+	$: if (gridSolved) session.send({ type: 'gridSolved' });
+
+	const fail = (message: string, e: unknown) => {
+		console.error(message, e);
+		toast.push(message);
+		session.send({ type: 'loadFailed', message });
 	};
 
-	// crosswordComplete is a child binding that stays true for one reactive
-	// flush after a new puzzle loads, so isPuzzleComplete must only reset once
-	// the child has actually re-evaluated (see onNextPuzzle) — otherwise this
-	// block records a bogus 0-second completion for the next puzzle.
-	$: if (crosswordComplete && !isPuzzleComplete && puzzleId) {
-		isPuzzleComplete = true;
-		submitPuzzleCompletion({
-			profileId: profile.id,
-			puzzleId,
-			usedCheck,
-			usedClear,
-			usedReveal,
-			timeInSeconds
-		});
-	}
-	$: if (!crosswordComplete && isPuzzleComplete) {
-		isPuzzleComplete = false;
-	}
+	const loadAnother = async () => {
+		// The grid is unmounted while loading, so the next one starts unsolved.
+		gridSolved = false;
+		try {
+			session.send({ type: 'puzzleLoaded', puzzle: await loadNextPuzzle(profile.id) });
+		} catch (e) {
+			fail('Error loading the next puzzle. Please try again.', e);
+		}
+	};
 
 	onMount(() => {
-		showAppKeyboard = localStorage.getItem('showAppKeyboard') !== 'false';
+		showAppKeyboard = readKeyboardSetting();
 		initializePuzzle(getCurrentUser, getOrCreateProfile, {
 			onAuthenticated(p, puzzle) {
 				profile = p;
-				if (!puzzle) {
-					outOfPuzzles = true;
-					return;
-				}
-				clues = puzzle.clues;
-				puzzleId = puzzle.id;
-				puzzleTitle = puzzle.title || '';
-				puzzleAuthor = puzzle.author || '';
+				session.send({ type: 'puzzleLoaded', puzzle });
 			},
 			onUnauthenticated: () => goto('/preview'),
-			onError: (e) => {
-				console.error('Error loading:', e);
-				toast.push('Error loading puzzle. Please try refreshing the page.');
-			}
+			onError: (e) => fail('Error loading puzzle. Please try refreshing the page.', e)
 		});
 	});
 
-	onDestroy(() => cancelTimer?.());
-
-	startTimer();
-
-	const toggleKeyboard = () => {
-		showAppKeyboard = !showAppKeyboard;
-		localStorage.setItem('showAppKeyboard', String(showAppKeyboard));
+	const toggleKeyboard = () => (showAppKeyboard = toggleKeyboardSetting(showAppKeyboard));
+	const onNextPuzzle = () => {
+		if (session.send({ type: 'nextRequested' }).phase === 'loading') loadAnother();
 	};
-	const onNextPuzzle = async () => {
-		try {
-			const puzzle = await loadNextPuzzle(profile.id);
-			if (!puzzle) {
-				outOfPuzzles = true;
-				return;
-			}
-			timeInSeconds = 0;
-			usedCheck = usedReveal = usedClear = false;
-			// isPuzzleComplete intentionally NOT reset here — it clears
-			// reactively once the child recomputes crosswordComplete=false
-			// for the new clues, preventing a duplicate submission.
-			clues = puzzle.clues;
-			puzzleId = puzzle.id;
-			puzzleTitle = puzzle.title || '';
-			puzzleAuthor = puzzle.author || '';
-			startTimer();
-		} catch (e) {
-			console.error('Error loading next puzzle:', e);
-			toast.push('Error loading the next puzzle. Please try again.');
-		}
+	const onRetry = () => {
+		session.send({ type: 'reset' });
+		loadAnother();
 	};
-	const onSignOut = () => performSignOut(signOut, () => void (clues = []));
+	const onSignOut = () => performSignOut(signOut, () => session.send({ type: 'reset' }));
 </script>
 
-{#if outOfPuzzles}
+{#if $session.phase === 'exhausted'}
 	<PuzzleHeader email={profile.email} puzzleTitle="" puzzleAuthor="" {onSignOut} />
-	<p style="text-align: center; padding: 2rem;">
+	<p class="notice">
 		You've completed every available puzzle! 🎉<br />
 		Check back soon for more.
 	</p>
-{:else if clues.length === 0}
+{:else if $session.phase === 'error'}
+	<p class="notice" role="alert">
+		{$session.message}<br />
+		<button type="button" class="retry" on:click={onRetry}>Try again</button>
+	</p>
+{:else if $session.phase === 'loading'}
 	<div style="margin: auto">
 		<SyncLoader size="60" color="palevioletred" unit="px" duration="1s" />
 	</div>
 {:else}
-	<PuzzleHeader email={profile.email} {puzzleTitle} {puzzleAuthor} {onSignOut} />
+	<PuzzleHeader
+		email={profile.email}
+		puzzleTitle={$session.puzzle.title || ''}
+		puzzleAuthor={$session.puzzle.author || ''}
+		{onSignOut}
+	/>
 	<PuzzleCrossword
-		{clues}
+		session={$session}
 		{showAppKeyboard}
 		keyboardStyle="outline"
-		{timeInSeconds}
-		{isPuzzleComplete}
-		bind:usedClear
-		bind:usedReveal
-		bind:usedCheck
+		onAssist={(assist) => session.send({ type: 'assistUsed', assist })}
 		onToggleKeyboard={toggleKeyboard}
-		{onNextPuzzle}
-		bind:isComplete={crosswordComplete}
+		onContinue={onNextPuzzle}
+		bind:isComplete={gridSolved}
 	/>
 {/if}
+
+<style>
+	.notice {
+		text-align: center;
+		padding: 2rem;
+	}
+	.retry {
+		margin-top: 1em;
+		cursor: pointer;
+		font: inherit;
+		padding: 0.5em 1em;
+		border: none;
+		border-radius: 4px;
+		background-color: palevioletred;
+		color: white;
+	}
+</style>

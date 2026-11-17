@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
+import { NO_ASSISTS } from './helpers/session/puzzleSession';
 
 // puzzleGameLogic pulls in aws-sdk/amplify, so mock it. handleToolbarAction just
 // invokes the supplied callback so our spies fire; navigateToHistory is a spy.
@@ -12,115 +13,86 @@ vi.mock('./helpers/puzzleGameLogic', () => ({
 import PuzzleToolbar from './PuzzleToolbar.svelte';
 
 const makeProps = (overrides = {}) => ({
-	timeInSeconds: 65,
-	isPuzzleComplete: false,
-	usedClear: false,
-	usedReveal: false,
-	usedCheck: false,
+	elapsedSeconds: 65,
+	solved: false,
+	assists: NO_ASSISTS,
 	showAppKeyboard: false,
 	onClear: vi.fn(),
 	onReveal: vi.fn(),
 	onCheck: vi.fn(),
+	onAssist: vi.fn(),
 	onToggleKeyboard: vi.fn(),
-	onNextPuzzle: vi.fn(),
+	onContinue: vi.fn(),
 	...overrides
 });
 
 describe('PuzzleToolbar', () => {
-	beforeEach(() => {
-		navigateToHistory.mockClear();
-	});
+	beforeEach(() => navigateToHistory.mockClear());
 
 	it('renders the human-readable timer', () => {
-		const { getByText } = render(PuzzleToolbar, { props: makeProps({ timeInSeconds: 65 }) });
-		// 65s -> "1m 5s"
+		const { getByText } = render(PuzzleToolbar, { props: makeProps({ elapsedSeconds: 65 }) });
 		expect(getByText(/1m\s+5s/)).toBeInTheDocument();
 	});
 
-	it('shows the History button (not Continue) when the puzzle is not complete', () => {
-		const { getByText, queryByText } = render(PuzzleToolbar, {
-			props: makeProps({ isPuzzleComplete: false })
-		});
+	it('shows History (not Continue) while playing', () => {
+		const { getByText, queryByText } = render(PuzzleToolbar, { props: makeProps() });
 		expect(getByText('History')).toBeInTheDocument();
 		expect(queryByText('Continue')).toBeNull();
 	});
 
-	it('shows the Continue button (not History) when the puzzle is complete', () => {
+	it('shows Continue (not History) once solved', () => {
 		const { getByText, queryByText } = render(PuzzleToolbar, {
-			props: makeProps({ isPuzzleComplete: true })
+			props: makeProps({ solved: true })
 		});
 		expect(getByText('Continue')).toBeInTheDocument();
 		expect(queryByText('History')).toBeNull();
 	});
 
-	it('calls navigateToHistory when the History button is clicked', async () => {
-		const { getByText } = render(PuzzleToolbar, { props: makeProps() });
+	it('can hide the History button (preview mode)', () => {
+		const { queryByText } = render(PuzzleToolbar, { props: makeProps({ showHistory: false }) });
+		expect(queryByText('History')).toBeNull();
+	});
+
+	it('navigates to history and fires onContinue', async () => {
+		const onContinue = vi.fn();
+		const { getByText, rerender } = render(PuzzleToolbar, { props: makeProps({ onContinue }) });
 		await fireEvent.click(getByText('History'));
 		expect(navigateToHistory).toHaveBeenCalledOnce();
-	});
-
-	it('calls onNextPuzzle when the Continue button is clicked', async () => {
-		const onNextPuzzle = vi.fn();
-		const { getByText } = render(PuzzleToolbar, {
-			props: makeProps({ isPuzzleComplete: true, onNextPuzzle })
-		});
+		await rerender(makeProps({ solved: true, onContinue }));
 		await fireEvent.click(getByText('Continue'));
-		expect(onNextPuzzle).toHaveBeenCalledOnce();
+		expect(onContinue).toHaveBeenCalledOnce();
 	});
 
-	it('calls onToggleKeyboard when the keyboard toggle is clicked', async () => {
+	it('toggles the keyboard and shows the matching glyph', async () => {
 		const onToggleKeyboard = vi.fn();
-		const { getByTitle } = render(PuzzleToolbar, { props: makeProps({ onToggleKeyboard }) });
+		const { getByTitle, rerender } = render(PuzzleToolbar, {
+			props: makeProps({ onToggleKeyboard, showAppKeyboard: false })
+		});
+		expect(getByTitle('Toggle keyboard').textContent?.trim()).toBe('📱');
 		await fireEvent.click(getByTitle('Toggle keyboard'));
 		expect(onToggleKeyboard).toHaveBeenCalledOnce();
-	});
-
-	it('shows the phone glyph when showAppKeyboard is false', () => {
-		const { getByTitle } = render(PuzzleToolbar, { props: makeProps({ showAppKeyboard: false }) });
-		expect(getByTitle('Toggle keyboard').textContent?.trim()).toBe('📱');
-	});
-
-	it('shows the keyboard glyph when showAppKeyboard is true', () => {
-		const { getByTitle } = render(PuzzleToolbar, { props: makeProps({ showAppKeyboard: true }) });
+		await rerender(makeProps({ showAppKeyboard: true }));
 		expect(getByTitle('Toggle keyboard').textContent?.trim()).toBe('⌨️');
 	});
 
-	it('fires onClear and marks the Clear button active when clicked', async () => {
-		const onClear = vi.fn();
-		const { getByText } = render(PuzzleToolbar, { props: makeProps({ onClear }) });
-		const clear = getByText('Clear');
-		expect(clear).not.toHaveClass('active');
-		await fireEvent.click(clear);
-		expect(onClear).toHaveBeenCalledOnce();
-		expect(clear).toHaveClass('active');
+	it.each([
+		['Clear', 'clear', 'onClear'],
+		['Reveal', 'reveal', 'onReveal'],
+		['Check', 'check', 'onCheck']
+	] as const)('%s reports the assist and runs the engine action', async (label, kind, cb) => {
+		const props = makeProps();
+		const { getByText } = render(PuzzleToolbar, { props });
+		await fireEvent.click(getByText(label));
+		expect(props.onAssist).toHaveBeenCalledWith(kind);
+		expect(props[cb]).toHaveBeenCalledOnce();
 	});
 
-	it('fires onReveal and marks the Reveal button active when clicked', async () => {
-		const onReveal = vi.fn();
-		const { getByText } = render(PuzzleToolbar, { props: makeProps({ onReveal }) });
-		const reveal = getByText('Reveal');
-		expect(reveal).not.toHaveClass('active');
-		await fireEvent.click(reveal);
-		expect(onReveal).toHaveBeenCalledOnce();
-		expect(reveal).toHaveClass('active');
-	});
-
-	it('fires onCheck and marks the Check button active when clicked', async () => {
-		const onCheck = vi.fn();
-		const { getByText } = render(PuzzleToolbar, { props: makeProps({ onCheck }) });
-		const check = getByText('Check');
-		expect(check).not.toHaveClass('active');
-		await fireEvent.click(check);
-		expect(onCheck).toHaveBeenCalledOnce();
-		expect(check).toHaveClass('active');
-	});
-
-	it('renders Clear/Reveal/Check already active when their used* props are true', () => {
+	it('highlights the assists the session has recorded', () => {
 		const { getByText } = render(PuzzleToolbar, {
-			props: makeProps({ usedClear: true, usedReveal: true, usedCheck: true })
+			props: makeProps({ assists: { usedClear: true, usedReveal: false, usedCheck: true } })
 		});
 		expect(getByText('Clear')).toHaveClass('active');
-		expect(getByText('Reveal')).toHaveClass('active');
+		expect(getByText('Reveal')).not.toHaveClass('active');
 		expect(getByText('Check')).toHaveClass('active');
 	});
 });

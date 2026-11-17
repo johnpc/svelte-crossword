@@ -1,4 +1,6 @@
 /**
+ * @state-machine undo-history
+ *
  * Compute the new state after an undo/redo operation.
  * Returns { cells, cellsHistoryIndex, focusedCellIndex, focusedCellIndexHistoryIndex }
  * @param {{
