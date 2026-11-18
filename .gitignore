@@ -24,3 +24,6 @@ output.zip
 /playwright-report
 /.features-gen
 /artifacts
+
+# iOS launch smoke output (scripts/ios-launch-smoke.sh)
+ios-smoke-output/
