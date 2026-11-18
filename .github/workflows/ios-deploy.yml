@@ -1,5 +1,7 @@
 name: iOS Deploy
 
+# Shared deploy: johnpc/ci-workflows (launch smoke, CI-keychain signing, per-job
+# $RUNNER_TEMP paths, version bump through an auto-merging PR). Per-repo knobs only.
 on:
   workflow_run:
     workflows: ['CI']
@@ -9,138 +11,21 @@ on:
 
 permissions:
   contents: write
-
-env:
-  SCHEME: App
-  WORKSPACE: ios/App/App.xcworkspace
-  XCODEPROJ: ios/App/App.xcodeproj
-  BUNDLE_ID: com.johncorser.crosswords
+  pull-requests: write
+  actions: write
 
 jobs:
   deploy:
-    name: Deploy to App Store Connect
-    runs-on: [self-hosted, mac-mini]
-    timeout-minutes: 60
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: main
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 26
-          # No setup-node cache on the self-hosted Mac mini: ~/.npm persists there, and saving it was a ~1.8 GB upload per run.
-          package-manager-cache: false
-
-      # Amplify Gen2 deps drag in conflicting zod peers; legacy-peer-deps
-      # is the only way npm ci will resolve them without erroring.
-      - run: npm ci --legacy-peer-deps
-
-      - name: Provide amplify_outputs.json
-        env:
-          AMPLIFY_OUTPUTS_BASE64: ${{ secrets.AMPLIFY_OUTPUTS_BASE64 }}
-        run: echo "$AMPLIFY_OUTPUTS_BASE64" | base64 -d > src/amplify_outputs.json
-
-      - name: Build SvelteKit and sync to Capacitor iOS
-        run: |
-          CAPACITOR_BUILD=1 npm run build
-          npx cap sync ios
-
-      - name: Install CocoaPods
-        working-directory: ios/App
-        run: pod install
-
-      - name: Launch smoke (the built app must start in a simulator)
-        # A build made with the iOS 27 SDK and no UIScene manifest archives, uploads
-        # and passes every browser test, then dies on its first frame. Start the real
-        # binary in a fresh simulator before spending a signed archive on it.
-        run: SMOKE_WEB_BUILD=0 bash scripts/ios-launch-smoke.sh
-
-      - name: Keep the launch-smoke evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-launch-smoke
-          path: |
-            ios-smoke-output/launch.png
-            ios-smoke-output/app.stdout
-            ios-smoke-output/xcodebuild.log
-          if-no-files-found: ignore
-
-      - name: Write App Store Connect API key
-        run: |
-          mkdir -p ~/private_keys
-          echo "${{ secrets.ASC_KEY_CONTENT }}" > ~/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
-
-      - name: Increment build number
-        working-directory: ios/App
-        run: |
-          BUILD_NUM=$(date +%Y%m%d%H%M)
-          agvtool new-version -all $BUILD_NUM
-          echo "Set build number to $BUILD_NUM"
-
-      - name: Prepare CI signing (manual, CI keychain)
-        env:
-          CI_KEYCHAIN_PASSWORD: ${{ secrets.CI_KEYCHAIN_PASSWORD }}
-        run: |
-          # Runner jobs run in the system launchd context, where Xcode's automatic
-          # signing can't see or write a keychain. Sign manually with the CI
-          # keychain's Apple Distribution identity (see ~/ci-signing/ios_manual_signing.py).
-          # Export options, archive and export dir live under $RUNNER_TEMP (unique per job): fixed
-          # /tmp and ~/Desktop paths were overwritten by other apps' deploys running concurrently.
-          security unlock-keychain -p "$CI_KEYCHAIN_PASSWORD" "$HOME/Library/Keychains/ci-signing.keychain-db"
-          python3 ~/ci-signing/ios_manual_signing.py apply "$XCODEPROJ" --export-options "$RUNNER_TEMP/ExportOptions.plist"
-
-      - name: Archive and upload (auto-bump version on conflict)
-        run: |
-
-          archive_and_upload() {
-            xcodebuild archive \
-              -workspace "$WORKSPACE" \
-              -scheme "$SCHEME" \
-              -destination "generic/platform=iOS" \
-              -archivePath "$RUNNER_TEMP/SmallCrosswords.xcarchive" \
-              -quiet
-
-            xcodebuild -exportArchive \
-              -archivePath "$RUNNER_TEMP/SmallCrosswords.xcarchive" \
-              -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
-              -exportPath "$RUNNER_TEMP/export" \
-              -allowProvisioningUpdates \
-              -authenticationKeyPath ~/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8 \
-              -authenticationKeyID ${{ secrets.ASC_KEY_ID }} \
-              -authenticationKeyIssuerID ${{ secrets.ASC_ISSUER_ID }} 2>&1
-          }
-
-          OUTPUT=$(archive_and_upload) && echo "$OUTPUT" && exit 0
-
-          if echo "$OUTPUT" | grep -qi "version.*already exists\|already been uploaded\|redundant binary\|train.*closed\|higher version"; then
-            echo "⚠️ Version conflict, bumping minor version..."
-            python3 ~/ci-signing/ios_manual_signing.py revert "$XCODEPROJ"
-            CURRENT=$(grep -m 1 'MARKETING_VERSION' "$XCODEPROJ/project.pbxproj" | sed 's/.*= *\(.*\);/\1/')
-            MAJOR=$(echo "$CURRENT" | cut -d. -f1)
-            MINOR=$(echo "$CURRENT" | cut -d. -f2)
-            PATCH=$(echo "$CURRENT" | cut -d. -f3)
-            NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))"
-            sed -i '' "s/MARKETING_VERSION = ${CURRENT}/MARKETING_VERSION = ${NEW_VERSION}/g" "$XCODEPROJ/project.pbxproj"
-            echo "Bumped $CURRENT → $NEW_VERSION"
-
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add "$XCODEPROJ/project.pbxproj"
-            git commit -m "chore(ios): bump version to $NEW_VERSION [skip ci]"
-            git push origin main
-            python3 ~/ci-signing/ios_manual_signing.py apply "$XCODEPROJ" --export-options "$RUNNER_TEMP/ExportOptions.plist"
-
-            rm -rf "$RUNNER_TEMP/SmallCrosswords.xcarchive" "$RUNNER_TEMP/export"
-            archive_and_upload
-          else
-            echo "$OUTPUT"
-            exit 1
-          fi
-
-      - name: Revert CI signing
-        if: always()
-        run: python3 ~/ci-signing/ios_manual_signing.py revert "$XCODEPROJ"
+    uses: johnpc/ci-workflows/.github/workflows/ios-deploy-capacitor.yml@v1
+    secrets: inherit
+    with:
+      bundle-id: com.johncorser.crosswords
+      archive-name: SmallCrosswords
+      ref: main
+      # Amplify Gen2 deps drag in conflicting zod peers; legacy-peer-deps is the
+      # only way npm ci resolves them.
+      npm-ci-args: --legacy-peer-deps
+      amplify-outputs-path: src/amplify_outputs.json
+      build-command: CAPACITOR_BUILD=1 npm run build
+      bump: patch

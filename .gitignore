@@ -25,5 +25,5 @@ output.zip
 /.features-gen
 /artifacts
 
-# iOS launch smoke output (scripts/ios-launch-smoke.sh)
+# iOS launch smoke output (johnpc/ci-workflows ios-launch-smoke action)
 ios-smoke-output/
