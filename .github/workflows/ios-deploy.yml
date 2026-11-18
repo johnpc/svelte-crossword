@@ -30,7 +30,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 26
           # No setup-node cache on the self-hosted Mac mini: ~/.npm persists there, and saving it was a ~1.8 GB upload per run.
           package-manager-cache: false
 
