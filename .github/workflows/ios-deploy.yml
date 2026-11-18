@@ -52,6 +52,23 @@ jobs:
         working-directory: ios/App
         run: pod install
 
+      - name: Launch smoke (the built app must start in a simulator)
+        # A build made with the iOS 27 SDK and no UIScene manifest archives, uploads
+        # and passes every browser test, then dies on its first frame. Start the real
+        # binary in a fresh simulator before spending a signed archive on it.
+        run: SMOKE_WEB_BUILD=0 bash scripts/ios-launch-smoke.sh
+
+      - name: Keep the launch-smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-launch-smoke
+          path: |
+            ios-smoke-output/launch.png
+            ios-smoke-output/app.stdout
+            ios-smoke-output/xcodebuild.log
+          if-no-files-found: ignore
+
       - name: Write App Store Connect API key
         run: |
           mkdir -p ~/private_keys
