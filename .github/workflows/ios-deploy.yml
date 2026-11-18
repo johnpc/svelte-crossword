@@ -88,8 +88,10 @@ jobs:
           # Runner jobs run in the system launchd context, where Xcode's automatic
           # signing can't see or write a keychain. Sign manually with the CI
           # keychain's Apple Distribution identity (see ~/ci-signing/ios_manual_signing.py).
+          # Export options, archive and export dir live under $RUNNER_TEMP (unique per job): fixed
+          # /tmp and ~/Desktop paths were overwritten by other apps' deploys running concurrently.
           security unlock-keychain -p "$CI_KEYCHAIN_PASSWORD" "$HOME/Library/Keychains/ci-signing.keychain-db"
-          python3 ~/ci-signing/ios_manual_signing.py apply "$XCODEPROJ" --export-options /tmp/ExportOptions.plist
+          python3 ~/ci-signing/ios_manual_signing.py apply "$XCODEPROJ" --export-options "$RUNNER_TEMP/ExportOptions.plist"
 
       - name: Archive and upload (auto-bump version on conflict)
         run: |
@@ -99,13 +101,13 @@ jobs:
               -workspace "$WORKSPACE" \
               -scheme "$SCHEME" \
               -destination "generic/platform=iOS" \
-              -archivePath ~/Desktop/SmallCrosswords.xcarchive \
+              -archivePath "$RUNNER_TEMP/SmallCrosswords.xcarchive" \
               -quiet
 
             xcodebuild -exportArchive \
-              -archivePath ~/Desktop/SmallCrosswords.xcarchive \
-              -exportOptionsPlist /tmp/ExportOptions.plist \
-              -exportPath ~/Desktop/export \
+              -archivePath "$RUNNER_TEMP/SmallCrosswords.xcarchive" \
+              -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+              -exportPath "$RUNNER_TEMP/export" \
               -allowProvisioningUpdates \
               -authenticationKeyPath ~/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8 \
               -authenticationKeyID ${{ secrets.ASC_KEY_ID }} \
@@ -130,9 +132,9 @@ jobs:
             git add "$XCODEPROJ/project.pbxproj"
             git commit -m "chore(ios): bump version to $NEW_VERSION [skip ci]"
             git push origin main
-            python3 ~/ci-signing/ios_manual_signing.py apply "$XCODEPROJ" --export-options /tmp/ExportOptions.plist
+            python3 ~/ci-signing/ios_manual_signing.py apply "$XCODEPROJ" --export-options "$RUNNER_TEMP/ExportOptions.plist"
 
-            rm -rf ~/Desktop/SmallCrosswords.xcarchive ~/Desktop/export
+            rm -rf "$RUNNER_TEMP/SmallCrosswords.xcarchive" "$RUNNER_TEMP/export"
             archive_and_upload
           else
             echo "$OUTPUT"
