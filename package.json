@@ -1,6 +1,9 @@
 {
 	"name": "svelte-crossword-app",
 	"version": "0.0.1",
+	"engines": {
+		"node": ">=26"
+	},
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
